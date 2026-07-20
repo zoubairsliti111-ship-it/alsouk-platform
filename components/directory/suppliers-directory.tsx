@@ -7,7 +7,6 @@ import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { DirectoryFilters, emptyFilters, type FilterState } from "@/components/directory/directory-filters"
 import { SupplierCard } from "@/components/directory/supplier-card"
-import { supabase } from "@/lib/supabase/client"
 import { matchesMoq, matchesYears, suppliers } from "@/lib/directory-data"
 
 type SortKey = "relevance" | "rating" | "products" | "years"
@@ -20,8 +19,6 @@ export function SuppliersDirectory() {
   const [filters, setFilters] = useState<FilterState>(emptyFilters)
   const [sort, setSort] = useState<SortKey>("relevance")
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-const [suppliersData, setSuppliersData] = useState<any[]>([])
-const [loading, setLoading] = useState(true)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
