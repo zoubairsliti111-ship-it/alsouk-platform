@@ -1,6 +1,7 @@
 "use client"
 
 import { Quote, Star } from "lucide-react"
+import { SectionHeading } from "@/components/section-heading"
 import { useLanguage } from "@/components/language-provider"
 
 export function TestimonialsSection() {
@@ -9,12 +10,7 @@ export function TestimonialsSection() {
   return (
     <section className="bg-secondary/40 py-16">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            {t.testimonials.title}
-          </h2>
-          <p className="mt-2 text-muted-foreground">{t.testimonials.subtitle}</p>
-        </div>
+        <SectionHeading align="center" title={t.testimonials.title} subtitle={t.testimonials.subtitle} />
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {t.testimonials.items.map((item) => (

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Check, ChevronDown, Globe, Heart, Menu, ShoppingCart, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { BrandLogo } from "@/components/brand-logo"
 import { useLanguage } from "@/components/language-provider"
 import { LANGS } from "@/lib/i18n"
 
@@ -87,14 +88,7 @@ export function SiteHeader() {
 
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         {/* Logo */}
-        <a href="#" className="flex shrink-0 items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
-            A
-          </span>
-          <span className="text-xl font-bold tracking-tight text-foreground">
-            AL<span className="text-primary">SOUK</span>
-          </span>
-        </a>
+        <BrandLogo />
 
         {/* Desktop nav */}
         <nav className="ms-4 hidden items-center gap-1 lg:flex">
