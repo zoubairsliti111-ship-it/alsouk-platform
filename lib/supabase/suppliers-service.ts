@@ -106,7 +106,7 @@ export async function fetchSuppliers(options?: {
   if (!supabase) {
     console.error(
       "[suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and " +
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (see .env.example).",
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY). See .env.example.",
     )
     return { suppliers: [], error: true }
   }
