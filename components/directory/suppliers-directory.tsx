@@ -1,14 +1,14 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ChevronRight, Search, SlidersHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { DirectoryFilters, emptyFilters, type FilterState } from "@/components/directory/directory-filters"
 import { SupplierCard } from "@/components/directory/supplier-card"
-import { supabase } from "@/lib/supabase/client"
-import { matchesMoq, matchesYears, suppliers } from "@/lib/directory-data"
+import { fetchSuppliers } from "@/lib/supabase/suppliers-service"
+import { matchesMoq, matchesYears, suppliers, type Supplier } from "@/lib/directory-data"
 
 type SortKey = "relevance" | "rating" | "products" | "years"
 
@@ -20,12 +20,21 @@ export function SuppliersDirectory() {
   const [filters, setFilters] = useState<FilterState>(emptyFilters)
   const [sort, setSort] = useState<SortKey>("relevance")
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-const [suppliersData, setSuppliersData] = useState<any[]>([])
-const [loading, setLoading] = useState(true)
+  const [suppliersData, setSuppliersData] = useState<Supplier[]>(suppliers)
+
+  useEffect(() => {
+    let active = true
+    fetchSuppliers().then((data) => {
+      if (active) setSuppliersData(data)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const result = suppliers.filter((s) => {
+    const result = suppliersData.filter((s) => {
       if (filters.verifiedOnly && !s.verified) return false
       if (filters.countries.length && !filters.countries.includes(s.country)) return false
       if (filters.region !== "any" && s.region !== filters.region) return false
@@ -62,7 +71,7 @@ const [loading, setLoading] = useState(true)
     else sorted.sort((a, b) => Number(b.verified) - Number(a.verified) || b.rating - a.rating)
 
     return sorted
-  }, [query, filters, sort, t])
+  }, [query, filters, sort, t, suppliersData])
 
   return (
     <div>
