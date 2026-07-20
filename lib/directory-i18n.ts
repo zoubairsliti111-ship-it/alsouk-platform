@@ -68,6 +68,17 @@ type DirectoryDict = {
     subtitle: string
     reset: string
   }
+  error: {
+    title: string
+    subtitle: string
+    retry: string
+  }
+  pagination: {
+    label: string
+    previous: string
+    next: string
+    pageOf: (page: number, total: number) => string
+  }
   countries: Record<CountryKey, string>
   regions: Record<RegionKey, string>
   categories: Record<CategoryKey, string>
@@ -139,6 +150,17 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       title: "No suppliers match your filters",
       subtitle: "Try adjusting or clearing some filters to see more results.",
       reset: "Clear all filters",
+    },
+    error: {
+      title: "Couldn't load suppliers",
+      subtitle: "We couldn't reach the suppliers database. Please try again in a moment.",
+      retry: "Try again",
+    },
+    pagination: {
+      label: "Suppliers pagination",
+      previous: "Previous",
+      next: "Next",
+      pageOf: (page, total) => `Page ${page} of ${total}`,
     },
     countries: {
       tn: "Tunisia",
@@ -263,6 +285,17 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       subtitle: "Essayez d'ajuster ou d'effacer certains filtres pour voir plus de résultats.",
       reset: "Effacer tous les filtres",
     },
+    error: {
+      title: "Impossible de charger les fournisseurs",
+      subtitle: "Nous n'avons pas pu joindre la base de données des fournisseurs. Veuillez réessayer dans un instant.",
+      retry: "Réessayer",
+    },
+    pagination: {
+      label: "Pagination des fournisseurs",
+      previous: "Précédent",
+      next: "Suivant",
+      pageOf: (page, total) => `Page ${page} sur ${total}`,
+    },
     countries: {
       tn: "Tunisie",
       ma: "Maroc",
@@ -385,6 +418,17 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       title: "لا يوجد موردون يطابقون عوامل التصفية",
       subtitle: "حاول تعديل أو مسح بعض عوامل التصفية لرؤية المزيد من النتائج.",
       reset: "مسح كل عوامل التصفية",
+    },
+    error: {
+      title: "تعذّر تحميل الموردين",
+      subtitle: "تعذّر الوصول إلى قاعدة بيانات الموردين. يُرجى المحاولة مرة أخرى بعد قليل.",
+      retry: "إعادة المحاولة",
+    },
+    pagination: {
+      label: "ترقيم صفحات الموردين",
+      previous: "السابق",
+      next: "التالي",
+      pageOf: (page, total) => `صفحة ${page} من ${total}`,
     },
     countries: {
       tn: "تونس",

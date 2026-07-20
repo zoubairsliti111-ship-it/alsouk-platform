@@ -48,7 +48,6 @@ type Dict = {
     viewProfile: string
     responseRate: string
     yearsLabel: string
-    items: { name: string; location: string; category: string; years: string; response: string }[]
   }
   products: {
     title: string
@@ -167,12 +166,6 @@ export const translations: Record<Lang, Dict> = {
       viewProfile: "View profile",
       responseRate: "Response rate",
       yearsLabel: "on ALSOUK",
-      items: [
-        { name: "Medina Olive Co.", location: "Sfax, Tunisia", category: "Food & Agriculture", years: "8 yrs", response: "98%" },
-        { name: "Carthage Textiles", location: "Monastir, Tunisia", category: "Textiles & Apparel", years: "12 yrs", response: "96%" },
-        { name: "Atlas Ceramics", location: "Nabeul, Tunisia", category: "Handicrafts & Ceramics", years: "6 yrs", response: "94%" },
-        { name: "Sahara Dates Export", location: "Tozeur, Tunisia", category: "Food & Agriculture", years: "10 yrs", response: "99%" },
-      ],
     },
     products: {
       title: "Featured Products",
@@ -313,12 +306,6 @@ export const translations: Record<Lang, Dict> = {
       viewProfile: "Voir le profil",
       responseRate: "Taux de réponse",
       yearsLabel: "sur ALSOUK",
-      items: [
-        { name: "Medina Olive Co.", location: "Sfax, Tunisie", category: "Alimentation & Agriculture", years: "8 ans", response: "98%" },
-        { name: "Carthage Textiles", location: "Monastir, Tunisie", category: "Textiles & Habillement", years: "12 ans", response: "96%" },
-        { name: "Atlas Ceramics", location: "Nabeul, Tunisie", category: "Artisanat & Céramique", years: "6 ans", response: "94%" },
-        { name: "Sahara Dates Export", location: "Tozeur, Tunisie", category: "Alimentation & Agriculture", years: "10 ans", response: "99%" },
-      ],
     },
     products: {
       title: "Produits en vedette",
@@ -459,12 +446,6 @@ export const translations: Record<Lang, Dict> = {
       viewProfile: "عرض الملف",
       responseRate: "معدل الاستجابة",
       yearsLabel: "على ألسوق",
-      items: [
-        { name: "شركة مدينة للزيتون", location: "صفاقس، تونس", category: "الأغذية والزراعة", years: "8 سنوات", response: "98%" },
-        { name: "قرطاج للمنسوجات", location: "المنستير، تونس", category: "المنسوجات والملابس", years: "12 سنة", response: "96%" },
-        { name: "أطلس للخزف", location: "نابل، تونس", category: "الحرف والخزف", years: "6 سنوات", response: "94%" },
-        { name: "الصحراء لتصدير التمور", location: "توزر، تونس", category: "الأغذية والزراعة", years: "10 سنوات", response: "99%" },
-      ],
     },
     products: {
       title: "منتجات مميزة",

@@ -3,7 +3,6 @@ import {
   CATEGORY_KEYS,
   COUNTRY_KEYS,
   REGION_KEYS,
-  suppliers as fallbackSuppliers,
   type BusinessTypeKey,
   type CategoryKey,
   type CountryKey,
@@ -11,6 +10,15 @@ import {
   type Supplier,
 } from "@/lib/directory-data"
 import { getSupabaseClient } from "@/lib/supabase/client"
+
+export type SupplierSort = "rating" | "products" | "years"
+
+/** Result of a suppliers query, including a coarse error flag for the UI. */
+export type SuppliersResult = {
+  suppliers: Supplier[]
+  /** True when the request could not be completed (unconfigured or failed). */
+  error: boolean
+}
 
 /** Name of the Supabase table backing the supplier directory. */
 export const SUPPLIERS_TABLE = "suppliers"
@@ -81,27 +89,44 @@ function mapRow(row: SupplierRow): Supplier | null {
 }
 
 /**
- * Loads suppliers for the directory.
+ * Loads suppliers from Supabase, mapping and validating each row.
  *
- * Queries Supabase when it is configured, mapping and validating each row. If
- * Supabase is not configured, the request fails, or it returns no usable rows,
- * the bundled static dataset is returned so the directory always renders.
+ * Returns `{ suppliers: [], error: true }` when Supabase is not configured or
+ * the query fails, so the UI can show an explicit error/empty state rather than
+ * silently rendering stale mock data.
+ *
+ * @param options.sort  optional server-side ordering (defaults to rating desc)
+ * @param options.limit optional row cap (e.g. for the home "Featured" section)
  */
-export async function fetchSuppliers(): Promise<Supplier[]> {
+export async function fetchSuppliers(options?: {
+  sort?: SupplierSort
+  limit?: number
+}): Promise<SuppliersResult> {
   const supabase = getSupabaseClient()
-  if (!supabase) return fallbackSuppliers
+  if (!supabase) {
+    console.error(
+      "[suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and " +
+        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (see .env.example).",
+    )
+    return { suppliers: [], error: true }
+  }
+
+  const sortColumn = options?.sort === "products" ? "products" : options?.sort === "years" ? "years" : "rating"
 
   try {
-    const { data, error } = await supabase.from(SUPPLIERS_TABLE).select(SUPPLIER_COLUMNS)
+    let query = supabase.from(SUPPLIERS_TABLE).select(SUPPLIER_COLUMNS).order(sortColumn, { ascending: false })
+    if (options?.limit) query = query.limit(options.limit)
+
+    const { data, error } = await query
     if (error) {
-      console.error("[suppliers] Supabase query failed, using bundled data:", error.message)
-      return fallbackSuppliers
+      console.error("[suppliers] Supabase query failed:", error.message)
+      return { suppliers: [], error: true }
     }
 
     const mapped = (data as SupplierRow[] | null)?.map(mapRow).filter((s): s is Supplier => s !== null) ?? []
-    return mapped.length > 0 ? mapped : fallbackSuppliers
+    return { suppliers: mapped, error: false }
   } catch (err) {
-    console.error("[suppliers] Unexpected error loading suppliers, using bundled data:", err)
-    return fallbackSuppliers
+    console.error("[suppliers] Unexpected error loading suppliers:", err)
+    return { suppliers: [], error: true }
   }
 }

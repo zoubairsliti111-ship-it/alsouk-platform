@@ -1,16 +1,19 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import { ChevronRight, Search, SlidersHorizontal, X } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { ChevronLeft, ChevronRight, Search, ServerCrash, SlidersHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { DirectoryFilters, emptyFilters, type FilterState } from "@/components/directory/directory-filters"
 import { SupplierCard } from "@/components/directory/supplier-card"
 import { fetchSuppliers } from "@/lib/supabase/suppliers-service"
-import { matchesMoq, matchesYears, suppliers, type Supplier } from "@/lib/directory-data"
+import { matchesMoq, matchesYears, type Supplier } from "@/lib/directory-data"
 
 type SortKey = "relevance" | "rating" | "products" | "years"
+type Status = "loading" | "ready" | "error"
+
+const PAGE_SIZE = 9
 
 export function SuppliersDirectory() {
   const { lang, dir } = useLanguage()
@@ -20,17 +23,28 @@ export function SuppliersDirectory() {
   const [filters, setFilters] = useState<FilterState>(emptyFilters)
   const [sort, setSort] = useState<SortKey>("relevance")
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
-  const [suppliersData, setSuppliersData] = useState<Supplier[]>(suppliers)
+  const [suppliersData, setSuppliersData] = useState<Supplier[]>([])
+  const [status, setStatus] = useState<Status>("loading")
+  const [page, setPage] = useState(1)
 
-  useEffect(() => {
+  const runFetch = useCallback(() => {
     let active = true
-    fetchSuppliers().then((data) => {
-      if (active) setSuppliersData(data)
+    fetchSuppliers().then((res) => {
+      if (!active) return
+      setSuppliersData(res.suppliers)
+      setStatus(res.error ? "error" : "ready")
     })
     return () => {
       active = false
     }
   }, [])
+
+  useEffect(() => runFetch(), [runFetch])
+
+  const retry = () => {
+    setStatus("loading")
+    runFetch()
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -72,6 +86,19 @@ export function SuppliersDirectory() {
 
     return sorted
   }, [query, filters, sort, t, suppliersData])
+
+  // Reset to the first page whenever the result set changes, following React's
+  // "adjust state during render" pattern instead of a cascading effect.
+  const resultKey = `${query}|${sort}|${JSON.stringify(filters)}|${suppliersData.length}`
+  const [prevResultKey, setPrevResultKey] = useState(resultKey)
+  if (resultKey !== prevResultKey) {
+    setPrevResultKey(resultKey)
+    setPage(1)
+  }
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   return (
     <div>
@@ -185,12 +212,67 @@ export function SuppliersDirectory() {
               </div>
             </div>
 
-            {filtered.length > 0 ? (
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                {filtered.map((s) => (
-                  <SupplierCard key={s.id} supplier={s} />
+            {status === "loading" ? (
+              <div
+                className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+                aria-busy="true"
+                aria-live="polite"
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-72 animate-pulse rounded-2xl border border-border bg-card"
+                  />
                 ))}
               </div>
+            ) : status === "error" ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">
+                <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10">
+                  <ServerCrash className="size-6 text-destructive" />
+                </div>
+                <h3 className="mt-4 text-lg font-bold text-foreground">{t.error.title}</h3>
+                <p className="mt-1 max-w-sm text-sm text-muted-foreground">{t.error.subtitle}</p>
+                <Button variant="outline" className="mt-5" onClick={retry}>
+                  {t.error.retry}
+                </Button>
+              </div>
+            ) : filtered.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                  {paginated.map((s) => (
+                    <SupplierCard key={s.id} supplier={s} />
+                  ))}
+                </div>
+
+                {totalPages > 1 && (
+                  <nav
+                    className="mt-8 flex items-center justify-center gap-2"
+                    aria-label={t.pagination.label}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={currentPage <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      <ChevronLeft className="size-4 rtl:rotate-180" />
+                      {t.pagination.previous}
+                    </Button>
+                    <span className="px-2 text-sm text-muted-foreground">
+                      {t.pagination.pageOf(currentPage, totalPages)}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={currentPage >= totalPages}
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    >
+                      {t.pagination.next}
+                      <ChevronRight className="size-4 rtl:rotate-180" />
+                    </Button>
+                  </nav>
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">
                 <div className="flex size-12 items-center justify-center rounded-full bg-secondary">
