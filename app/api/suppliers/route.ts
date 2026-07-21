@@ -29,10 +29,29 @@ const KEY_VARS = [
 
 function firstDefined(names: readonly string[]): { name?: string; value?: string } {
   for (const name of names) {
-    const value = process.env[name]
+    // Trim so a value that is empty or whitespace-only (a common paste/config
+    // mistake) is treated as absent rather than sent as a bogus credential.
+    const value = process.env[name]?.trim()
     if (value) return { name, value }
   }
   return {}
+}
+
+/**
+ * Per-variable presence/length report (names + lengths only, never values).
+ * Makes it unambiguous whether a configured var is simply empty at runtime
+ * vs. missing entirely — without exposing any secret.
+ */
+function reportVars(names: readonly string[]) {
+  return names.map((name) => {
+    const raw = process.env[name]
+    return {
+      name,
+      inEnv: name in process.env,
+      rawLength: raw?.length ?? 0,
+      trimmedLength: raw?.trim().length ?? 0,
+    }
+  })
 }
 
 /**
@@ -71,6 +90,11 @@ function buildDiag(): Record<string, unknown> {
     presentEnvNames: Object.keys(process.env)
       .filter((name) => /supabase/i.test(name) || name.startsWith("NEXT_PUBLIC_"))
       .sort(),
+    // Definitive per-variable proof: shows each checked key var's presence and
+    // value length. A row with inEnv:true but trimmedLength:0 is a configured
+    // but *empty* value — not a detection bug.
+    keyVarReport: reportVars(KEY_VARS),
+    urlVarReport: reportVars(URL_VARS),
   }
 }
 
