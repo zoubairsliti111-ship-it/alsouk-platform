@@ -10,9 +10,9 @@ import {
   type Supplier,
 } from "@/lib/directory-data"
 import { directoryT } from "@/lib/directory-i18n"
-import { getSupabaseClient } from "@/lib/supabase/client"
 
 export type SupplierSort = "rating" | "products" | "years"
+export const SUPPLIER_SORTS: SupplierSort[] = ["rating", "products", "years"]
 
 // Production stores country/city as English display names (e.g. "Tunisia",
 // "Sfax") while the UI keys off short codes. Build reverse lookups from the
@@ -52,7 +52,7 @@ export type SuppliersResult = {
 export const SUPPLIERS_TABLE = "suppliers"
 
 /** Shape of a row as stored in the Supabase `suppliers` table (snake_case). */
-type SupplierRow = {
+export type SupplierRow = {
   id: string
   company_name: string
   monogram: string | null
@@ -71,11 +71,12 @@ type SupplierRow = {
   category: string | null
 }
 
-const SUPPLIER_COLUMNS =
-  "id, company_name, monogram, logo_color, country, city, region, verified, rating, reviews, products, years_in_business, response_rate, min_moq, business_type, category"
+/** Columns selected from the table (no spaces, safe for a PostgREST URL). */
+export const SUPPLIER_COLUMNS =
+  "id,company_name,monogram,logo_color,country,city,region,verified,rating,reviews,products,years_in_business,response_rate,min_moq,business_type,category"
 
 /** Maps a {@link SupplierSort} onto its physical Supabase column. */
-const SORT_COLUMNS: Record<SupplierSort, string> = {
+export const SORT_COLUMNS: Record<SupplierSort, string> = {
   rating: "rating",
   products: "products",
   years: "years_in_business",
@@ -97,7 +98,7 @@ function isOneOf<T extends string>(value: string, allowed: readonly T[]): value 
  * `null` when required fields are missing or enum-like columns hold unexpected
  * values. Invalid rows are skipped rather than crashing the directory.
  */
-function mapRow(row: SupplierRow): Supplier | null {
+export function mapRow(row: SupplierRow): Supplier | null {
   if (!row?.id || !row.company_name) return null
 
   const country = resolveCountry(row.country)
@@ -133,44 +134,38 @@ function mapRow(row: SupplierRow): Supplier | null {
 }
 
 /**
- * Loads suppliers from Supabase, mapping and validating each row.
+ * Loads suppliers via the internal `/api/suppliers` route.
  *
- * Returns `{ suppliers: [], error: true }` when Supabase is not configured or
- * the query fails, so the UI can show an explicit error/empty state rather than
- * silently rendering stale mock data.
+ * The query runs on the server (see app/api/suppliers/route.ts), which reads the
+ * Supabase credentials from the environment at request time. This avoids relying
+ * on `NEXT_PUBLIC_*` values being inlined into the client bundle at build time,
+ * and keeps the key off the browser.
  *
- * @param options.sort  optional server-side ordering (defaults to rating desc)
+ * Returns `{ suppliers: [], error: true }` when the request fails, so the UI can
+ * show an explicit error/empty state rather than silently rendering nothing.
+ *
+ * @param options.sort  optional ordering (defaults to rating desc)
  * @param options.limit optional row cap (e.g. for the home "Featured" section)
  */
 export async function fetchSuppliers(options?: {
   sort?: SupplierSort
   limit?: number
 }): Promise<SuppliersResult> {
-  const supabase = getSupabaseClient()
-  if (!supabase) {
-    console.error(
-      "[suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and " +
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY). See .env.example.",
-    )
-    return { suppliers: [], error: true }
-  }
-
-  const sortColumn = SORT_COLUMNS[options?.sort ?? "rating"]
+  const params = new URLSearchParams()
+  if (options?.sort) params.set("sort", options.sort)
+  if (options?.limit) params.set("limit", String(options.limit))
+  const qs = params.toString()
 
   try {
-    let query = supabase.from(SUPPLIERS_TABLE).select(SUPPLIER_COLUMNS).order(sortColumn, { ascending: false })
-    if (options?.limit) query = query.limit(options.limit)
-
-    const { data, error } = await query
-    if (error) {
-      console.error("[suppliers] Supabase query failed:", error.message)
+    const res = await fetch(`/api/suppliers${qs ? `?${qs}` : ""}`, { cache: "no-store" })
+    if (!res.ok) {
+      console.error("[suppliers] /api/suppliers responded", res.status)
       return { suppliers: [], error: true }
     }
-
-    const mapped = (data as SupplierRow[] | null)?.map(mapRow).filter((s): s is Supplier => s !== null) ?? []
-    return { suppliers: mapped, error: false }
+    const json = (await res.json()) as Partial<SuppliersResult>
+    return { suppliers: json.suppliers ?? [], error: Boolean(json.error) }
   } catch (err) {
-    console.error("[suppliers] Unexpected error loading suppliers:", err)
+    console.error("[suppliers] Failed to load suppliers:", err)
     return { suppliers: [], error: true }
   }
 }
