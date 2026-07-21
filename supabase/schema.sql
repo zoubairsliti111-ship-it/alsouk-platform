@@ -44,3 +44,38 @@ create index if not exists suppliers_country_idx on public.suppliers (country);
 create index if not exists suppliers_region_idx on public.suppliers (region);
 create index if not exists suppliers_category_idx on public.suppliers (category);
 create index if not exists suppliers_verified_idx on public.suppliers (verified);
+
+-- ---------------------------------------------------------------------------
+-- RFQ (Request for Quote) submissions. See supabase/migrations/0001_create_rfqs.sql
+-- for the authoritative migration; this mirrors it for the full-schema view.
+-- ---------------------------------------------------------------------------
+create table if not exists public.rfqs (
+  id                   uuid        primary key default gen_random_uuid(),
+  supplier_id          uuid        references public.suppliers (id) on delete set null,
+  supplier_name        text,
+  company_name         text        not null,
+  contact_person       text        not null,
+  email                text        not null,
+  phone                text        not null,
+  country              text        not null,
+  product_requested    text        not null,
+  quantity             text        not null,
+  target_price         text,
+  delivery_destination text        not null,
+  message              text        not null,
+  status               text        not null default 'new'
+                                    check (status in ('new', 'in_progress', 'closed')),
+  created_at           timestamptz not null default now()
+);
+
+create index if not exists rfqs_supplier_id_idx on public.rfqs (supplier_id);
+create index if not exists rfqs_created_at_idx on public.rfqs (created_at desc);
+
+-- Public may INSERT an RFQ; reads are server-side via the service-role key.
+alter table public.rfqs enable row level security;
+
+drop policy if exists "Anyone can submit an RFQ" on public.rfqs;
+create policy "Anyone can submit an RFQ"
+  on public.rfqs
+  for insert
+  with check (true);

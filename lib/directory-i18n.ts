@@ -119,6 +119,63 @@ type DirectoryDict = {
     errorSubtitle: string
     retry: string
   }
+  rfq: {
+    title: string
+    subtitle: (supplier: string) => string
+    companyName: string
+    contactPerson: string
+    email: string
+    phone: string
+    country: string
+    productRequested: string
+    quantity: string
+    targetPrice: string
+    optional: string
+    deliveryDestination: string
+    message: string
+    messagePlaceholder: string
+    submit: string
+    submitting: string
+    cancel: string
+    close: string
+    successTitle: string
+    successBody: string
+    sendAnother: string
+    errorTitle: string
+    errorBody: string
+    notFoundBody: string
+    errRequired: string
+    errEmail: string
+    errPhone: string
+    errMessage: string
+  }
+  admin: {
+    title: string
+    subtitle: string
+    tokenLabel: string
+    tokenPlaceholder: string
+    unlock: string
+    lockedHint: string
+    unauthorized: string
+    unconfigured: string
+    error: string
+    loading: string
+    emptyTitle: string
+    emptyBody: string
+    count: (n: number) => string
+    refresh: string
+    signOut: string
+    colDate: string
+    colSupplier: string
+    colBuyer: string
+    colContact: string
+    colProduct: string
+    colQuantity: string
+    colTargetPrice: string
+    colDestination: string
+    colMessage: string
+    colStatus: string
+  }
 }
 
 export const directoryT: Record<Lang, DirectoryDict> = {
@@ -287,6 +344,63 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       errorSubtitle: "We couldn't reach the suppliers database. Please try again in a moment.",
       retry: "Try again",
     },
+    rfq: {
+      title: "Request a quote",
+      subtitle: (supplier) => `Tell ${supplier} what you need and they'll get back to you.`,
+      companyName: "Company name",
+      contactPerson: "Contact person",
+      email: "Email",
+      phone: "Phone",
+      country: "Country",
+      productRequested: "Product requested",
+      quantity: "Quantity",
+      targetPrice: "Target price",
+      optional: "optional",
+      deliveryDestination: "Delivery destination",
+      message: "Message",
+      messagePlaceholder: "Describe your requirements, specifications, timeline…",
+      submit: "Send request",
+      submitting: "Sending…",
+      cancel: "Cancel",
+      close: "Close",
+      successTitle: "Request sent",
+      successBody: "Your quote request has been sent. The supplier will contact you at the email you provided.",
+      sendAnother: "Send another request",
+      errorTitle: "Couldn't send your request",
+      errorBody: "Something went wrong while sending your request. Please try again in a moment.",
+      notFoundBody: "This supplier is no longer available.",
+      errRequired: "This field is required.",
+      errEmail: "Enter a valid email address.",
+      errPhone: "Enter a valid phone number.",
+      errMessage: "Please add a few more details (at least 10 characters).",
+    },
+    admin: {
+      title: "RFQ submissions",
+      subtitle: "Quote requests submitted by buyers.",
+      tokenLabel: "Admin token",
+      tokenPlaceholder: "Enter admin token",
+      unlock: "View submissions",
+      lockedHint: "Enter the admin token to view submitted quote requests.",
+      unauthorized: "Invalid admin token. Please check and try again.",
+      unconfigured: "The admin view isn't configured on the server yet (missing service key or admin token).",
+      error: "Couldn't load submissions. Please try again.",
+      loading: "Loading submissions…",
+      emptyTitle: "No submissions yet",
+      emptyBody: "Quote requests submitted by buyers will appear here.",
+      count: (n) => `${n} submission${n === 1 ? "" : "s"}`,
+      refresh: "Refresh",
+      signOut: "Lock",
+      colDate: "Date",
+      colSupplier: "Supplier",
+      colBuyer: "Buyer",
+      colContact: "Contact",
+      colProduct: "Product",
+      colQuantity: "Quantity",
+      colTargetPrice: "Target price",
+      colDestination: "Destination",
+      colMessage: "Message",
+      colStatus: "Status",
+    },
   },
   fr: {
     breadcrumbHome: "Accueil",
@@ -453,6 +567,63 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       errorSubtitle: "Nous n'avons pas pu joindre la base de données des fournisseurs. Veuillez réessayer dans un instant.",
       retry: "Réessayer",
     },
+    rfq: {
+      title: "Demander un devis",
+      subtitle: (supplier) => `Indiquez à ${supplier} ce dont vous avez besoin et il vous répondra.`,
+      companyName: "Nom de l'entreprise",
+      contactPerson: "Personne à contacter",
+      email: "E-mail",
+      phone: "Téléphone",
+      country: "Pays",
+      productRequested: "Produit demandé",
+      quantity: "Quantité",
+      targetPrice: "Prix cible",
+      optional: "facultatif",
+      deliveryDestination: "Destination de livraison",
+      message: "Message",
+      messagePlaceholder: "Décrivez vos besoins, spécifications, délais…",
+      submit: "Envoyer la demande",
+      submitting: "Envoi…",
+      cancel: "Annuler",
+      close: "Fermer",
+      successTitle: "Demande envoyée",
+      successBody: "Votre demande de devis a été envoyée. Le fournisseur vous contactera à l'e-mail fourni.",
+      sendAnother: "Envoyer une autre demande",
+      errorTitle: "Impossible d'envoyer votre demande",
+      errorBody: "Une erreur s'est produite lors de l'envoi de votre demande. Veuillez réessayer dans un instant.",
+      notFoundBody: "Ce fournisseur n'est plus disponible.",
+      errRequired: "Ce champ est obligatoire.",
+      errEmail: "Saisissez une adresse e-mail valide.",
+      errPhone: "Saisissez un numéro de téléphone valide.",
+      errMessage: "Veuillez ajouter quelques précisions (au moins 10 caractères).",
+    },
+    admin: {
+      title: "Demandes de devis",
+      subtitle: "Demandes de devis soumises par les acheteurs.",
+      tokenLabel: "Jeton administrateur",
+      tokenPlaceholder: "Saisir le jeton administrateur",
+      unlock: "Voir les demandes",
+      lockedHint: "Saisissez le jeton administrateur pour voir les demandes de devis soumises.",
+      unauthorized: "Jeton administrateur invalide. Veuillez vérifier et réessayer.",
+      unconfigured: "La vue administrateur n'est pas encore configurée sur le serveur (clé de service ou jeton manquant).",
+      error: "Impossible de charger les demandes. Veuillez réessayer.",
+      loading: "Chargement des demandes…",
+      emptyTitle: "Aucune demande pour le moment",
+      emptyBody: "Les demandes de devis soumises par les acheteurs apparaîtront ici.",
+      count: (n) => `${n} demande${n === 1 ? "" : "s"}`,
+      refresh: "Actualiser",
+      signOut: "Verrouiller",
+      colDate: "Date",
+      colSupplier: "Fournisseur",
+      colBuyer: "Acheteur",
+      colContact: "Contact",
+      colProduct: "Produit",
+      colQuantity: "Quantité",
+      colTargetPrice: "Prix cible",
+      colDestination: "Destination",
+      colMessage: "Message",
+      colStatus: "Statut",
+    },
   },
   ar: {
     breadcrumbHome: "الرئيسية",
@@ -618,6 +789,63 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       errorTitle: "تعذّر تحميل هذا المورّد",
       errorSubtitle: "تعذّر الوصول إلى قاعدة بيانات الموردين. يُرجى المحاولة مرة أخرى بعد قليل.",
       retry: "إعادة المحاولة",
+    },
+    rfq: {
+      title: "طلب عرض سعر",
+      subtitle: (supplier) => `أخبر ${supplier} بما تحتاجه وسيتواصل معك.`,
+      companyName: "اسم الشركة",
+      contactPerson: "الشخص المسؤول",
+      email: "البريد الإلكتروني",
+      phone: "الهاتف",
+      country: "البلد",
+      productRequested: "المنتج المطلوب",
+      quantity: "الكمية",
+      targetPrice: "السعر المستهدف",
+      optional: "اختياري",
+      deliveryDestination: "وجهة التسليم",
+      message: "الرسالة",
+      messagePlaceholder: "صف متطلباتك والمواصفات والجدول الزمني…",
+      submit: "إرسال الطلب",
+      submitting: "جارٍ الإرسال…",
+      cancel: "إلغاء",
+      close: "إغلاق",
+      successTitle: "تم إرسال الطلب",
+      successBody: "تم إرسال طلب عرض السعر. سيتواصل معك المورّد عبر البريد الإلكتروني الذي قدمته.",
+      sendAnother: "إرسال طلب آخر",
+      errorTitle: "تعذّر إرسال طلبك",
+      errorBody: "حدث خطأ أثناء إرسال طلبك. يُرجى المحاولة مرة أخرى بعد قليل.",
+      notFoundBody: "هذا المورّد لم يعد متاحاً.",
+      errRequired: "هذا الحقل مطلوب.",
+      errEmail: "أدخل عنوان بريد إلكتروني صالحاً.",
+      errPhone: "أدخل رقم هاتف صالحاً.",
+      errMessage: "يرجى إضافة المزيد من التفاصيل (10 أحرف على الأقل).",
+    },
+    admin: {
+      title: "طلبات عروض الأسعار",
+      subtitle: "طلبات عروض الأسعار المقدّمة من المشترين.",
+      tokenLabel: "رمز المشرف",
+      tokenPlaceholder: "أدخل رمز المشرف",
+      unlock: "عرض الطلبات",
+      lockedHint: "أدخل رمز المشرف لعرض طلبات عروض الأسعار المقدّمة.",
+      unauthorized: "رمز المشرف غير صالح. يُرجى التحقق والمحاولة مرة أخرى.",
+      unconfigured: "لم تُهيّأ لوحة المشرف على الخادم بعد (مفتاح الخدمة أو رمز المشرف مفقود).",
+      error: "تعذّر تحميل الطلبات. يُرجى المحاولة مرة أخرى.",
+      loading: "جارٍ تحميل الطلبات…",
+      emptyTitle: "لا توجد طلبات بعد",
+      emptyBody: "ستظهر هنا طلبات عروض الأسعار المقدّمة من المشترين.",
+      count: (n) => `${n} طلب`,
+      refresh: "تحديث",
+      signOut: "قفل",
+      colDate: "التاريخ",
+      colSupplier: "المورّد",
+      colBuyer: "المشتري",
+      colContact: "التواصل",
+      colProduct: "المنتج",
+      colQuantity: "الكمية",
+      colTargetPrice: "السعر المستهدف",
+      colDestination: "الوجهة",
+      colMessage: "الرسالة",
+      colStatus: "الحالة",
     },
   },
 }

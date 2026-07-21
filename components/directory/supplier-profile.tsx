@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -23,6 +23,7 @@ import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { fetchSupplierById } from "@/lib/supabase/suppliers-service"
 import type { Supplier } from "@/lib/directory-data"
+import { RfqDialog } from "@/components/rfq/rfq-dialog"
 
 type Status = "loading" | "loaded" | "notFound" | "error"
 
@@ -36,6 +37,8 @@ export function SupplierProfile({ id }: { id: string }) {
     status: "loading",
     supplier: null,
   })
+  const [rfqOpen, setRfqOpen] = useState(false)
+  const closeRfq = useCallback(() => setRfqOpen(false), [])
 
   useEffect(() => {
     let active = true
@@ -107,6 +110,7 @@ export function SupplierProfile({ id }: { id: string }) {
   const requestQuoteButton = (
     <Button
       size="lg"
+      onClick={() => setRfqOpen(true)}
       className="w-full gap-2 bg-primary text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
     >
       <MessageSquare className="size-4" />
@@ -280,6 +284,8 @@ export function SupplierProfile({ id }: { id: string }) {
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 p-3 backdrop-blur lg:hidden">
         <div className="mx-auto max-w-6xl">{requestQuoteButton}</div>
       </div>
+
+      {rfqOpen && <RfqDialog supplierId={s.id} supplierName={s.name} onClose={closeRfq} />}
     </div>
   )
 }
