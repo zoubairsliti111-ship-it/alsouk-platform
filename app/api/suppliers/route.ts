@@ -14,33 +14,76 @@ import {
 // reflects the current database and environment.
 export const dynamic = "force-dynamic"
 
+// The Supabase URL + browser-safe key are read from the environment on the
+// server at request time, so this works regardless of whether the
+// `NEXT_PUBLIC_*` values were inlined into the client bundle at build time.
+
+/** Names of the env vars checked, in resolution order, for diagnostics. */
+const URL_VARS = ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_URL"] as const
+const KEY_VARS = [
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+  "SUPABASE_ANON_KEY",
+  "SUPABASE_KEY",
+] as const
+
+function firstDefined(names: readonly string[]): { name?: string; value?: string } {
+  for (const name of names) {
+    const value = process.env[name]
+    if (value) return { name, value }
+  }
+  return {}
+}
+
 /**
- * Resolves the Supabase URL + browser-safe key from the environment.
- *
- * Runs on the server at request time, so it works regardless of whether the
- * `NEXT_PUBLIC_*` values were inlined into the client bundle at build time.
+ * Builds a diagnostic object that is safe to expose: it reports only which env
+ * var names are present and the *shape* of their values — never a secret value.
  */
-function getSupabaseEnv(): { url?: string; key?: string } {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL
-  const key =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    process.env.SUPABASE_ANON_KEY ??
-    process.env.SUPABASE_KEY
-  return { url, key }
+function buildDiag(): Record<string, unknown> {
+  const url = firstDefined(URL_VARS)
+  const key = firstDefined(KEY_VARS)
+  return {
+    urlVarPresent: Boolean(url.value),
+    urlVarName: url.name ?? null,
+    urlLooksLikeHttpUrl: url.value ? /^https?:\/\//.test(url.value) : false,
+    keyVarPresent: Boolean(key.value),
+    keyVarName: key.name ?? null,
+    // Non-sensitive key shape hints (kind + length only, never the value).
+    keyKind: key.value
+      ? key.value.startsWith("sb_publishable_")
+        ? "publishable"
+        : key.value.startsWith("sb_secret_")
+          ? "secret"
+          : key.value.startsWith("eyJ")
+            ? "jwt"
+            : "unknown"
+      : null,
+    keyLength: key.value ? key.value.length : 0,
+    checkedUrlVars: URL_VARS,
+    checkedKeyVars: KEY_VARS,
+  }
 }
 
 export async function GET(request: Request) {
-  const { url, key } = getSupabaseEnv()
+  const { searchParams } = new URL(request.url)
+  const debug = searchParams.get("debug") === "1"
+  const withDiag = (body: Record<string, unknown>) =>
+    NextResponse.json(debug ? { ...body, diag: buildDiag() } : body)
+
+  const url = firstDefined(URL_VARS).value
+  const key = firstDefined(KEY_VARS).value
   if (!url || !key) {
     console.error(
       "[api/suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and " +
         "NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).",
     )
-    return NextResponse.json({ suppliers: [], error: true })
+    return withDiag({ suppliers: [], error: true, reason: "unconfigured" })
+  }
+  if (!/^https?:\/\//.test(url)) {
+    console.error("[api/suppliers] Supabase URL is not an http(s) URL.")
+    return withDiag({ suppliers: [], error: true, reason: "bad_url" })
   }
 
-  const { searchParams } = new URL(request.url)
   const sortParam = searchParams.get("sort")
   const sort: SupplierSort = SUPPLIER_SORTS.includes(sortParam as SupplierSort)
     ? (sortParam as SupplierSort)
@@ -59,14 +102,15 @@ export async function GET(request: Request) {
       cache: "no-store",
     })
     if (!res.ok) {
-      console.error("[api/suppliers] Supabase query failed:", res.status, await res.text())
-      return NextResponse.json({ suppliers: [], error: true })
+      const text = await res.text()
+      console.error("[api/suppliers] Supabase query failed:", res.status, text)
+      return withDiag({ suppliers: [], error: true, reason: `upstream_${res.status}` })
     }
     const rows = (await res.json()) as SupplierRow[]
     const suppliers = rows.map(mapRow).filter((s): s is Supplier => s !== null)
-    return NextResponse.json({ suppliers, error: false })
+    return withDiag({ suppliers, error: false })
   } catch (err) {
     console.error("[api/suppliers] Unexpected error loading suppliers:", err)
-    return NextResponse.json({ suppliers: [], error: true })
+    return withDiag({ suppliers: [], error: true, reason: "fetch_failed" })
   }
 }
