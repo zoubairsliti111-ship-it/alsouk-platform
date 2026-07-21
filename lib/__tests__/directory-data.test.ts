@@ -1,14 +1,9 @@
 import { describe, expect, it } from "vitest"
 import {
-  BUSINESS_TYPE_KEYS,
-  CATEGORY_KEYS,
-  COUNTRY_KEYS,
   MOQ_TIERS,
-  REGION_KEYS,
   YEARS_TIERS,
   matchesMoq,
   matchesYears,
-  suppliers,
   type MoqTier,
   type YearsTier,
 } from "@/lib/directory-data"
@@ -108,53 +103,21 @@ describe("tier constants", () => {
   })
 })
 
-describe("suppliers dataset integrity", () => {
-  it("contains at least one supplier", () => {
-    expect(suppliers.length).toBeGreaterThan(0)
-  })
+describe("tier partitioning", () => {
+  const moqValues = [10, 50, 100, 200, 500, 501, 1000, 1001, 2000]
+  const yearsValues = [1, 3, 4, 5, 6, 10, 11, 15, 22]
 
-  it("has unique ids", () => {
-    const ids = suppliers.map((s) => s.id)
-    expect(new Set(ids).size).toBe(ids.length)
-  })
-
-  it("only references known enum keys", () => {
-    for (const s of suppliers) {
-      expect(COUNTRY_KEYS).toContain(s.country)
-      expect(REGION_KEYS).toContain(s.region)
-      expect(s.businessTypes.length).toBeGreaterThan(0)
-      for (const b of s.businessTypes) expect(BUSINESS_TYPE_KEYS).toContain(b)
-      expect(s.categories.length).toBeGreaterThan(0)
-      for (const c of s.categories) expect(CATEGORY_KEYS).toContain(c)
-    }
-  })
-
-  it("keeps numeric fields within sane bounds", () => {
-    for (const s of suppliers) {
-      expect(s.rating).toBeGreaterThanOrEqual(0)
-      expect(s.rating).toBeLessThanOrEqual(5)
-      expect(s.responseRate).toBeGreaterThanOrEqual(0)
-      expect(s.responseRate).toBeLessThanOrEqual(100)
-      expect(s.minMoq).toBeGreaterThan(0)
-      expect(s.years).toBeGreaterThanOrEqual(0)
-      expect(Number.isInteger(s.reviews)).toBe(true)
-      expect(Number.isInteger(s.products)).toBe(true)
-    }
-  })
-
-  it("assigns every supplier a MOQ tier via matchesMoq", () => {
-    for (const s of suppliers) {
-      const matched = MOQ_TIERS.filter((t) => t !== "any").filter((t) =>
-        matchesMoq(t, s.minMoq),
-      )
+  it("maps every MOQ value to exactly one non-'any' tier", () => {
+    for (const v of moqValues) {
+      const matched = MOQ_TIERS.filter((t) => t !== "any").filter((t) => matchesMoq(t, v))
       expect(matched.length).toBe(1)
     }
   })
 
-  it("assigns every supplier a years tier via matchesYears", () => {
-    for (const s of suppliers) {
+  it("maps every years value to exactly one non-'any' tier", () => {
+    for (const v of yearsValues) {
       const matched = YEARS_TIERS.filter((t) => t !== "any").filter((t) =>
-        matchesYears(t, s.years),
+        matchesYears(t, v),
       )
       expect(matched.length).toBe(1)
     }

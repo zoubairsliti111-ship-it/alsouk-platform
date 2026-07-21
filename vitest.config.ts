@@ -14,7 +14,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["lib/**/*.ts"],
-      exclude: ["lib/supabase/**", "lib/**/*.{test,spec}.ts", "**/__tests__/**"],
+      exclude: ["lib/supabase/client.ts", "lib/**/*.{test,spec}.ts", "**/__tests__/**"],
     },
   },
 })
