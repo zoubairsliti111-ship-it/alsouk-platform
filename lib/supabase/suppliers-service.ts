@@ -69,11 +69,13 @@ export type SupplierRow = {
   min_moq: number
   business_type: string | null
   category: string | null
+  description: string | null
+  logo_url: string | null
 }
 
 /** Columns selected from the table (no spaces, safe for a PostgREST URL). */
 export const SUPPLIER_COLUMNS =
-  "id,company_name,monogram,logo_color,country,city,region,verified,rating,reviews,products,years_in_business,response_rate,min_moq,business_type,category"
+  "id,company_name,monogram,logo_color,country,city,region,verified,rating,reviews,products,years_in_business,response_rate,min_moq,business_type,category,description,logo_url"
 
 /** Maps a {@link SupplierSort} onto its physical Supabase column. */
 export const SORT_COLUMNS: Record<SupplierSort, string> = {
@@ -130,6 +132,8 @@ export function mapRow(row: SupplierRow): Supplier | null {
     minMoq: Number(row.min_moq),
     businessTypes,
     categories,
+    description: row.description?.trim() || null,
+    logoUrl: row.logo_url?.trim() || null,
   }
 }
 
@@ -167,5 +171,43 @@ export async function fetchSuppliers(options?: {
   } catch (err) {
     console.error("[suppliers] Failed to load suppliers:", err)
     return { suppliers: [], error: true }
+  }
+}
+
+/** Result of a single-supplier lookup, distinguishing "not found" from errors. */
+export type SupplierResult = {
+  supplier: Supplier | null
+  /** True when the request could not be completed (unconfigured or failed). */
+  error: boolean
+  /** True when the request succeeded but no supplier matched the id. */
+  notFound: boolean
+}
+
+/**
+ * Loads a single supplier by id via the internal `/api/suppliers/[id]` route.
+ *
+ * Mirrors {@link fetchSuppliers}: the query runs on the server so credentials
+ * stay off the browser. A 404 resolves to `{ supplier: null, notFound: true }`
+ * so the profile page can render a not-found state instead of an error.
+ */
+export async function fetchSupplierById(id: string): Promise<SupplierResult> {
+  try {
+    const res = await fetch(`/api/suppliers/${encodeURIComponent(id)}`, { cache: "no-store" })
+    if (res.status === 404) {
+      return { supplier: null, error: false, notFound: true }
+    }
+    if (!res.ok) {
+      console.error("[suppliers] /api/suppliers/[id] responded", res.status)
+      return { supplier: null, error: true, notFound: false }
+    }
+    const json = (await res.json()) as Partial<SupplierResult>
+    return {
+      supplier: json.supplier ?? null,
+      error: Boolean(json.error),
+      notFound: Boolean(json.notFound),
+    }
+  } catch (err) {
+    console.error("[suppliers] Failed to load supplier:", err)
+    return { supplier: null, error: true, notFound: false }
   }
 }

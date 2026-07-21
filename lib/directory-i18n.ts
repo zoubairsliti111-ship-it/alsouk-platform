@@ -87,6 +87,38 @@ type DirectoryDict = {
   moqTiers: Record<MoqTier, string>
   yearsTiers: Record<YearsTier, string>
   anyOption: string
+  profile: {
+    backToDirectory: string
+    verified: string
+    memberSince: string
+    about: string
+    aboutEmpty: string
+    gallery: string
+    galleryEmpty: string
+    categories: string
+    products: string
+    productsCount: (n: number) => string
+    productsEmpty: string
+    certifications: string
+    certificationsEmpty: string
+    commercialTerms: string
+    moq: string
+    moqUnit: string
+    responseRate: string
+    rating: string
+    reviews: string
+    businessType: string
+    yearsInBusiness: string
+    location: string
+    region: string
+    requestQuote: string
+    contactSupplier: string
+    notFoundTitle: string
+    notFoundSubtitle: string
+    errorTitle: string
+    errorSubtitle: string
+    retry: string
+  }
 }
 
 export const directoryT: Record<Lang, DirectoryDict> = {
@@ -223,6 +255,38 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       gt10: "Over 10 years",
     },
     anyOption: "All",
+    profile: {
+      backToDirectory: "Back to directory",
+      verified: "Verified supplier",
+      memberSince: "On ALSOUK since",
+      about: "About the company",
+      aboutEmpty: "This supplier hasn't added a company description yet.",
+      gallery: "Gallery",
+      galleryEmpty: "No gallery images have been published yet.",
+      categories: "Product categories",
+      products: "Products",
+      productsCount: (n) => `${n} product${n === 1 ? "" : "s"} in catalog`,
+      productsEmpty: "The full product catalog isn't available online yet — request a quote to receive it.",
+      certifications: "Certifications",
+      certificationsEmpty: "No certifications have been listed yet.",
+      commercialTerms: "Commercial terms",
+      moq: "Minimum order",
+      moqUnit: "units",
+      responseRate: "Response rate",
+      rating: "Rating",
+      reviews: "reviews",
+      businessType: "Business type",
+      yearsInBusiness: "Years in business",
+      location: "Location",
+      region: "Region",
+      requestQuote: "Request Quote",
+      contactSupplier: "Contact supplier",
+      notFoundTitle: "Supplier not found",
+      notFoundSubtitle: "We couldn't find the supplier you're looking for. It may have been removed.",
+      errorTitle: "Couldn't load this supplier",
+      errorSubtitle: "We couldn't reach the suppliers database. Please try again in a moment.",
+      retry: "Try again",
+    },
   },
   fr: {
     breadcrumbHome: "Accueil",
@@ -357,6 +421,38 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       gt10: "Plus de 10 ans",
     },
     anyOption: "Tous",
+    profile: {
+      backToDirectory: "Retour à l'annuaire",
+      verified: "Fournisseur vérifié",
+      memberSince: "Sur ALSOUK depuis",
+      about: "À propos de l'entreprise",
+      aboutEmpty: "Ce fournisseur n'a pas encore ajouté de description.",
+      gallery: "Galerie",
+      galleryEmpty: "Aucune image de galerie n'a encore été publiée.",
+      categories: "Catégories de produits",
+      products: "Produits",
+      productsCount: (n) => `${n} produit${n === 1 ? "" : "s"} au catalogue`,
+      productsEmpty: "Le catalogue complet n'est pas encore disponible en ligne — demandez un devis pour le recevoir.",
+      certifications: "Certifications",
+      certificationsEmpty: "Aucune certification n'a encore été renseignée.",
+      commercialTerms: "Conditions commerciales",
+      moq: "Commande minimale",
+      moqUnit: "unités",
+      responseRate: "Taux de réponse",
+      rating: "Note",
+      reviews: "avis",
+      businessType: "Type d'entreprise",
+      yearsInBusiness: "Années d'activité",
+      location: "Emplacement",
+      region: "Région",
+      requestQuote: "Demander un devis",
+      contactSupplier: "Contacter le fournisseur",
+      notFoundTitle: "Fournisseur introuvable",
+      notFoundSubtitle: "Nous n'avons pas trouvé le fournisseur recherché. Il a peut-être été supprimé.",
+      errorTitle: "Impossible de charger ce fournisseur",
+      errorSubtitle: "Nous n'avons pas pu joindre la base de données des fournisseurs. Veuillez réessayer dans un instant.",
+      retry: "Réessayer",
+    },
   },
   ar: {
     breadcrumbHome: "الرئيسية",
@@ -491,5 +587,37 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       gt10: "أكثر من 10 سنوات",
     },
     anyOption: "الكل",
+    profile: {
+      backToDirectory: "العودة إلى الدليل",
+      verified: "مورّد موثّق",
+      memberSince: "على ألسوق منذ",
+      about: "عن الشركة",
+      aboutEmpty: "لم يضف هذا المورّد وصفاً للشركة بعد.",
+      gallery: "معرض الصور",
+      galleryEmpty: "لم يتم نشر أي صور في المعرض بعد.",
+      categories: "فئات المنتجات",
+      products: "المنتجات",
+      productsCount: (n) => `${n} منتج في الكتالوج`,
+      productsEmpty: "الكتالوج الكامل غير متاح على الإنترنت بعد — اطلب عرض سعر لاستلامه.",
+      certifications: "الشهادات",
+      certificationsEmpty: "لم يتم إدراج أي شهادات بعد.",
+      commercialTerms: "الشروط التجارية",
+      moq: "الحد الأدنى للطلب",
+      moqUnit: "وحدة",
+      responseRate: "معدل الرد",
+      rating: "التقييم",
+      reviews: "مراجعة",
+      businessType: "نوع النشاط",
+      yearsInBusiness: "سنوات النشاط",
+      location: "الموقع",
+      region: "المنطقة",
+      requestQuote: "طلب عرض سعر",
+      contactSupplier: "تواصل مع المورّد",
+      notFoundTitle: "المورّد غير موجود",
+      notFoundSubtitle: "تعذّر العثور على المورّد المطلوب. ربما تمت إزالته.",
+      errorTitle: "تعذّر تحميل هذا المورّد",
+      errorSubtitle: "تعذّر الوصول إلى قاعدة بيانات الموردين. يُرجى المحاولة مرة أخرى بعد قليل.",
+      retry: "إعادة المحاولة",
+    },
   },
 }

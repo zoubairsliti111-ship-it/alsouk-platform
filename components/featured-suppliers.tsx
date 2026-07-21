@@ -93,7 +93,7 @@ export function FeaturedSuppliers() {
                     <Button
                       variant="outline"
                       className="mt-4 w-full"
-                      render={<a href="/suppliers" />}
+                      render={<a href={`/suppliers/${s.id}`} />}
                     >
                       {t.suppliers.viewProfile}
                       <ArrowRight className="size-4 rtl:rotate-180" />
