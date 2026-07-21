@@ -61,6 +61,16 @@ function buildDiag(): Record<string, unknown> {
     keyLength: key.value ? key.value.length : 0,
     checkedUrlVars: URL_VARS,
     checkedKeyVars: KEY_VARS,
+    // Vercel-provided, non-secret context: confirms which deployment/env is
+    // actually serving this response (helps catch a stale alias or a build
+    // created before an env var was added).
+    vercelEnv: process.env.VERCEL_ENV ?? null,
+    commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+    // Names only (never values) of every Supabase-related / NEXT_PUBLIC_ env
+    // var visible to the function, to surface a mis-named or mis-scoped key.
+    presentEnvNames: Object.keys(process.env)
+      .filter((name) => /supabase/i.test(name) || name.startsWith("NEXT_PUBLIC_"))
+      .sort(),
   }
 }
 
