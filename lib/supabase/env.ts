@@ -15,6 +15,20 @@ export const KEY_VARS = [
 ] as const
 
 /**
+ * Env var names checked, in resolution order, for the server-only service-role
+ * key. This key bypasses RLS, so it MUST never be exposed to the browser (no
+ * `NEXT_PUBLIC_` prefix) — it is used only by server routes that need to read
+ * RLS-protected data such as RFQ submissions.
+ */
+export const SERVICE_KEY_VARS = [
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "SUPABASE_SERVICE_KEY",
+] as const
+
+/** Shared-secret token that gates the RFQ admin view. Server-only. */
+export const ADMIN_TOKEN_VAR = "RFQ_ADMIN_TOKEN" as const
+
+/**
  * Returns the first env var (from `names`) that holds a non-empty value.
  * Values are trimmed so an empty/whitespace-only entry is treated as absent
  * rather than sent upstream as a bogus credential.
