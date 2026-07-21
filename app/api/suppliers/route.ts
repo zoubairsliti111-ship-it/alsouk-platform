@@ -9,6 +9,7 @@ import {
   type SupplierRow,
   type SupplierSort,
 } from "@/lib/supabase/suppliers-service"
+import { KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
 
 // Read fresh on every request (no static caching) so the response always
 // reflects the current database and environment.
@@ -17,25 +18,6 @@ export const dynamic = "force-dynamic"
 // The Supabase URL + browser-safe key are read from the environment on the
 // server at request time, so this works regardless of whether the
 // `NEXT_PUBLIC_*` values were inlined into the client bundle at build time.
-
-/** Names of the env vars checked, in resolution order, for diagnostics. */
-const URL_VARS = ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_URL"] as const
-const KEY_VARS = [
-  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-  "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-  "SUPABASE_ANON_KEY",
-  "SUPABASE_KEY",
-] as const
-
-function firstDefined(names: readonly string[]): { name?: string; value?: string } {
-  for (const name of names) {
-    // Trim so a value that is empty or whitespace-only (a common paste/config
-    // mistake) is treated as absent rather than sent as a bogus credential.
-    const value = process.env[name]?.trim()
-    if (value) return { name, value }
-  }
-  return {}
-}
 
 /**
  * Per-variable presence/length report (names + lengths only, never values).

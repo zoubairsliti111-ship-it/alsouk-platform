@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { BadgeCheck, MapPin, MessageSquare, Package, Star, TrendingUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
@@ -15,8 +16,17 @@ export function SupplierCard({ supplier }: { supplier: Supplier }) {
       ? "bg-brand-green text-brand-green-foreground"
       : "bg-brand-blue text-brand-blue-foreground"
 
+  const profileHref = `/suppliers/${supplier.id}`
+
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
+      {/* Stretched overlay link: clicking anywhere on the card (except the
+          action buttons below) opens the supplier's profile page. */}
+      <Link
+        href={profileHref}
+        aria-label={supplier.name}
+        className="absolute inset-0 z-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      />
       {/* Header */}
       <div className="flex items-start gap-4 p-5">
         <div
@@ -109,12 +119,15 @@ export function SupplierCard({ supplier }: { supplier: Supplier }) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 border-t border-border p-4">
-        <Button variant="outline" className="flex-1 gap-1.5">
+      <div className="relative z-10 flex gap-2 border-t border-border p-4">
+        <Button variant="outline" className="flex-1 gap-1.5" render={<Link href={profileHref} />}>
           <MessageSquare className="size-4" />
           {t.card.contact}
         </Button>
-        <Button className="flex-1 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+        <Button
+          className="flex-1 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+          render={<Link href={profileHref} />}
+        >
           {t.card.quote}
         </Button>
       </div>

@@ -29,6 +29,10 @@ export type Supplier = {
   minMoq: number
   businessTypes: BusinessTypeKey[]
   categories: CategoryKey[]
+  /** Long-form company description shown on the profile page. */
+  description: string | null
+  /** Optional hero/logo image URL; falls back to the monogram when absent. */
+  logoUrl: string | null
 }
 
 /**
