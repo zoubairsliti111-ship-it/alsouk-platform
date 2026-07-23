@@ -120,13 +120,12 @@ export function SupplierCard({ supplier }: { supplier: Supplier }) {
 
       {/* Actions */}
       <div className="relative z-10 flex gap-2 border-t border-border p-4">
-        <Button variant="outline" className="flex-1 gap-1.5" render={<Link href={profileHref} />}>
+          <Button variant="outline" className="flex-1 gap-1.5">
           <MessageSquare className="size-4" />
           {t.card.contact}
         </Button>
         <Button
           className="flex-1 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
-          render={<Link href={profileHref} />}
         >
           {t.card.quote}
         </Button>

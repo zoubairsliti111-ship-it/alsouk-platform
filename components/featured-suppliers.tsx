@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 
 import { useEffect, useState } from "react"
 import { BadgeCheck, Crown, MapPin, ArrowRight } from "lucide-react"
@@ -90,14 +91,12 @@ export function FeaturedSuppliers() {
                       </div>
                     </div>
 
-                    <Button
-                      variant="outline"
-                      className="mt-4 w-full"
-                      render={<a href={`/suppliers/${s.id}`} />}
-                    >
-                      {t.suppliers.viewProfile}
-                      <ArrowRight className="size-4 rtl:rotate-180" />
-                    </Button>
+<Link href={`/suppliers/${s.id}`}>
+  <Button variant="outline" className="mt-4 w-full">
+    {t.suppliers.viewProfile}
+    <ArrowRight className="size-4 rtl:rotate-180" />
+  </Button>
+</Link>
                   </div>
                 </div>
               ))}
