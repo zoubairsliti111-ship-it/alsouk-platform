@@ -1,8 +1,10 @@
 "use client"
 
-import { ArrowRight, Store } from "lucide-react"
+import { Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SectionHeading } from "@/components/section-heading"
 import { useLanguage } from "@/components/language-provider"
+import { cycle } from "@/lib/ui"
 
 const IMAGES = [
   "/images/product-oliveoil.png",
@@ -18,21 +20,11 @@ export function FeaturedProducts() {
 
   return (
     <section id="products" className="mx-auto max-w-7xl px-4 py-16">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            {t.products.title}
-          </h2>
-          <p className="mt-2 max-w-xl text-muted-foreground">{t.products.subtitle}</p>
-        </div>
-        <a
-          href="#"
-          className="group inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
-        >
-          {t.products.viewAll}
-          <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
-        </a>
-      </div>
+      <SectionHeading
+        title={t.products.title}
+        subtitle={t.products.subtitle}
+        action={{ label: t.products.viewAll }}
+      />
 
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {t.products.items.map((p, i) => (
@@ -42,7 +34,7 @@ export function FeaturedProducts() {
           >
             <div className="relative overflow-hidden bg-secondary">
               <img
-                src={IMAGES[i % IMAGES.length] || "/placeholder.svg"}
+                src={cycle(IMAGES, i) || "/placeholder.svg"}
                 alt={p.name}
                 className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />

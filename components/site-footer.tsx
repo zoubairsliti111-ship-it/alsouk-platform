@@ -2,6 +2,8 @@
 
 import { AtSign, Mail, MapPin, MessageCircle, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { BrandLogo } from "@/components/brand-logo"
+import { inputClass } from "@/lib/ui"
 import { useLanguage } from "@/components/language-provider"
 
 export function SiteFooter() {
@@ -30,7 +32,7 @@ export function SiteFooter() {
             <input
               type="email"
               placeholder={t.footer.emailPlaceholder}
-              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className={inputClass}
             />
             <Button type="submit" className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90">
               {t.footer.subscribe}
@@ -42,14 +44,7 @@ export function SiteFooter() {
       {/* Main */}
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
         <div>
-          <a href="#" className="flex items-center gap-2">
-            <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
-              A
-            </span>
-            <span className="text-xl font-bold tracking-tight text-foreground">
-              AL<span className="text-primary">SOUK</span>
-            </span>
-          </a>
+          <BrandLogo />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">{t.footer.tagline}</p>
           <p className="mt-4 flex items-center gap-1.5 text-sm text-muted-foreground">
             <MapPin className="size-4 text-primary" />

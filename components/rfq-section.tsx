@@ -4,6 +4,7 @@ import { useState } from "react"
 import { CheckCircle2, FileText, MessagesSquare, PackageCheck, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
+import { inputClass } from "@/lib/ui"
 
 export function RfqSection() {
   const { t } = useLanguage()
@@ -73,7 +74,7 @@ export function RfqSection() {
                     required
                     type="text"
                     placeholder={t.rfq.productPlaceholder}
-                    className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={inputClass}
                   />
                 </div>
                 <div>
@@ -82,7 +83,7 @@ export function RfqSection() {
                     required
                     type="text"
                     placeholder={t.rfq.quantityPlaceholder}
-                    className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={inputClass}
                   />
                 </div>
                 <div>
@@ -90,7 +91,7 @@ export function RfqSection() {
                   <textarea
                     rows={3}
                     placeholder={t.rfq.detailsPlaceholder}
-                    className="w-full resize-none rounded-xl border border-input bg-background px-4 py-2.5 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className={`${inputClass} resize-none`}
                   />
                 </div>
               </div>

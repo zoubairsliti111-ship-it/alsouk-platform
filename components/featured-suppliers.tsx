@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { BadgeCheck, Crown, MapPin, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SectionHeading } from "@/components/section-heading"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { fetchSuppliers } from "@/lib/supabase/suppliers-service"
@@ -36,12 +37,7 @@ export function FeaturedSuppliers() {
   return (
     <section id="suppliers" className="bg-secondary/40 py-16">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            {t.suppliers.title}
-          </h2>
-          <p className="mt-2 text-muted-foreground">{t.suppliers.subtitle}</p>
-        </div>
+        <SectionHeading align="center" title={t.suppliers.title} subtitle={t.suppliers.subtitle} />
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {loading
