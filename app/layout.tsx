@@ -10,10 +10,10 @@ const cairo = Cairo({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://alsouk-platform.vercel.app'),
   title: 'ALSOUK — B2B Marketplace for Tunisia & North Africa',
   description:
     'ALSOUK connects manufacturers, suppliers, wholesalers, exporters and buyers across Tunisia and North Africa. Source quality products, request quotes and grow your business.',
-  generator: 'v0.app',
 }
 
 export const viewport: Viewport = {
