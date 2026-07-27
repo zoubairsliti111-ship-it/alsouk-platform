@@ -1,39 +1,46 @@
-import { MetadataRoute } from 'next'
+import type { MetadataRoute } from "next"
+import { SITE_URL } from "@/lib/site"
+import { getCompanies } from "@/lib/services/companies-service"
+import { getCategories } from "@/lib/services/categories-service"
+import { getProducts } from "@/lib/services/products-service"
+import { fetchSuppliers } from "@/lib/supabase/suppliers-service"
+
+export const revalidate = 3600
+
+const STATIC_PATHS = ["", "/companies", "/suppliers", "/categories", "/products", "/rfq", "/search"]
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://alsouk-platform.vercel.app'
+  const now = new Date()
+  const entries: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
+    url: `${SITE_URL}${path}`,
+    lastModified: now,
+    changeFrequency: "daily",
+    priority: path === "" ? 1 : 0.7,
+  }))
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/suppliers?select=id,created_at`,
-    {
-      headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      },
-    }
-  )
+  // Dynamic catalogue entries. Each source degrades to [] on failure so a
+  // single backend hiccup never breaks the whole sitemap.
+  const [companies, categories, products, suppliers] = await Promise.all([
+    getCompanies().catch(() => []),
+    getCategories().catch(() => []),
+    getProducts().catch(() => []),
+    fetchSuppliers({ limit: 1000 })
+      .then((r) => r.suppliers)
+      .catch(() => []),
+  ])
 
-  const suppliers = response.ok ? await response.json() : []
+  for (const c of companies) {
+    entries.push({ url: `${SITE_URL}/companies/${c.slug}`, lastModified: now, priority: 0.6 })
+  }
+  for (const c of categories) {
+    entries.push({ url: `${SITE_URL}/categories/${c.slug}`, lastModified: now, priority: 0.5 })
+  }
+  for (const p of products) {
+    entries.push({ url: `${SITE_URL}/products/${p.id}`, lastModified: now, priority: 0.6 })
+  }
+  for (const s of suppliers) {
+    entries.push({ url: `${SITE_URL}/suppliers/${s.id}`, lastModified: now, priority: 0.6 })
+  }
 
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/suppliers`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    ...suppliers.map((supplier: { id: string; created_at?: string }) => ({
-      url: `${baseUrl}/suppliers/${supplier.id}`,
-      lastModified: supplier.created_at
-        ? new Date(supplier.created_at)
-        : new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    })),
-  ]
+  return entries
 }

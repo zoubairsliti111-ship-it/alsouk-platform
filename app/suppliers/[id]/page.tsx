@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/components/language-provider"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { SupplierProfile } from "@/components/directory/supplier-profile"
+import { AssistantWidget } from "@/components/ai/assistant-widget"
 
 export default function SupplierProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -17,6 +18,7 @@ export default function SupplierProfilePage({ params }: { params: Promise<{ id: 
           <SupplierProfile id={id} />
         </main>
         <SiteFooter />
+        <AssistantWidget />
       </div>
     </LanguageProvider>
   )

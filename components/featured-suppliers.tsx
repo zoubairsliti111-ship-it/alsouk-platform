@@ -1,5 +1,6 @@
 "use client"
 import Link from "next/link"
+import Image from "next/image"
 
 import { useEffect, useState } from "react"
 import { BadgeCheck, Crown, MapPin, ArrowRight } from "lucide-react"
@@ -54,10 +55,12 @@ export function FeaturedSuppliers() {
                   className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
                 >
                   <div className="relative h-32 overflow-hidden">
-                    <img
+                    <Image
                       src="/images/supplier-factory.png"
                       alt={`${s.name} facility`}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     {s.verified && (
                       <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground shadow">

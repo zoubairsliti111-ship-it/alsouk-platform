@@ -4,6 +4,7 @@ import { LanguageProvider } from "@/components/language-provider"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { SuppliersDirectory } from "@/components/directory/suppliers-directory"
+import { AssistantWidget } from "@/components/ai/assistant-widget"
 
 export default function SuppliersPage() {
   return (
@@ -14,6 +15,7 @@ export default function SuppliersPage() {
           <SuppliersDirectory />
         </main>
         <SiteFooter />
+        <AssistantWidget />
       </div>
     </LanguageProvider>
   )
