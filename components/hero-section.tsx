@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { ArrowRight, BadgeCheck, Search, ShieldCheck, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -89,11 +90,14 @@ export function HeroSection() {
 
         {/* Right image */}
         <div className="relative">
-          <div className="relative overflow-hidden rounded-3xl border border-border shadow-xl">
-            <img
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-border shadow-xl">
+            <Image
               src="/images/hero-trade.png"
               alt="Mediterranean trade and logistics port in Tunisia"
-              className="aspect-[4/3] w-full object-cover"
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
             />
           </div>
 
