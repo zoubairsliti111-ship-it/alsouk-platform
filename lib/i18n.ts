@@ -111,6 +111,67 @@ type Dict = {
     privacy: string
     country: string
   }
+  marketplace: {
+    breadcrumbHome: string
+    loading: string
+    error: string
+    errorDesc: string
+    retry: string
+    companies: {
+      title: string
+      subtitle: string
+      empty: string
+      verified: string
+      storefronts: string
+      categories: string
+      website: string
+      viewStore: string
+      viewProducts: string
+      notFound: string
+      notFoundDesc: string
+      back: string
+    }
+    categories: {
+      title: string
+      subtitle: string
+      empty: string
+      productsIn: string
+      subcategories: string
+      notFound: string
+      notFoundDesc: string
+      back: string
+    }
+    stores: {
+      about: string
+      products: string
+      categories: string
+      empty: string
+      viewCompany: string
+      notFound: string
+      notFoundDesc: string
+    }
+    products: {
+      title: string
+      subtitle: string
+      empty: string
+      moq: string
+      perUnit: string
+      priceOnRequest: string
+      inStock: string
+      outOfStock: string
+      sku: string
+      description: string
+      details: string
+      soldBy: string
+      categories: string
+      gallery: string
+      noImage: string
+      viewProduct: string
+      notFound: string
+      notFoundDesc: string
+      back: string
+    }
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -253,6 +314,67 @@ export const translations: Record<Lang, Dict> = {
       privacy: "Privacy",
       country: "Tunisia",
     },
+    marketplace: {
+      breadcrumbHome: "Home",
+      loading: "Loading…",
+      error: "Something went wrong",
+      errorDesc: "We couldn't load this content. Please try again.",
+      retry: "Try again",
+      companies: {
+        title: "Companies",
+        subtitle: "Browse verified companies and their storefronts across the marketplace.",
+        empty: "No companies to show yet.",
+        verified: "Verified",
+        storefronts: "Storefronts",
+        categories: "Categories",
+        website: "Visit website",
+        viewStore: "View store",
+        viewProducts: "View products",
+        notFound: "Company not found",
+        notFoundDesc: "This company doesn't exist or is no longer available.",
+        back: "Back to companies",
+      },
+      categories: {
+        title: "Categories",
+        subtitle: "Explore products by category across the marketplace.",
+        empty: "No categories to show yet.",
+        productsIn: "Products in this category",
+        subcategories: "Subcategories",
+        notFound: "Category not found",
+        notFoundDesc: "This category doesn't exist or is no longer available.",
+        back: "Back to categories",
+      },
+      stores: {
+        about: "About",
+        products: "Products",
+        categories: "Categories",
+        empty: "This store hasn't published any products yet.",
+        viewCompany: "View company",
+        notFound: "Store not found",
+        notFoundDesc: "This storefront doesn't exist or is no longer active.",
+      },
+      products: {
+        title: "Products",
+        subtitle: "Discover products from suppliers across Tunisia and North Africa.",
+        empty: "No products to show yet.",
+        moq: "MOQ",
+        perUnit: "per unit",
+        priceOnRequest: "Price on request",
+        inStock: "In stock",
+        outOfStock: "Out of stock",
+        sku: "SKU",
+        description: "Description",
+        details: "Details",
+        soldBy: "Sold by",
+        categories: "Categories",
+        gallery: "Gallery",
+        noImage: "No image available",
+        viewProduct: "View product",
+        notFound: "Product not found",
+        notFoundDesc: "This product doesn't exist or is no longer available.",
+        back: "Back to products",
+      },
+    },
   },
   fr: {
     nav: {
@@ -393,6 +515,67 @@ export const translations: Record<Lang, Dict> = {
       privacy: "Confidentialité",
       country: "Tunisie",
     },
+    marketplace: {
+      breadcrumbHome: "Accueil",
+      loading: "Chargement…",
+      error: "Une erreur est survenue",
+      errorDesc: "Impossible de charger ce contenu. Veuillez réessayer.",
+      retry: "Réessayer",
+      companies: {
+        title: "Entreprises",
+        subtitle: "Parcourez les entreprises vérifiées et leurs boutiques sur la place de marché.",
+        empty: "Aucune entreprise à afficher pour le moment.",
+        verified: "Vérifiée",
+        storefronts: "Boutiques",
+        categories: "Catégories",
+        website: "Visiter le site",
+        viewStore: "Voir la boutique",
+        viewProducts: "Voir les produits",
+        notFound: "Entreprise introuvable",
+        notFoundDesc: "Cette entreprise n'existe pas ou n'est plus disponible.",
+        back: "Retour aux entreprises",
+      },
+      categories: {
+        title: "Catégories",
+        subtitle: "Explorez les produits par catégorie sur la place de marché.",
+        empty: "Aucune catégorie à afficher pour le moment.",
+        productsIn: "Produits dans cette catégorie",
+        subcategories: "Sous-catégories",
+        notFound: "Catégorie introuvable",
+        notFoundDesc: "Cette catégorie n'existe pas ou n'est plus disponible.",
+        back: "Retour aux catégories",
+      },
+      stores: {
+        about: "À propos",
+        products: "Produits",
+        categories: "Catégories",
+        empty: "Cette boutique n'a pas encore publié de produits.",
+        viewCompany: "Voir l'entreprise",
+        notFound: "Boutique introuvable",
+        notFoundDesc: "Cette boutique n'existe pas ou n'est plus active.",
+      },
+      products: {
+        title: "Produits",
+        subtitle: "Découvrez les produits de fournisseurs de Tunisie et d'Afrique du Nord.",
+        empty: "Aucun produit à afficher pour le moment.",
+        moq: "Qté min.",
+        perUnit: "par unité",
+        priceOnRequest: "Prix sur demande",
+        inStock: "En stock",
+        outOfStock: "Rupture de stock",
+        sku: "Réf.",
+        description: "Description",
+        details: "Détails",
+        soldBy: "Vendu par",
+        categories: "Catégories",
+        gallery: "Galerie",
+        noImage: "Aucune image disponible",
+        viewProduct: "Voir le produit",
+        notFound: "Produit introuvable",
+        notFoundDesc: "Ce produit n'existe pas ou n'est plus disponible.",
+        back: "Retour aux produits",
+      },
+    },
   },
   ar: {
     nav: {
@@ -532,6 +715,67 @@ export const translations: Record<Lang, Dict> = {
       terms: "الشروط",
       privacy: "الخصوصية",
       country: "تونس",
+    },
+    marketplace: {
+      breadcrumbHome: "الرئيسية",
+      loading: "جارٍ التحميل…",
+      error: "حدث خطأ ما",
+      errorDesc: "تعذّر تحميل هذا المحتوى. يرجى المحاولة مرة أخرى.",
+      retry: "إعادة المحاولة",
+      companies: {
+        title: "الشركات",
+        subtitle: "تصفّح الشركات الموثّقة ومتاجرها عبر السوق.",
+        empty: "لا توجد شركات لعرضها بعد.",
+        verified: "موثّقة",
+        storefronts: "المتاجر",
+        categories: "الفئات",
+        website: "زيارة الموقع",
+        viewStore: "عرض المتجر",
+        viewProducts: "عرض المنتجات",
+        notFound: "الشركة غير موجودة",
+        notFoundDesc: "هذه الشركة غير موجودة أو لم تعد متاحة.",
+        back: "العودة إلى الشركات",
+      },
+      categories: {
+        title: "الفئات",
+        subtitle: "استكشف المنتجات حسب الفئة عبر السوق.",
+        empty: "لا توجد فئات لعرضها بعد.",
+        productsIn: "منتجات في هذه الفئة",
+        subcategories: "الفئات الفرعية",
+        notFound: "الفئة غير موجودة",
+        notFoundDesc: "هذه الفئة غير موجودة أو لم تعد متاحة.",
+        back: "العودة إلى الفئات",
+      },
+      stores: {
+        about: "نبذة",
+        products: "المنتجات",
+        categories: "الفئات",
+        empty: "لم ينشر هذا المتجر أي منتجات بعد.",
+        viewCompany: "عرض الشركة",
+        notFound: "المتجر غير موجود",
+        notFoundDesc: "هذا المتجر غير موجود أو لم يعد نشطًا.",
+      },
+      products: {
+        title: "المنتجات",
+        subtitle: "اكتشف منتجات الموردين في تونس وشمال إفريقيا.",
+        empty: "لا توجد منتجات لعرضها بعد.",
+        moq: "الحد الأدنى للطلب",
+        perUnit: "لكل وحدة",
+        priceOnRequest: "السعر عند الطلب",
+        inStock: "متوفر",
+        outOfStock: "غير متوفر",
+        sku: "الرمز",
+        description: "الوصف",
+        details: "التفاصيل",
+        soldBy: "يُباع بواسطة",
+        categories: "الفئات",
+        gallery: "المعرض",
+        noImage: "لا توجد صورة متاحة",
+        viewProduct: "عرض المنتج",
+        notFound: "المنتج غير موجود",
+        notFoundDesc: "هذا المنتج غير موجود أو لم يعد متاحًا.",
+        back: "العودة إلى المنتجات",
+      },
     },
   },
 }
