@@ -1,8 +1,20 @@
+import { timingSafeEqual } from "node:crypto"
 import { NextResponse } from "next/server"
 import { ADMIN_TOKEN_VAR, SERVICE_KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
 import type { RfqRow } from "@/lib/supabase/rfq-service"
 
 export const dynamic = "force-dynamic"
+
+// Never cache admin responses: they carry buyer PII.
+const NO_STORE = { "Cache-Control": "no-store" } as const
+
+/** Constant-time string comparison to avoid leaking the token via timing. */
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) return false
+  return timingSafeEqual(bufA, bufB)
+}
 
 const RFQS_TABLE = "rfqs"
 const RFQ_COLUMNS =
@@ -24,12 +36,12 @@ export async function GET(request: Request) {
 
   if (!url || !serviceKey || !adminToken || !/^https?:\/\//.test(url)) {
     console.error("[api/admin/rfqs] Admin RFQ view is not configured (need service key + token).")
-    return NextResponse.json({ rfqs: [], reason: "unconfigured" }, { status: 503 })
+    return NextResponse.json({ rfqs: [], reason: "unconfigured" }, { status: 503, headers: NO_STORE })
   }
 
   const provided = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim()
-  if (!provided || provided !== adminToken) {
-    return NextResponse.json({ rfqs: [], reason: "unauthorized" }, { status: 401 })
+  if (!provided || !safeEqual(provided, adminToken)) {
+    return NextResponse.json({ rfqs: [], reason: "unauthorized" }, { status: 401, headers: NO_STORE })
   }
 
   const endpoint = `${url}/rest/v1/${RFQS_TABLE}?select=${RFQ_COLUMNS}&order=created_at.desc`
@@ -42,12 +54,12 @@ export async function GET(request: Request) {
     if (!res.ok) {
       const text = await res.text()
       console.error("[api/admin/rfqs] Query failed:", res.status, text)
-      return NextResponse.json({ rfqs: [], reason: "error" }, { status: 502 })
+      return NextResponse.json({ rfqs: [], reason: "error" }, { status: 502, headers: NO_STORE })
     }
     const rfqs = (await res.json()) as RfqRow[]
-    return NextResponse.json({ rfqs })
+    return NextResponse.json({ rfqs }, { headers: NO_STORE })
   } catch (err) {
     console.error("[api/admin/rfqs] Unexpected error:", err)
-    return NextResponse.json({ rfqs: [], reason: "error" }, { status: 500 })
+    return NextResponse.json({ rfqs: [], reason: "error" }, { status: 500, headers: NO_STORE })
   }
 }

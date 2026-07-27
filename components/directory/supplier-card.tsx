@@ -50,7 +50,7 @@ export function SupplierCard({ supplier }: { supplier: Supplier }) {
           <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin className="size-3.5 shrink-0 text-primary" />
             <span className="truncate">
-              {t.cities[supplier.cityKey]}, {t.countries[supplier.country]}
+              {t.cities[supplier.cityKey] ?? supplier.cityKey}, {t.countries[supplier.country] ?? supplier.country}
             </span>
           </div>
 

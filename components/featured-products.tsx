@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import { ArrowRight, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
@@ -26,13 +27,13 @@ export function FeaturedProducts() {
           </h2>
           <p className="mt-2 max-w-xl text-muted-foreground">{t.products.subtitle}</p>
         </div>
-        <a
-          href="#"
+        <Link
+          href="/products"
           className="group inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
         >
           {t.products.viewAll}
           <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
-        </a>
+        </Link>
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
