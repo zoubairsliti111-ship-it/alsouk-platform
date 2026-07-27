@@ -185,6 +185,18 @@ type Dict = {
     companies: string
     products: string
   }
+  ai: {
+    launch: string
+    title: string
+    subtitle: string
+    placeholder: string
+    send: string
+    greeting: string
+    thinking: string
+    error: string
+    disabledTitle: string
+    disabledBody: string
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -401,6 +413,18 @@ export const translations: Record<Lang, Dict> = {
       companies: "Companies",
       products: "Products",
     },
+    ai: {
+      launch: "Ask ALSOUK",
+      title: "ALSOUK Assistant",
+      subtitle: "Your B2B commerce helper",
+      placeholder: "Ask about suppliers, products or RFQs…",
+      send: "Send",
+      greeting: "Hi! I can help you find suppliers, compare products and prepare RFQs. What are you sourcing today?",
+      thinking: "Thinking…",
+      error: "Something went wrong. Please try again.",
+      disabledTitle: "Assistant coming soon",
+      disabledBody: "The AI assistant isn't enabled yet. Meanwhile, use search to find suppliers and products, or post an RFQ to get quotes.",
+    },
   },
   fr: {
     nav: {
@@ -615,6 +639,18 @@ export const translations: Record<Lang, Dict> = {
       companies: "Entreprises",
       products: "Produits",
     },
+    ai: {
+      launch: "Demander à ALSOUK",
+      title: "Assistant ALSOUK",
+      subtitle: "Votre aide au commerce B2B",
+      placeholder: "Fournisseurs, produits ou devis…",
+      send: "Envoyer",
+      greeting: "Bonjour ! Je peux vous aider à trouver des fournisseurs, comparer des produits et préparer des devis. Que recherchez-vous ?",
+      thinking: "Réflexion…",
+      error: "Une erreur est survenue. Veuillez réessayer.",
+      disabledTitle: "Assistant bientôt disponible",
+      disabledBody: "L'assistant IA n'est pas encore activé. En attendant, utilisez la recherche pour trouver des fournisseurs et des produits, ou publiez une demande de devis.",
+    },
   },
   ar: {
     nav: {
@@ -828,6 +864,18 @@ export const translations: Record<Lang, Dict> = {
       suppliers: "الموردون",
       companies: "الشركات",
       products: "المنتجات",
+    },
+    ai: {
+      launch: "اسأل ألسوق",
+      title: "مساعد ألسوق",
+      subtitle: "مساعدك في التجارة بين الشركات",
+      placeholder: "اسأل عن الموردين أو المنتجات أو طلبات عروض الأسعار…",
+      send: "إرسال",
+      greeting: "مرحبًا! يمكنني مساعدتك في العثور على الموردين ومقارنة المنتجات وإعداد طلبات عروض الأسعار. ما الذي تبحث عنه اليوم؟",
+      thinking: "جارٍ التفكير…",
+      error: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+      disabledTitle: "المساعد قريبًا",
+      disabledBody: "مساعد الذكاء الاصطناعي غير مُفعّل بعد. في هذه الأثناء، استخدم البحث للعثور على الموردين والمنتجات، أو انشر طلب عرض سعر.",
     },
   },
 }

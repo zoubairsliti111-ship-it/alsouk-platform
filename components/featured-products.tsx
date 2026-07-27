@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { ArrowRight, Store } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
@@ -40,11 +41,13 @@ export function FeaturedProducts() {
             key={p.name}
             className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
           >
-            <div className="relative overflow-hidden bg-secondary">
-              <img
+            <div className="relative aspect-[4/3] w-full overflow-hidden bg-secondary">
+              <Image
                 src={IMAGES[i % IMAGES.length] || "/placeholder.svg"}
                 alt={p.name}
-                className="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                fill
+                sizes="(max-width: 768px) 50vw, 25vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </div>
             <div className="flex flex-1 flex-col p-4">

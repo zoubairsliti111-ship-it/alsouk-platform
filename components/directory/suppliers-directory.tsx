@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
+import Link from "next/link"
 import { ChevronLeft, ChevronRight, Search, ServerCrash, SlidersHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
@@ -106,9 +107,9 @@ export function SuppliersDirectory() {
       <section className="border-b border-border bg-gradient-to-b from-secondary/60 to-background">
         <div className="mx-auto max-w-7xl px-4 py-10 md:py-14">
           <nav className="mb-5 flex items-center gap-1 text-xs text-muted-foreground">
-            <a href="/" className="transition-colors hover:text-primary">
+            <Link href="/" className="transition-colors hover:text-primary">
               {t.breadcrumbHome}
-            </a>
+            </Link>
             <ChevronRight className="size-3.5 rtl:rotate-180" />
             <span className="font-medium text-foreground">{t.hero.badge}</span>
           </nav>
