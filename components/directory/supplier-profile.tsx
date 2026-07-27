@@ -158,7 +158,7 @@ export function SupplierProfile({ id }: { id: string }) {
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <MapPin className="size-4 text-primary" />
-                  {t.cities[s.cityKey]}, {t.countries[s.country]}
+                  {t.cities[s.cityKey] ?? s.cityKey}, {t.countries[s.country] ?? s.country}
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Star className="size-4 fill-amber-500 text-amber-500" />
@@ -270,8 +270,8 @@ export function SupplierProfile({ id }: { id: string }) {
 
           <Card title={p.location} icon={<MapPin className="size-4" />}>
             <dl className="divide-y divide-border text-sm">
-              <Row label={t.filters.country} value={t.countries[s.country]} />
-              <Row label={p.location} value={t.cities[s.cityKey]} />
+              <Row label={t.filters.country} value={t.countries[s.country] ?? s.country} />
+              <Row label={p.location} value={t.cities[s.cityKey] ?? s.cityKey} />
               <Row label={p.region} value={t.regions[s.region]} />
             </dl>
           </Card>

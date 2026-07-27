@@ -37,10 +37,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: true, reason: "invalid_json" }, { status: 400 })
   }
 
+  // supplierId is optional: an empty value means a general (marketplace-wide)
+  // RFQ not directed at a specific supplier.
   const supplierId = asString(body.supplierId)
-  if (!supplierId) {
-    return NextResponse.json({ error: true, reason: "validation" }, { status: 400 })
-  }
 
   const input: RfqInput = normalizeRfq({
     companyName: asString(body.companyName),
@@ -61,32 +60,35 @@ export async function POST(request: Request) {
 
   const headers = { apikey: key, Authorization: `Bearer ${key}` }
 
-  // Confirm the supplier exists and snapshot its name for the admin view.
+  // When directed at a specific supplier, confirm it exists and snapshot its
+  // name for the admin view. A general RFQ (no supplierId) skips this.
   let supplierName: string | null = null
-  try {
-    const lookup = await fetch(
-      `${url}/rest/v1/${SUPPLIERS_TABLE}?select=company_name&id=eq.${encodeURIComponent(supplierId)}&limit=1`,
-      { headers, cache: "no-store" },
-    )
-    if (lookup.status === 400) {
-      return NextResponse.json({ error: true, reason: "notFound" }, { status: 404 })
+  if (supplierId) {
+    try {
+      const lookup = await fetch(
+        `${url}/rest/v1/${SUPPLIERS_TABLE}?select=company_name&id=eq.${encodeURIComponent(supplierId)}&limit=1`,
+        { headers, cache: "no-store" },
+      )
+      if (lookup.status === 400) {
+        return NextResponse.json({ error: true, reason: "notFound" }, { status: 404 })
+      }
+      if (!lookup.ok) {
+        console.error("[api/rfqs] Supplier lookup failed:", lookup.status)
+        return NextResponse.json({ error: true, reason: "error" }, { status: 502 })
+      }
+      const rows = (await lookup.json()) as { company_name: string }[]
+      if (!rows[0]) {
+        return NextResponse.json({ error: true, reason: "notFound" }, { status: 404 })
+      }
+      supplierName = rows[0].company_name
+    } catch (err) {
+      console.error("[api/rfqs] Supplier lookup error:", err)
+      return NextResponse.json({ error: true, reason: "error" }, { status: 500 })
     }
-    if (!lookup.ok) {
-      console.error("[api/rfqs] Supplier lookup failed:", lookup.status)
-      return NextResponse.json({ error: true, reason: "error" }, { status: 502 })
-    }
-    const rows = (await lookup.json()) as { company_name: string }[]
-    if (!rows[0]) {
-      return NextResponse.json({ error: true, reason: "notFound" }, { status: 404 })
-    }
-    supplierName = rows[0].company_name
-  } catch (err) {
-    console.error("[api/rfqs] Supplier lookup error:", err)
-    return NextResponse.json({ error: true, reason: "error" }, { status: 500 })
   }
 
   const record = {
-    supplier_id: supplierId,
+    supplier_id: supplierId || null,
     supplier_name: supplierName,
     company_name: input.companyName,
     contact_person: input.contactPerson,

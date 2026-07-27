@@ -11,6 +11,7 @@ import { WhyChoose } from "@/components/why-choose"
 import { StatsSection } from "@/components/stats-section"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { SiteFooter } from "@/components/site-footer"
+import { AssistantWidget } from "@/components/ai/assistant-widget"
 
 export default function HomePage() {
   return (
@@ -28,6 +29,7 @@ export default function HomePage() {
           <TestimonialsSection />
         </main>
         <SiteFooter />
+        <AssistantWidget />
       </div>
     </LanguageProvider>
   )
