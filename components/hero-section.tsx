@@ -1,11 +1,20 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { ArrowRight, BadgeCheck, Search, ShieldCheck, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 
 export function HeroSection() {
   const { t } = useLanguage()
+  const router = useRouter()
+  const [query, setQuery] = useState("")
+
+  function goSearch(term?: string) {
+    const q = (term ?? query).trim()
+    router.push(q ? `/search?q=${encodeURIComponent(q)}` : "/search")
+  }
 
   return (
     <section className="relative overflow-hidden bg-secondary/40">
@@ -28,26 +37,37 @@ export function HeroSection() {
 
           {/* Search */}
           <div className="mt-7 max-w-xl">
-            <div className="flex flex-col gap-2 rounded-2xl border border-border bg-background p-2 shadow-sm sm:flex-row sm:items-center sm:rounded-full">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                goSearch()
+              }}
+              role="search"
+              className="flex flex-col gap-2 rounded-2xl border border-border bg-background p-2 shadow-sm sm:flex-row sm:items-center sm:rounded-full"
+            >
               <div className="flex flex-1 items-center gap-2 px-3">
                 <Search className="size-5 shrink-0 text-muted-foreground" />
                 <input
-                  type="text"
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
                   placeholder={t.hero.searchPlaceholder}
+                  aria-label={t.hero.searchButton}
                   className="w-full bg-transparent py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 />
               </div>
-              <Button className="h-11 shrink-0 rounded-xl bg-primary px-6 text-primary-foreground hover:bg-primary/90 sm:rounded-full">
+              <Button type="submit" className="h-11 shrink-0 rounded-xl bg-primary px-6 text-primary-foreground hover:bg-primary/90 sm:rounded-full">
                 <Search className="size-4" />
                 {t.hero.searchButton}
               </Button>
-            </div>
+            </form>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
               <span className="text-muted-foreground">{t.hero.popular}</span>
               {t.hero.popularTerms.map((term) => (
                 <button
                   key={term}
+                  onClick={() => goSearch(term)}
                   className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground/80 transition-colors hover:border-primary hover:text-primary"
                 >
                   {term}

@@ -172,6 +172,19 @@ type Dict = {
       back: string
     }
   }
+  search: {
+    title: string
+    placeholder: string
+    button: string
+    resultsFor: string
+    searching: string
+    prompt: string
+    noResults: string
+    noResultsDesc: string
+    suppliers: string
+    companies: string
+    products: string
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -375,6 +388,19 @@ export const translations: Record<Lang, Dict> = {
         back: "Back to products",
       },
     },
+    search: {
+      title: "Search",
+      placeholder: "Search products, suppliers or companies…",
+      button: "Search",
+      resultsFor: "Results for",
+      searching: "Searching…",
+      prompt: "Search suppliers, companies and products across the marketplace.",
+      noResults: "No results found",
+      noResultsDesc: "Try a different keyword or check your spelling.",
+      suppliers: "Suppliers",
+      companies: "Companies",
+      products: "Products",
+    },
   },
   fr: {
     nav: {
@@ -576,6 +602,19 @@ export const translations: Record<Lang, Dict> = {
         back: "Retour aux produits",
       },
     },
+    search: {
+      title: "Recherche",
+      placeholder: "Rechercher produits, fournisseurs ou entreprises…",
+      button: "Rechercher",
+      resultsFor: "Résultats pour",
+      searching: "Recherche…",
+      prompt: "Recherchez fournisseurs, entreprises et produits sur la marketplace.",
+      noResults: "Aucun résultat",
+      noResultsDesc: "Essayez un autre mot-clé ou vérifiez l'orthographe.",
+      suppliers: "Fournisseurs",
+      companies: "Entreprises",
+      products: "Produits",
+    },
   },
   ar: {
     nav: {
@@ -776,6 +815,19 @@ export const translations: Record<Lang, Dict> = {
         notFoundDesc: "هذا المنتج غير موجود أو لم يعد متاحًا.",
         back: "العودة إلى المنتجات",
       },
+    },
+    search: {
+      title: "بحث",
+      placeholder: "ابحث عن منتجات أو موردين أو شركات…",
+      button: "بحث",
+      resultsFor: "نتائج البحث عن",
+      searching: "جارٍ البحث…",
+      prompt: "ابحث عن الموردين والشركات والمنتجات في السوق.",
+      noResults: "لا توجد نتائج",
+      noResultsDesc: "جرّب كلمة مختلفة أو تحقق من الإملاء.",
+      suppliers: "الموردون",
+      companies: "الشركات",
+      products: "المنتجات",
     },
   },
 }

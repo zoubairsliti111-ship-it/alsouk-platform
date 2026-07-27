@@ -1,16 +1,27 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Check, ChevronDown, Globe, Heart, Menu, ShoppingCart, User, X } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Check, ChevronDown, Globe, Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { LANGS } from "@/lib/i18n"
 
 export function SiteHeader() {
   const { t, lang, setLang } = useLanguage()
+  const router = useRouter()
   const [langOpen, setLangOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [query, setQuery] = useState("")
   const langRef = useRef<HTMLDivElement>(null)
+
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault()
+    const q = query.trim()
+    setMobileOpen(false)
+    router.push(q ? `/search?q=${encodeURIComponent(q)}` : "/search")
+  }
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -21,11 +32,12 @@ export function SiteHeader() {
   }, [])
 
   const navLinks = [
-    { label: t.nav.categories, href: "#categories" },
+    { label: t.marketplace.companies.title, href: "/companies" },
     { label: t.nav.suppliers, href: "/suppliers" },
-    { label: t.nav.products, href: "#products" },
-    { label: t.nav.rfq, href: "#rfq" },
-    { label: t.nav.about, href: "#why" },
+    { label: t.nav.categories, href: "/categories" },
+    { label: t.nav.products, href: "/products" },
+    { label: t.nav.rfq, href: "/#rfq" },
+    { label: t.nav.about, href: "/#why" },
   ]
 
   const current = LANGS.find((l) => l.code === lang)!
@@ -78,8 +90,8 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs text-muted-foreground">
           <p>{t.hero.trusted}</p>
           <div className="flex items-center gap-4">
-            <a href="#suppliers" className="transition-colors hover:text-primary">{t.nav.forSuppliers}</a>
-            <a href="#products" className="transition-colors hover:text-primary">{t.nav.forBuyers}</a>
+            <Link href="/suppliers" className="transition-colors hover:text-primary">{t.nav.forSuppliers}</Link>
+            <Link href="/products" className="transition-colors hover:text-primary">{t.nav.forBuyers}</Link>
             <a href="#" className="transition-colors hover:text-primary">{t.nav.help}</a>
           </div>
         </div>
@@ -87,31 +99,47 @@ export function SiteHeader() {
 
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
         {/* Logo */}
-        <a href="#" className="flex shrink-0 items-center gap-2">
+        <Link href="/" className="flex shrink-0 items-center gap-2">
           <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
             A
           </span>
           <span className="text-xl font-bold tracking-tight text-foreground">
             AL<span className="text-primary">SOUK</span>
           </span>
-        </a>
+        </Link>
 
         {/* Desktop nav */}
         <nav className="ms-4 hidden items-center gap-1 lg:flex">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.href}
               href={link.href}
               className="rounded-lg px-3 py-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-secondary hover:text-primary"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
-        <div className="ms-auto flex items-center gap-2">
+        {/* Desktop search */}
+        <form onSubmit={submitSearch} role="search" className="relative ms-auto hidden max-w-xs flex-1 md:block">
+          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t.search.placeholder}
+            aria-label={t.search.title}
+            className="w-full rounded-full border border-border bg-secondary/50 py-2 ps-9 pe-3 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-card"
+          />
+        </form>
+
+        <div className="ms-auto flex items-center gap-2 md:ms-2">
           <div className="hidden md:block">{LangSwitcher}</div>
 
+          <button className="inline-flex rounded-full p-2 text-foreground/70 transition-colors hover:bg-secondary hover:text-primary md:hidden" aria-label={t.search.title} onClick={() => router.push("/search")}>
+            <Search className="size-5" />
+          </button>
           <button className="hidden rounded-full p-2 text-foreground/70 transition-colors hover:bg-secondary hover:text-primary sm:inline-flex" aria-label="Wishlist">
             <Heart className="size-5" />
           </button>
@@ -141,15 +169,26 @@ export function SiteHeader() {
       {mobileOpen && (
         <div className="border-t border-border bg-background lg:hidden">
           <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
+            <form onSubmit={submitSearch} role="search" className="relative mb-2">
+              <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t.search.placeholder}
+                aria-label={t.search.title}
+                className="w-full rounded-full border border-border bg-secondary/50 py-2.5 ps-9 pe-3 text-sm text-foreground outline-none focus:border-primary focus:bg-card"
+              />
+            </form>
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             <div className="mt-2 flex items-center justify-between gap-3 border-t border-border pt-3">
               {LangSwitcher}
