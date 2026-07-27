@@ -36,7 +36,7 @@ export function SiteHeader() {
     { label: t.nav.suppliers, href: "/suppliers" },
     { label: t.nav.categories, href: "/categories" },
     { label: t.nav.products, href: "/products" },
-    { label: t.nav.rfq, href: "/#rfq" },
+    { label: t.nav.rfq, href: "/rfq" },
     { label: t.nav.about, href: "/#why" },
   ]
 
