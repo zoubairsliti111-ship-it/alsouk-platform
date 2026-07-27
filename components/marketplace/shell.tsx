@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react"
 import { LanguageProvider, useLanguage } from "@/components/language-provider"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
+import { AssistantWidget } from "@/components/ai/assistant-widget"
 
 /** Page wrapper: language context + shared header/footer chrome. */
 export function MarketplaceShell({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export function MarketplaceShell({ children }: { children: React.ReactNode }) {
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <AssistantWidget />
       </div>
     </LanguageProvider>
   )
