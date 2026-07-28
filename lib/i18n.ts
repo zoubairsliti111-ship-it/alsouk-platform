@@ -215,6 +215,19 @@ type Dict = {
       type: "all" | "factory" | "product" | "process"
     }[]
   }
+  opportunities: {
+    title: string
+    subtitle: string
+    viewAll: string
+    verifiedBuyer: string
+    items: {
+      title: string
+      target: string
+      location: string
+      budget: string
+      urgency: string
+    }[]
+  }
   export: {
     title: string
     subtitle: string
@@ -289,12 +302,12 @@ export const translations: Record<Lang, Dict> = {
       perUnit: "/ unit",
       inquire: "Inquire now",
       items: [
-        { name: "Extra Virgin Olive Oil", price: "$4.50 - $6.20", moq: "500 L", supplier: "Medina Olive Co." },
-        { name: "Premium Cotton Fabric", price: "$2.10 - $3.40", moq: "1,000 m", supplier: "Carthage Textiles" },
-        { name: "Handcrafted Ceramic Tiles", price: "$8.00 - $14.00", moq: "200 pcs", supplier: "Atlas Ceramics" },
-        { name: "Deglet Nour Dates", price: "$3.20 - $5.00", moq: "1 ton", supplier: "Sahara Dates Export" },
-        { name: "Genuine Leather Goods", price: "$12.00 - $28.00", moq: "100 pcs", supplier: "Kairouan Leather" },
-        { name: "Industrial Components", price: "$15.00 - $45.00", moq: "50 pcs", supplier: "Tunis Metalworks" },
+        { name: "Extra Virgin Olive Oil", price: "14.500 د.ت - 18.200 د.ت", moq: "500 L", supplier: "Medina Olive Co." },
+        { name: "Premium Cotton Fabric", price: "6.500 د.ت - 10.200 د.ت", moq: "1,000 m", supplier: "Carthage Textiles" },
+        { name: "Handcrafted Ceramic Tiles", price: "25.000 د.ت - 45.000 د.ت", moq: "200 pcs", supplier: "Atlas Ceramics" },
+        { name: "Deglet Nour Dates", price: "10.000 د.ت - 15.000 د.ت", moq: "1 ton", supplier: "Sahara Dates Export" },
+        { name: "Genuine Leather Goods", price: "35.000 د.ت - 85.000 د.ت", moq: "100 pcs", supplier: "Kairouan Leather" },
+        { name: "Industrial Components", price: "45.000 د.ت - 120.000 د.ت", moq: "50 pcs", supplier: "Tunis Metalworks" },
       ],
     },
     rfq: {
@@ -471,6 +484,19 @@ export const translations: Record<Lang, Dict> = {
         { title: "Precision Metal Stamping & Welding Operations Tour", supplier: "Tunis Metalworks", duration: "4:05", views: "1.5k views", category: "Industrial", type: "factory" }
       ]
     },
+    opportunities: {
+      title: "Today's Opportunities",
+      subtitle: "Active buy leads & high-demand inquiries in Tunisia",
+      viewAll: "View All",
+      verifiedBuyer: "Verified Buyer",
+      items: [
+        { title: "Sourcing Extra Virgin Olive Oil", target: "15,000 Liters", location: "Sfax, Tunisia", budget: "180,000 د.ت", urgency: "Urgent" },
+        { title: "Premium Cotton Bedding Set Supply", target: "2,500 Sets", location: "Monastir, Tunisia", budget: "45,000 د.ت", urgency: "Active" },
+        { title: "Artisanal Ceramic Tableware", target: "1,200 Sets", location: "Nabeul, Tunisia", budget: "32,000 د.ت", urgency: "Active" },
+        { title: "Bulk Deglet Nour Dates", target: "12 Tons", location: "Tozeur, Tunisia", budget: "96,000 د.ت", urgency: "Urgent" },
+        { title: "Custom Leather Travel Bags", target: "500 Pcs", location: "Kairouan, Tunisia", budget: "28,000 د.ت", urgency: "Active" },
+      ]
+    },
     export: {
       title: "Tunisia's Strategic Export Advantage",
       subtitle: "Source from a modern, world-class hub situated at the crossroads of Europe, Africa, and the Middle East.",
@@ -543,12 +569,12 @@ export const translations: Record<Lang, Dict> = {
       perUnit: "/ unité",
       inquire: "Demander",
       items: [
-        { name: "Huile d'olive extra vierge", price: "4,50 $ - 6,20 $", moq: "500 L", supplier: "Medina Olive Co." },
-        { name: "Tissu de coton premium", price: "2,10 $ - 3,40 $", moq: "1 000 m", supplier: "Carthage Textiles" },
-        { name: "Carreaux en céramique artisanaux", price: "8,00 $ - 14,00 $", moq: "200 pcs", supplier: "Atlas Ceramics" },
-        { name: "Dattes Deglet Nour", price: "3,20 $ - 5,00 $", moq: "1 tonne", supplier: "Sahara Dates Export" },
-        { name: "Articles en cuir véritable", price: "12,00 $ - 28,00 $", moq: "100 pcs", supplier: "Kairouan Leather" },
-        { name: "Composants industriels", price: "15,00 $ - 45,00 $", moq: "50 pcs", supplier: "Tunis Metalworks" },
+        { name: "Huile d'olive extra vierge", price: "14,500 د.ت - 18,200 د.ت", moq: "500 L", supplier: "Medina Olive Co." },
+        { name: "Tissu de coton premium", price: "6,500 د.ت - 10,200 د.ت", moq: "1 000 m", supplier: "Carthage Textiles" },
+        { name: "Carreaux en céramique artisanaux", price: "25,000 د.ت - 45,000 د.ت", moq: "200 pcs", supplier: "Atlas Ceramics" },
+        { name: "Dattes Deglet Nour", price: "10,000 د.ت - 15,000 د.ت", moq: "1 tonne", supplier: "Sahara Dates Export" },
+        { name: "Articles en cuir véritable", price: "35,000 د.ت - 85,000 د.ت", moq: "100 pcs", supplier: "Kairouan Leather" },
+        { name: "Composants industriels", price: "45,000 د.ت - 120,000 د.ت", moq: "50 pcs", supplier: "Tunis Metalworks" },
       ],
     },
     rfq: {
@@ -725,6 +751,19 @@ export const translations: Record<Lang, Dict> = {
         { title: "Visite des opérations d'emboutissage et de soudage de précision", supplier: "Tunis Metalworks", duration: "4:05", views: "1.5k vues", category: "Industriel", type: "factory" }
       ]
     },
+    opportunities: {
+      title: "Opportunités du Jour",
+      subtitle: "Demandes d'achat actives et besoins urgents en Tunisie",
+      viewAll: "Tout afficher",
+      verifiedBuyer: "Acheteur Vérifié",
+      items: [
+        { title: "Achat d'Huile d'Olive Extra Vierge", target: "15 000 Litres", location: "Sfax, Tunisie", budget: "180 000 د.ت", urgency: "Urgent" },
+        { title: "Fourniture de Parures de Lit en Coton", target: "2 500 Ensembles", location: "Monastir, Tunisie", budget: "45 000 د.ت", urgency: "Actif" },
+        { title: "Vaisselle en Céramique Artisanale", target: "1 200 Lots", location: "Nabeul, Tunisie", budget: "32 000 د.ت", urgency: "Actif" },
+        { title: "Dattes Deglet Nour en Vrac", target: "12 Tonnes", location: "Tozeur, Tunisie", budget: "96 000 د.ت", urgency: "Urgent" },
+        { title: "Sacs de Voyage en Cuir Personnalisés", target: "500 Pièces", location: "Kairouan, Tunisie", budget: "28 000 د.ت", urgency: "Actif" },
+      ]
+    },
     export: {
       title: "L'avantage Stratégique à l'Export de la Tunisie",
       subtitle: "Approvisionnez-vous auprès d'un pôle moderne idéalement situé au carrefour de l'Europe, de l'Afrique et du Moyen-Orient.",
@@ -797,12 +836,12 @@ export const translations: Record<Lang, Dict> = {
       perUnit: "/ للوحدة",
       inquire: "استفسر الآن",
       items: [
-        { name: "زيت زيتون بكر ممتاز", price: "4.50$ - 6.20$", moq: "500 لتر", supplier: "شركة مدينة للزيتون" },
-        { name: "قماش قطني فاخر", price: "2.10$ - 3.40$", moq: "1,000 م", supplier: "قرطاج للمنسوجات" },
-        { name: "بلاط خزفي يدوي الصنع", price: "8.00$ - 14.00$", moq: "200 قطعة", supplier: "أطلس للخزف" },
-        { name: "تمور دقلة النور", price: "3.20$ - 5.00$", moq: "1 طن", supplier: "الصحراء لتصدير التمور" },
-        { name: "منتجات جلدية أصلية", price: "12.00$ - 28.00$", moq: "100 قطعة", supplier: "القيروان للجلود" },
-        { name: "مكوّنات صناعية", price: "15.00$ - 45.00$", moq: "50 قطعة", supplier: "تونس للأشغال المعدنية" },
+        { name: "زيت زيتون بكر ممتاز", price: "14.500 د.ت - 18.200 د.ت", moq: "500 لتر", supplier: "شركة مدينة للزيتون" },
+        { name: "قماش قطني فاخر", price: "6.500 د.ت - 10.200 د.ت", moq: "1,000 م", supplier: "قرطاج للمنسوجات" },
+        { name: "بلاط خزفي يدوي الصنع", price: "25.000 د.ت - 45.000 د.ت", moq: "200 قطعة", supplier: "أطلس للخزف" },
+        { name: "تمور دقلة النور", price: "10.000 د.ت - 15.000 د.ت", moq: "1 طن", supplier: "الصحراء لتصدير التمور" },
+        { name: "منتجات جلدية أصلية", price: "35.000 د.ت - 85.000 د.ت", moq: "100 قطعة", supplier: "القيروان للجلود" },
+        { name: "مكوّنات صناعية", price: "45.000 د.ت - 120.000 د.ت", moq: "50 قطعة", supplier: "تونس للأشغال المعدنية" },
       ],
     },
     rfq: {
@@ -977,6 +1016,19 @@ export const translations: Record<Lang, Dict> = {
         { title: "خطوط فرز التمور وتغليفها الصديق للبيئة", supplier: "الصحراء لتصدير التمور", duration: "2:10", views: "1.2k مشاهدة", category: "الأغذية والزراعة", type: "process" },
         { title: "استعراض لقص الجلد الآلي وتجميع الأحذية الفاخرة", supplier: "القيروان للجلود", duration: "3:40", views: "940 مشاهدة", category: "المنتجات الجلدية", type: "product" },
         { title: "جولة في عمليات كبس المعادن واللحام عالية الدقة", supplier: "تونس للأشغال المعدنية", duration: "4:05", views: "1.5k مشاهدة", category: "صناعي", type: "factory" }
+      ]
+    },
+    opportunities: {
+      title: "فرص اليوم",
+      subtitle: "طلبات شراء نشطة واحتياجات عالية الطلب في تونس",
+      viewAll: "عرض الكل",
+      verifiedBuyer: "مشتري موثّق",
+      items: [
+        { title: "طلب توريد زيت زيتون بكر ممتاز", target: "15,000 لتر", location: "صفاقس، تونس", budget: "180,000 د.ت", urgency: "عاجل" },
+        { title: "توريد أطقم أغطية أسرة قطنية فاخرة", target: "2,500 طقم", location: "المنستير، تونس", budget: "45,000 د.ت", urgency: "نشط" },
+        { title: "أواني مائدة خزفية حرفية", target: "1,200 طقم", location: "نابل، تونس", budget: "32,000 د.ت", urgency: "نشط" },
+        { title: "تمور دقلة النور بكميات كبيرة", target: "12 طن", location: "توزر، تونس", budget: "96,000 د.ت", urgency: "عاجل" },
+        { title: "حقائب سفر جلدية مخصصة", target: "500 قطعة", location: "القيروان، تونس", budget: "28,000 د.ت", urgency: "نشط" },
       ]
     },
     export: {

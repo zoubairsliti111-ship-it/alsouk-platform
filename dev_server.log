@@ -5,9 +5,9 @@
 ▲ Next.js 16.2.6 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 552ms
+✓ Ready in 531ms
 
 ○ Compiling / ...
- GET / 200 in 6.3s (next.js: 5.7s, application-code: 649ms)
+ GET / 200 in 6.6s (next.js: 5.8s, application-code: 875ms)
 [api/suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).
- GET /api/suppliers?sort=rating&limit=4 200 in 892ms (next.js: 864ms, application-code: 28ms)
+ GET /api/suppliers?sort=rating&limit=4 200 in 858ms (next.js: 807ms, application-code: 51ms)
