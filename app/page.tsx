@@ -3,6 +3,7 @@
 import { LanguageProvider } from "@/components/language-provider"
 import { SiteHeader } from "@/components/site-header"
 import { HeroSection } from "@/components/hero-section"
+import { BusinessShorts } from "@/components/business-shorts"
 import { CategoriesSection } from "@/components/categories-section"
 import { FeaturedSuppliers } from "@/components/featured-suppliers"
 import { FeaturedProducts } from "@/components/featured-products"
@@ -20,6 +21,7 @@ export default function HomePage() {
         <SiteHeader />
         <main className="flex-1">
           <HeroSection />
+          <BusinessShorts />
           <CategoriesSection />
           <FeaturedSuppliers />
           <FeaturedProducts />

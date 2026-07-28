@@ -9,6 +9,8 @@ import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { fetchSuppliers } from "@/lib/supabase/suppliers-service"
 import type { Supplier } from "@/lib/directory-data"
+import { PremiumCard } from "@/components/ui/premium-card"
+import { PremiumBadge } from "@/components/ui/premium-badge"
 
 const FEATURED_LIMIT = 4
 
@@ -35,26 +37,31 @@ export function FeaturedSuppliers() {
   if (!loading && items.length === 0) return null
 
   return (
-    <section id="suppliers" className="bg-secondary/40 py-16">
+    <section id="suppliers" className="bg-gradient-to-b from-secondary/40 to-secondary/10 py-20 border-y border-border/30">
       <div className="mx-auto max-w-7xl px-4">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <PremiumBadge variant="gold" className="mb-2">
+            <Crown className="size-3.5 text-amber-500" />
+            {lang === "ar" ? "الموردون المعتمدون" : lang === "fr" ? "Fournisseurs Vérifiés" : "Verified Exporters"}
+          </PremiumBadge>
+          <h2 className="text-balance text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl mt-3">
             {t.suppliers.title}
           </h2>
           <p className="mt-2 text-muted-foreground">{t.suppliers.subtitle}</p>
         </div>
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {loading
             ? Array.from({ length: FEATURED_LIMIT }).map((_, i) => (
-                <div key={i} className="h-72 animate-pulse rounded-2xl border border-border bg-card" />
+                <div key={i} className="h-80 animate-pulse rounded-[32px] border border-border bg-card" />
               ))
             : items.map((s) => (
-                <div
+                <PremiumCard
                   key={s.id}
-                  className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                  hoverEffect="lift"
+                  className="group overflow-hidden border border-border/80 bg-background"
                 >
-                  <div className="relative h-32 overflow-hidden">
+                  <div className="relative h-36 overflow-hidden">
                     <Image
                       src="/images/supplier-factory.png"
                       alt={`${s.name} facility`}
@@ -63,45 +70,47 @@ export function FeaturedSuppliers() {
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     {s.verified && (
-                      <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-accent-foreground shadow">
-                        <Crown className="size-3" />
+                      <span className="absolute start-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-full bg-background/95 backdrop-blur-md px-3 py-1 text-xs font-bold text-amber-600 shadow-md border border-amber-500/10">
+                        <Crown className="size-3 text-amber-500 fill-amber-500" />
                         {t.suppliers.goldSupplier}
                       </span>
                     )}
                   </div>
 
-                  <div className="p-4">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="truncate font-semibold text-foreground">{s.name}</h3>
-                      {s.verified && <BadgeCheck className="size-4 shrink-0 text-primary" />}
-                    </div>
-                    <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-                      <MapPin className="size-3.5" />
-                      {dt.cities[s.cityKey]}, {dt.countries[s.country]}
-                    </p>
-                    <p className="mt-2 inline-block rounded-md bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
-                      {dt.categories[s.categories[0]]}
-                    </p>
-
-                    <div className="mt-4 grid grid-cols-2 gap-2 border-t border-border pt-3 text-center">
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{s.responseRate}%</p>
-                        <p className="text-[11px] text-muted-foreground">{t.suppliers.responseRate}</p>
+                  <div className="p-5 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="truncate font-bold text-foreground text-base group-hover:text-primary transition-colors">{s.name}</h3>
+                        {s.verified && <BadgeCheck className="size-4 shrink-0 text-primary" />}
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{s.years}</p>
-                        <p className="text-[11px] text-muted-foreground">{t.suppliers.yearsLabel}</p>
-                      </div>
+                      <p className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground font-medium">
+                        <MapPin className="size-3.5 text-primary" />
+                        {dt.cities[s.cityKey]}, {dt.countries[s.country]}
+                      </p>
+                      <span className="mt-3 inline-block rounded-full bg-secondary px-3 py-0.5 text-[10px] font-bold text-secondary-foreground tracking-wide uppercase">
+                        {dt.categories[s.categories[0]]}
+                      </span>
                     </div>
 
-<Link href={`/suppliers/${s.id}`}>
-  <Button variant="outline" className="mt-4 w-full">
-    {t.suppliers.viewProfile}
-    <ArrowRight className="size-4 rtl:rotate-180" />
-  </Button>
-</Link>
+                    <div className="mt-5 grid grid-cols-2 gap-3 border-t border-border/60 pt-4 text-center">
+                      <div>
+                        <p className="text-base font-extrabold text-foreground">{s.responseRate}%</p>
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">{t.suppliers.responseRate}</p>
+                      </div>
+                      <div>
+                        <p className="text-base font-extrabold text-foreground">{s.years}</p>
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">{t.suppliers.yearsLabel}</p>
+                      </div>
+                    </div>
+
+                    <Link href={`/suppliers/${s.id}`} className="mt-5 block">
+                      <Button variant="outline" className="w-full rounded-xl border-border/80 font-bold hover:bg-secondary/40 text-xs">
+                        {t.suppliers.viewProfile}
+                        <ArrowRight className="size-3.5 rtl:rotate-180" />
+                      </Button>
+                    </Link>
                   </div>
-                </div>
+                </PremiumCard>
               ))}
         </div>
       </div>
