@@ -10,6 +10,7 @@ import {
   type Supplier,
 } from "@/lib/directory-data"
 import { directoryT } from "@/lib/directory-i18n"
+import { SITE_URL } from "@/lib/site"
 
 export type SupplierSort = "rating" | "products" | "years"
 export const SUPPLIER_SORTS: SupplierSort[] = ["rating", "products", "years"]
@@ -154,14 +155,16 @@ export function mapRow(row: SupplierRow): Supplier | null {
 export async function fetchSuppliers(options?: {
   sort?: SupplierSort
   limit?: number
+  cache?: RequestCache
 }): Promise<SuppliersResult> {
   const params = new URLSearchParams()
   if (options?.sort) params.set("sort", options.sort)
   if (options?.limit) params.set("limit", String(options.limit))
   const qs = params.toString()
 
+  const baseUrl = typeof window === "undefined" ? SITE_URL : ""
   try {
-    const res = await fetch(`/api/suppliers${qs ? `?${qs}` : ""}`, { cache: "no-store" })
+    const res = await fetch(`${baseUrl}/api/suppliers${qs ? `?${qs}` : ""}`, { cache: options?.cache ?? "no-store" })
     if (!res.ok) {
       console.error("[suppliers] /api/suppliers responded", res.status)
       return { suppliers: [], error: true }
