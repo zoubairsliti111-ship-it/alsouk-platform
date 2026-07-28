@@ -3,14 +3,12 @@
 import { LanguageProvider } from "@/components/language-provider"
 import { SiteHeader } from "@/components/site-header"
 import { HeroSection } from "@/components/hero-section"
-import { BusinessDiscovery } from "@/components/business-discovery"
+import { OpportunitiesSection } from "@/components/opportunities-section"
 import { CategoriesSection } from "@/components/categories-section"
 import { FeaturedSuppliers } from "@/components/featured-suppliers"
 import { FeaturedProducts } from "@/components/featured-products"
+import { BusinessDiscovery } from "@/components/business-discovery"
 import { RfqSection } from "@/components/rfq-section"
-import { WhyChoose } from "@/components/why-choose"
-import { TestimonialsSection } from "@/components/testimonials-section"
-import { ExportTunisia } from "@/components/export-tunisia"
 import { SiteFooter } from "@/components/site-footer"
 import { AssistantWidget } from "@/components/ai/assistant-widget"
 
@@ -21,35 +19,29 @@ export default function HomePage() {
         <SiteHeader />
 
         <main className="flex-1">
-          {/* 1. Premium Hero Section */}
+          {/* 1. Search Bar (HeroSection) */}
           <HeroSection />
 
-          {/* 2. Business Discovery (Manufacturing Videos, Factory Tours, Product Demos) */}
-          <BusinessDiscovery />
+          {/* 2. Today's Opportunities */}
+          <OpportunitiesSection />
 
-          {/* 3. Popular Industries */}
+          {/* 3. Categories */}
           <CategoriesSection />
 
-          {/* 4. Featured Manufacturers */}
+          {/* 4. Featured Suppliers */}
           <FeaturedSuppliers />
 
-          {/* 5. Trending Products */}
+          {/* 5. Featured Products */}
           <FeaturedProducts />
 
-          {/* 6. RFQ Section */}
+          {/* 6. Live Streams (Business Discovery) */}
+          <BusinessDiscovery />
+
+          {/* 7. RFQ Section */}
           <RfqSection />
-
-          {/* 7. Why ALSOUK */}
-          <WhyChoose />
-
-          {/* 8. Testimonials */}
-          <TestimonialsSection />
-
-          {/* 9. Export Tunisia Section */}
-          <ExportTunisia />
         </main>
 
-        {/* 10. Premium Footer */}
+        {/* Premium Footer */}
         <SiteFooter />
 
         {/* Pluggable AI Assistant widget */}
