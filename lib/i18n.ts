@@ -197,6 +197,34 @@ type Dict = {
     disabledTitle: string
     disabledBody: string
   }
+  discovery: {
+    title: string
+    subtitle: string
+    tabs: {
+      all: string
+      factory: string
+      product: string
+      process: string
+    }
+    items: {
+      title: string
+      supplier: string
+      duration: string
+      views: string
+      category: string
+      type: "all" | "factory" | "product" | "process"
+    }[]
+  }
+  export: {
+    title: string
+    subtitle: string
+    items: {
+      title: string
+      desc: string
+      stat: string
+      statLabel: string
+    }[]
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -425,6 +453,34 @@ export const translations: Record<Lang, Dict> = {
       disabledTitle: "Assistant coming soon",
       disabledBody: "The AI assistant isn't enabled yet. Meanwhile, use search to find suppliers and products, or post an RFQ to get quotes.",
     },
+    discovery: {
+      title: "Live Sourcing & Factory Tours",
+      subtitle: "Step inside premium Tunisian manufacturing facilities and verify quality first-hand through curated B2B demonstrations.",
+      tabs: {
+        all: "All Features",
+        factory: "Factory Highlights",
+        product: "Product Demos",
+        process: "Process Tours"
+      },
+      items: [
+        { title: "Premium Extra Virgin Olive Oil Cold-Pressing Process", supplier: "Medina Olive Co.", duration: "2:45", views: "3.4k views", category: "Agri-Food", type: "process" },
+        { title: "Automated Circular Knitting & Yarn Spinning Facility Tour", supplier: "Carthage Textiles", duration: "3:15", views: "1.8k views", category: "Textiles", type: "factory" },
+        { title: "Artisanal Pottery Shaping & Hand-Painting Techniques", supplier: "Atlas Ceramics", duration: "1:50", views: "2.1k views", category: "Handicrafts", type: "product" },
+        { title: "High-Yield Date Sorting & Eco-Friendly Packaging Lines", supplier: "Sahara Dates Export", duration: "2:10", views: "1.2k views", category: "Agri-Food", type: "process" },
+        { title: "Automated Leather Cutting & Luxury Shoe Assembly Demonstration", supplier: "Kairouan Leather", duration: "3:40", views: "940 views", category: "Leather Goods", type: "product" },
+        { title: "Precision Metal Stamping & Welding Operations Tour", supplier: "Tunis Metalworks", duration: "4:05", views: "1.5k views", category: "Industrial", type: "factory" }
+      ]
+    },
+    export: {
+      title: "Tunisia's Strategic Export Advantage",
+      subtitle: "Source from a modern, world-class hub situated at the crossroads of Europe, Africa, and the Middle East.",
+      items: [
+        { title: "Unmatched Proximity", desc: "Located just 140km from southern Europe, facilitating extremely short shipping lead times.", stat: "1-3 Days", statLabel: "Transit to EU" },
+        { title: "Duty-Free Trade Agreements", desc: "Benefit from free trade agreements with the European Union, UK, and major African nations.", stat: "0%", statLabel: "Customs Tariffs" },
+        { title: "Skilled & Vetted Craftsmanship", desc: "Access a rich heritage of precision engineering, handcrafts, and high-quality food production.", stat: "100%", statLabel: "Vetted Standards" },
+        { title: "Modern Deep-Water Ports", desc: "Highly connected maritime network with world-class facilities and streamlined export processing.", stat: "7+", statLabel: "Active Commercial Ports" }
+      ]
+    },
   },
   fr: {
     nav: {
@@ -651,6 +707,34 @@ export const translations: Record<Lang, Dict> = {
       disabledTitle: "Assistant bientôt disponible",
       disabledBody: "L'assistant IA n'est pas encore activé. En attendant, utilisez la recherche pour trouver des fournisseurs et des produits, ou publiez une demande de devis.",
     },
+    discovery: {
+      title: "Sourcing en Direct & Visites d'Usines",
+      subtitle: "Entrez dans les usines tunisiennes de premier plan et vérifiez la qualité de fabrication via des démonstrations B2B exclusives.",
+      tabs: {
+        all: "Tout afficher",
+        factory: "Points forts de l'usine",
+        product: "Démos de produits",
+        process: "Visites des processus"
+      },
+      items: [
+        { title: "Processus de pressage à froid d'huile d'olive extra vierge", supplier: "Medina Olive Co.", duration: "2:45", views: "3.4k vues", category: "Agroalimentaire", type: "process" },
+        { title: "Visite de l'usine de tricotage circulaire et de filature", supplier: "Carthage Textiles", duration: "3:15", views: "1.8k vues", category: "Textiles", type: "factory" },
+        { title: "Techniques de façonnage et peinture manuelle de poteries", supplier: "Atlas Ceramics", duration: "1:50", views: "2.1k vues", category: "Artisanat", type: "product" },
+        { title: "Lignes de tri de dattes et emballage éco-responsable", supplier: "Sahara Dates Export", duration: "2:10", views: "1.2k vues", category: "Agroalimentaire", type: "process" },
+        { title: "Démo de découpe automatisée de cuir et assemblage de chaussures", supplier: "Kairouan Leather", duration: "3:40", views: "940 vues", category: "Maroquinerie", type: "product" },
+        { title: "Visite des opérations d'emboutissage et de soudage de précision", supplier: "Tunis Metalworks", duration: "4:05", views: "1.5k vues", category: "Industriel", type: "factory" }
+      ]
+    },
+    export: {
+      title: "L'avantage Stratégique à l'Export de la Tunisie",
+      subtitle: "Approvisionnez-vous auprès d'un pôle moderne idéalement situé au carrefour de l'Europe, de l'Afrique et du Moyen-Orient.",
+      items: [
+        { title: "Proximité Incomparable", desc: "Situé à seulement 140 km du sud de l'Europe, permettant des délais de livraison extrêmement courts.", stat: "1-3 Jours", statLabel: "Transit vers l'UE" },
+        { title: "Accords de Libre-Échange", desc: "Bénéficiez d'accords de libre-échange avec l'Union européenne, le Royaume-Uni et les pays d'Afrique.", stat: "0%", statLabel: "Tarifs Douaniers" },
+        { title: "Savoir-Faire Qualifié & Audité", desc: "Accédez à un riche patrimoine d'ingénierie, d'artisanat et de production alimentaire de qualité.", stat: "100%", statLabel: "Normes Vérifiées" },
+        { title: "Ports Commerciaux Modernes", desc: "Réseau maritime hautement connecté doté d'installations de classe mondiale pour simplifier l'export.", stat: "7+", statLabel: "Ports Commerciaux" }
+      ]
+    },
   },
   ar: {
     nav: {
@@ -876,6 +960,34 @@ export const translations: Record<Lang, Dict> = {
       error: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
       disabledTitle: "المساعد قريبًا",
       disabledBody: "مساعد الذكاء الاصطناعي غير مُفعّل بعد. في هذه الأثناء، استخدم البحث للعثور على الموردين والمنتجات، أو انشر طلب عرض سعر.",
+    },
+    discovery: {
+      title: "استكشاف الموردين وجولات المصانع المباشرة",
+      subtitle: "ادخل إلى أفضل مرافق التصنيع التونسية وتحقق من الجودة مباشرة عبر عروض فيديو حصرية لمشاهدة الإنتاج الفعلي.",
+      tabs: {
+        all: "كل العروض",
+        factory: "أبرز مزايا المصانع",
+        product: "عروض المنتجات",
+        process: "جولات خطوط الإنتاج"
+      },
+      items: [
+        { title: "عملية العصر البارد لزيت الزيتون البكر الممتاز", supplier: "شركة مدينة للزيتون", duration: "2:45", views: "3.4k مشاهدة", category: "الأغذية والزراعة", type: "process" },
+        { title: "جولة في مصنع الغزل والنسيج الدائري المؤتمت", supplier: "قرطاج للمنسوجات", duration: "3:15", views: "1.8k مشاهدة", category: "المنسوجات", type: "factory" },
+        { title: "تقنيات تشكيل وتلوين الخزف الفخاري يدوياً", supplier: "أطلس للخزف", duration: "1:50", views: "2.1k مشاهدة", category: "الحرف اليدوية", type: "product" },
+        { title: "خطوط فرز التمور وتغليفها الصديق للبيئة", supplier: "الصحراء لتصدير التمور", duration: "2:10", views: "1.2k مشاهدة", category: "الأغذية والزراعة", type: "process" },
+        { title: "استعراض لقص الجلد الآلي وتجميع الأحذية الفاخرة", supplier: "القيروان للجلود", duration: "3:40", views: "940 مشاهدة", category: "المنتجات الجلدية", type: "product" },
+        { title: "جولة في عمليات كبس المعادن واللحام عالية الدقة", supplier: "تونس للأشغال المعدنية", duration: "4:05", views: "1.5k مشاهدة", category: "صناعي", type: "factory" }
+      ]
+    },
+    export: {
+      title: "ميزة التصدير الاستراتيجية لتونس",
+      subtitle: "استورد من مركز تصنيع حديث ذي مستوى عالمي يقع في مفترق الطرق بين أوروبا وأفريقيا والشرق الأوسط.",
+      items: [
+        { title: "قرب جغرافي لا مثيل له", desc: "تقع تونس على بعد 140 كم فقط من جنوب أوروبا، مما يضمن أوقات شحن قياسية وقصيرة للغاية.", stat: "1-3 أيام", statLabel: "العبور إلى أوروبا" },
+        { title: "اتفاقيات التجارة الحرة", desc: "استفد من الإعفاء الجمركي الكامل بفضل اتفاقيات الشراكة مع الاتحاد الأوروبي والمملكة المتحدة وأفريقيا.", stat: "0%", statLabel: "التعريفات الجمركية" },
+        { title: "مهارة يدوية معتمدة وعريقة", desc: "وصول إلى إرث غني من الدقة الهندسية والحرف الفنية والأغذية الزراعية الفاخرة المعتمدة دولياً.", stat: "100%", statLabel: "معايير موثقة" },
+        { title: "موانئ تجارية حديثة", desc: "شبكة نقل بحري متكاملة مع بنية تحتية وموانئ تجارية مجهزة لتسريع إجراءات التصدير.", stat: "7+ موانئ", statLabel: "نشطة للتصدير" }
+      ]
     },
   },
 }
