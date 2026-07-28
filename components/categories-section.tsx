@@ -12,17 +12,22 @@ import {
   FlaskConical,
 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
+import { PremiumCard } from "@/components/ui/premium-card"
+import { PremiumBadge } from "@/components/ui/premium-badge"
 
 const ICONS = [Wheat, Shirt, Cog, Building2, Palette, Sparkles, Footprints, FlaskConical]
 
 export function CategoriesSection() {
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
 
   return (
-    <section id="categories" className="mx-auto max-w-7xl px-4 py-16">
+    <section id="categories" className="mx-auto max-w-7xl px-4 py-20">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <PremiumBadge variant="primary" className="mb-2">
+            {lang === "ar" ? "الفئات الرئيسية" : lang === "fr" ? "Catégories Principales" : "Key Sectors"}
+          </PremiumBadge>
+          <h2 className="text-balance text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
             {t.categories.title}
           </h2>
           <p className="mt-2 max-w-xl text-muted-foreground">{t.categories.subtitle}</p>
@@ -36,25 +41,30 @@ export function CategoriesSection() {
         </a>
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="mt-10 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
         {t.categories.items.map((cat, i) => {
           const Icon = ICONS[i % ICONS.length]
           return (
-            <a
+            <PremiumCard
               key={cat.name}
-              href="#products"
-              className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+              hoverEffect="lift"
+              className="overflow-hidden border border-border/80"
             >
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                <Icon className="size-6" />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate font-semibold text-foreground">{cat.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {cat.count} {t.categories.suppliersLabel}
-                </p>
-              </div>
-            </a>
+              <a
+                href="#products"
+                className="group flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 h-full"
+              >
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-secondary text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary group-hover:text-primary-foreground">
+                  <Icon className="size-6" />
+                </span>
+                <div className="min-w-0 mt-2 sm:mt-0">
+                  <p className="truncate font-bold text-foreground text-base group-hover:text-primary transition-colors">{cat.name}</p>
+                  <p className="text-xs font-medium text-muted-foreground mt-0.5">
+                    {cat.count} {t.categories.suppliersLabel}
+                  </p>
+                </div>
+              </a>
+            </PremiumCard>
           )
         })}
       </div>
