@@ -24,7 +24,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getCompanies().catch(() => []),
     getCategories().catch(() => []),
     getProducts().catch(() => []),
-    fetchSuppliers({ limit: 1000 })
+    fetchSuppliers({ limit: 1000, cache: "force-cache" })
       .then((r) => r.suppliers)
       .catch(() => []),
   ])
