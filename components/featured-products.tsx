@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, Store } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 
 const IMAGES = [
@@ -40,9 +40,9 @@ export function FeaturedProducts() {
         {t.products.items.map((p, i) => (
           <div
             key={p.name}
-            className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+            className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl"
           >
-            <div className="relative aspect-[4/3] w-full overflow-hidden bg-secondary">
+            <Link href="/products" className="relative aspect-[4/3] w-full overflow-hidden bg-secondary">
               <Image
                 src={IMAGES[i % IMAGES.length] || "/placeholder.svg"}
                 alt={p.name}
@@ -50,9 +50,14 @@ export function FeaturedProducts() {
                 sizes="(max-width: 768px) 50vw, 25vw"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
-            </div>
+              <span className="absolute end-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold text-foreground shadow-sm backdrop-blur">
+                {t.products.moq}: {p.moq}
+              </span>
+            </Link>
             <div className="flex flex-1 flex-col p-4">
-              <h3 className="font-semibold text-foreground">{p.name}</h3>
+              <Link href="/products" className="font-semibold text-foreground hover:text-primary">
+                {p.name}
+              </Link>
               <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                 <Store className="size-3.5" />
                 {p.supplier}
@@ -64,13 +69,15 @@ export function FeaturedProducts() {
                   <span className="text-xs font-normal text-muted-foreground"> {t.products.perUnit}</span>
                 </p>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t.products.moq}: <span className="font-medium text-foreground">{p.moq}</span>
-              </p>
 
-              <Button className="mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90">
+              <Link
+                href="/rfq"
+                className={buttonVariants({
+                  className: "mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90",
+                })}
+              >
                 {t.products.inquire}
-              </Button>
+              </Link>
             </div>
           </div>
         ))}

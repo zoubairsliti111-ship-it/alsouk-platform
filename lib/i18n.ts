@@ -197,6 +197,23 @@ type Dict = {
     disabledTitle: string
     disabledBody: string
   }
+  home: {
+    liveTag: string
+    activityTitle: string
+    activitySubtitle: string
+    listed: string
+    joined: string
+    opportunitiesTag: string
+    opportunitiesTitle: string
+    opportunitiesSubtitle: string
+    buyerIn: string
+    sourcing: string
+    quoteNow: string
+    browseSuppliers: string
+    browseProducts: string
+    exploreCta: string
+    locations: string[]
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -425,6 +442,23 @@ export const translations: Record<Lang, Dict> = {
       disabledTitle: "Assistant coming soon",
       disabledBody: "The AI assistant isn't enabled yet. Meanwhile, use search to find suppliers and products, or post an RFQ to get quotes.",
     },
+    home: {
+      liveTag: "Live",
+      activityTitle: "Live marketplace activity",
+      activitySubtitle: "Verified suppliers and buyers trading across the region right now.",
+      listed: "listed new products",
+      joined: "is now a verified supplier",
+      opportunitiesTag: "Open buying requests",
+      opportunitiesTitle: "Business opportunities",
+      opportunitiesSubtitle: "Buyers are sourcing these products now — send your quote and win the order.",
+      buyerIn: "Buyer in",
+      sourcing: "is sourcing",
+      quoteNow: "Quote now",
+      browseSuppliers: "Browse all suppliers",
+      browseProducts: "Browse all products",
+      exploreCta: "Explore the marketplace",
+      locations: ["Tunis", "Sfax", "Casablanca", "Algiers", "Cairo", "Tripoli"],
+    },
   },
   fr: {
     nav: {
@@ -651,6 +685,23 @@ export const translations: Record<Lang, Dict> = {
       disabledTitle: "Assistant bientôt disponible",
       disabledBody: "L'assistant IA n'est pas encore activé. En attendant, utilisez la recherche pour trouver des fournisseurs et des produits, ou publiez une demande de devis.",
     },
+    home: {
+      liveTag: "En direct",
+      activityTitle: "Activité en direct de la marketplace",
+      activitySubtitle: "Fournisseurs vérifiés et acheteurs qui commercent dans la région en ce moment.",
+      listed: "a publié de nouveaux produits",
+      joined: "est désormais un fournisseur vérifié",
+      opportunitiesTag: "Demandes d'achat ouvertes",
+      opportunitiesTitle: "Opportunités d'affaires",
+      opportunitiesSubtitle: "Des acheteurs sourcent ces produits maintenant — envoyez votre devis et remportez la commande.",
+      buyerIn: "Acheteur à",
+      sourcing: "recherche",
+      quoteNow: "Devis maintenant",
+      browseSuppliers: "Voir tous les fournisseurs",
+      browseProducts: "Voir tous les produits",
+      exploreCta: "Explorer la marketplace",
+      locations: ["Tunis", "Sfax", "Casablanca", "Alger", "Le Caire", "Tripoli"],
+    },
   },
   ar: {
     nav: {
@@ -876,6 +927,23 @@ export const translations: Record<Lang, Dict> = {
       error: "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
       disabledTitle: "المساعد قريبًا",
       disabledBody: "مساعد الذكاء الاصطناعي غير مُفعّل بعد. في هذه الأثناء، استخدم البحث للعثور على الموردين والمنتجات، أو انشر طلب عرض سعر.",
+    },
+    home: {
+      liveTag: "مباشر",
+      activityTitle: "نشاط السوق المباشر",
+      activitySubtitle: "موردون موثّقون ومشترون يتاجرون في المنطقة الآن.",
+      listed: "أضاف منتجات جديدة",
+      joined: "أصبح الآن مورّداً موثّقاً",
+      opportunitiesTag: "طلبات شراء مفتوحة",
+      opportunitiesTitle: "فرص تجارية",
+      opportunitiesSubtitle: "يبحث المشترون عن هذه المنتجات الآن — أرسل عرضك واربح الطلب.",
+      buyerIn: "مشترٍ في",
+      sourcing: "يبحث عن",
+      quoteNow: "قدّم عرضاً",
+      browseSuppliers: "تصفّح كل الموردين",
+      browseProducts: "تصفّح كل المنتجات",
+      exploreCta: "استكشف السوق",
+      locations: ["تونس", "صفاقس", "الدار البيضاء", "الجزائر", "القاهرة", "طرابلس"],
     },
   },
 }
