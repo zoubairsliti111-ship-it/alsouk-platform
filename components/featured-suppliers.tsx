@@ -4,7 +4,7 @@ import Image from "next/image"
 
 import { useEffect, useState } from "react"
 import { BadgeCheck, Crown, MapPin, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { fetchSuppliers } from "@/lib/supabase/suppliers-service"
@@ -38,7 +38,11 @@ export function FeaturedSuppliers() {
     <section id="suppliers" className="bg-secondary/40 py-16">
       <div className="mx-auto max-w-7xl px-4">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            <BadgeCheck className="size-3.5" />
+            {t.suppliers.verified}
+          </span>
+          <h2 className="mt-3 text-balance text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             {t.suppliers.title}
           </h2>
           <p className="mt-2 text-muted-foreground">{t.suppliers.subtitle}</p>
@@ -94,16 +98,29 @@ export function FeaturedSuppliers() {
                       </div>
                     </div>
 
-<Link href={`/suppliers/${s.id}`}>
-  <Button variant="outline" className="mt-4 w-full">
-    {t.suppliers.viewProfile}
-    <ArrowRight className="size-4 rtl:rotate-180" />
-  </Button>
-</Link>
+                    <Link
+                      href={`/suppliers/${s.id}`}
+                      className={buttonVariants({ variant: "outline", className: "mt-4 w-full" })}
+                    >
+                      {t.suppliers.viewProfile}
+                      <ArrowRight className="size-4 rtl:rotate-180" />
+                    </Link>
                   </div>
                 </div>
               ))}
         </div>
+
+        {!loading && (
+          <div className="mt-10 flex justify-center">
+            <Link
+              href="/suppliers"
+              className={buttonVariants({ variant: "outline", size: "lg", className: "bg-background" })}
+            >
+              {t.home.browseSuppliers}
+              <ArrowRight className="size-4 rtl:rotate-180" />
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   )

@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
   ArrowRight,
   Wheat,
@@ -27,34 +28,38 @@ export function CategoriesSection() {
           </h2>
           <p className="mt-2 max-w-xl text-muted-foreground">{t.categories.subtitle}</p>
         </div>
-        <a
-          href="#"
+        <Link
+          href="/categories"
           className="group inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
         >
           {t.categories.viewAll}
           <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" />
-        </a>
+        </Link>
       </div>
 
       <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {t.categories.items.map((cat, i) => {
           const Icon = ICONS[i % ICONS.length]
           return (
-            <a
+            <Link
               key={cat.name}
-              href="#products"
-              className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+              href="/categories"
+              className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
             >
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -end-6 -top-6 size-16 rounded-full bg-primary/5 transition-transform duration-300 group-hover:scale-150"
+              />
+              <span className="relative flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <Icon className="size-6" />
               </span>
-              <div className="min-w-0">
+              <div className="relative min-w-0">
                 <p className="truncate font-semibold text-foreground">{cat.name}</p>
                 <p className="text-sm text-muted-foreground">
                   {cat.count} {t.categories.suppliersLabel}
                 </p>
               </div>
-            </a>
+            </Link>
           )
         })}
       </div>
