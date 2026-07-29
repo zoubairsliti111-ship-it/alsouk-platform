@@ -5,10 +5,10 @@
 ▲ Next.js 16.2.6 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 582ms
+✓ Ready in 922ms
 
 ○ Compiling / ...
- HEAD / 200 in 4.2s (next.js: 3.8s, application-code: 388ms)
- GET / 200 in 199ms (next.js: 11ms, application-code: 189ms)
+ HEAD / 200 in 4.7s (next.js: 4.3s, application-code: 403ms)
+ GET / 200 in 215ms (next.js: 11ms, application-code: 204ms)
 [browser] Image with src "/images/product-oliveoil.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
 Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
