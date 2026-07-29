@@ -18,9 +18,9 @@ export function LiveActivity() {
   const loop = [...items, ...items]
 
   return (
-    <section aria-label={t.home.activityTitle} className="border-y border-border bg-secondary/40">
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
-        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
+    <section aria-label={t.home.activityTitle} className="border-y border-border/60 bg-secondary/30">
+      <div className="mx-auto flex max-w-7xl items-center gap-4 px-6 py-3.5">
+        <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-accent/8 px-3 py-1.5 text-xs font-bold text-accent shadow-sm border border-accent/10">
           <span className="relative flex size-2">
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-75" />
             <span className="relative inline-flex size-2 rounded-full bg-accent" />
@@ -28,11 +28,11 @@ export function LiveActivity() {
           {t.home.liveTag}
         </span>
 
-        <div className="relative flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
-          <ul className="flex w-max items-center gap-8 whitespace-nowrap will-change-transform animate-[alsouk-marquee_36s_linear_infinite] motion-reduce:animate-none">
+        <div className="relative flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+          <ul className="flex w-max items-center gap-10 whitespace-nowrap will-change-transform animate-[alsouk-marquee_40s_linear_infinite] motion-reduce:animate-none">
             {loop.map((it, i) => (
-              <li key={i} className="flex items-center gap-2 text-sm text-foreground/75">
-                <Activity className="size-3.5 shrink-0 text-primary/70" />
+              <li key={i} className="flex items-center gap-2.5 text-sm font-semibold text-foreground/80 hover:text-primary transition-colors">
+                <Activity className="size-4 shrink-0 text-primary/80" />
                 {it.text}
               </li>
             ))}
