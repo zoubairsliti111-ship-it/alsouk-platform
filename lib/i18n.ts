@@ -307,6 +307,16 @@ type Dict = {
     browseProducts: string
     backHome: string
   }
+  discover: {
+    title: string
+    subtitle: string
+    viewProduct: string
+    visitSupplier: string
+    sendRfq: string
+    contact: string
+    save: string
+    saved: string
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -688,6 +698,16 @@ export const translations: Record<Lang, Dict> = {
       browseProducts: "Browse products",
       backHome: "Back to home",
     },
+    discover: {
+      title: "Discover",
+      subtitle: "Short business videos from verified suppliers",
+      viewProduct: "View product",
+      visitSupplier: "Visit supplier",
+      sendRfq: "Send RFQ",
+      contact: "Contact",
+      save: "Save",
+      saved: "Saved",
+    },
   },
   fr: {
     nav: {
@@ -1067,6 +1087,16 @@ export const translations: Record<Lang, Dict> = {
       browseProducts: "Parcourir les produits",
       backHome: "Retour à l'accueil",
     },
+    discover: {
+      title: "Découvrir",
+      subtitle: "Courtes vidéos d'affaires de fournisseurs vérifiés",
+      viewProduct: "Voir le produit",
+      visitSupplier: "Voir le fournisseur",
+      sendRfq: "Envoyer un devis",
+      contact: "Contacter",
+      save: "Enregistrer",
+      saved: "Enregistré",
+    },
   },
   ar: {
     nav: {
@@ -1445,6 +1475,16 @@ export const translations: Record<Lang, Dict> = {
       accountBody: "أدر ملف شركتك والمورّدين المحفوظين وطلباتك من هنا. الحسابات قادمة قريباً — واصل البحث عن المنتجات في هذه الأثناء.",
       browseProducts: "تصفح المنتجات",
       backHome: "العودة إلى الرئيسية",
+    },
+    discover: {
+      title: "اكتشف",
+      subtitle: "مقاطع فيديو تجارية قصيرة من موردين موثوقين",
+      viewProduct: "عرض المنتج",
+      visitSupplier: "زيارة المورّد",
+      sendRfq: "إرسال طلب عرض سعر",
+      contact: "تواصل",
+      save: "حفظ",
+      saved: "محفوظ",
     },
   },
 }
