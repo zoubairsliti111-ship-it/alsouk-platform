@@ -6,6 +6,7 @@ import { LanguageProvider, useLanguage } from "@/components/language-provider"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { AssistantWidget } from "@/components/ai/assistant-widget"
+import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 
 /** Page wrapper: language context + shared header/footer chrome. */
 export function MarketplaceShell({ children }: { children: React.ReactNode }) {
@@ -13,9 +14,10 @@ export function MarketplaceShell({ children }: { children: React.ReactNode }) {
     <LanguageProvider>
       <div className="flex min-h-screen flex-col bg-background">
         <SiteHeader />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 pb-16 lg:pb-0">{children}</main>
         <SiteFooter />
         <AssistantWidget />
+        <MobileBottomNav />
       </div>
     </LanguageProvider>
   )

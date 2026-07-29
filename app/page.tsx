@@ -16,13 +16,14 @@ import { RfqSection } from "@/components/rfq-section"
 import { AiCta } from "@/components/home/ai-cta"
 import { SiteFooter } from "@/components/site-footer"
 import { AssistantWidget } from "@/components/ai/assistant-widget"
+import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 
 export default function HomePage() {
   return (
     <LanguageProvider>
       <div className="flex min-h-screen flex-col bg-background">
         <SiteHeader />
-        <main className="flex-1">
+        <main className="flex-1 pb-16 lg:pb-0">
           <HeroSection />
           <LiveActivity />
           <CategoriesSection />
@@ -38,6 +39,7 @@ export default function HomePage() {
         </main>
         <SiteFooter />
         <AssistantWidget />
+        <MobileBottomNav />
       </div>
     </LanguageProvider>
   )

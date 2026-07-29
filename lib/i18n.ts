@@ -291,6 +291,15 @@ type Dict = {
     messages: string
     account: string
   }
+  soon: {
+    badge: string
+    messagesTitle: string
+    messagesBody: string
+    accountTitle: string
+    accountBody: string
+    browseProducts: string
+    backHome: string
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -656,6 +665,15 @@ export const translations: Record<Lang, Dict> = {
       messages: "Messages",
       account: "Account",
     },
+    soon: {
+      badge: "Coming soon",
+      messagesTitle: "Messages",
+      messagesBody: "Chat directly with suppliers about quotes and orders. Messaging is on the way — for now, send a request and suppliers will reply to you.",
+      accountTitle: "Your account",
+      accountBody: "Manage your company profile, saved suppliers and requests here. Accounts are coming soon — keep sourcing in the meantime.",
+      browseProducts: "Browse products",
+      backHome: "Back to home",
+    },
   },
   fr: {
     nav: {
@@ -1019,6 +1037,15 @@ export const translations: Record<Lang, Dict> = {
       messages: "Messages",
       account: "Compte",
     },
+    soon: {
+      badge: "Bientôt disponible",
+      messagesTitle: "Messages",
+      messagesBody: "Discutez directement avec les fournisseurs de vos devis et commandes. La messagerie arrive bientôt — envoyez une demande et les fournisseurs vous répondront.",
+      accountTitle: "Votre compte",
+      accountBody: "Gérez votre profil d'entreprise, vos fournisseurs enregistrés et vos demandes ici. Les comptes arrivent bientôt — continuez votre sourcing en attendant.",
+      browseProducts: "Parcourir les produits",
+      backHome: "Retour à l'accueil",
+    },
   },
   ar: {
     nav: {
@@ -1381,6 +1408,15 @@ export const translations: Record<Lang, Dict> = {
       categories: "الفئات",
       messages: "الرسائل",
       account: "الحساب",
+    },
+    soon: {
+      badge: "قريباً",
+      messagesTitle: "الرسائل",
+      messagesBody: "تواصل مباشرة مع المورّدين حول عروض الأسعار والطلبات. المراسلة قادمة قريباً — أرسل طلبك وسيرد عليك المورّدون.",
+      accountTitle: "حسابك",
+      accountBody: "أدر ملف شركتك والمورّدين المحفوظين وطلباتك من هنا. الحسابات قادمة قريباً — واصل البحث عن المنتجات في هذه الأثناء.",
+      browseProducts: "تصفح المنتجات",
+      backHome: "العودة إلى الرئيسية",
     },
   },
 }
