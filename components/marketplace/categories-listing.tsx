@@ -1,12 +1,61 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
-import { Layers, Tag } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 import { fetchCategories } from "@/lib/services/categories-client"
 import type { Category } from "@/lib/domains/category/types"
-import { Breadcrumbs, CardGridSkeleton, ListingHeader, MessageState } from "@/components/marketplace/shell"
+import { Breadcrumbs, CardGridSkeleton, ListingHeader } from "@/components/marketplace/shell"
+
+const CATEGORY_IMAGES = [
+  "/images/product-oliveoil.png",
+  "/images/product-textiles.png",
+  "/images/product-machinery.png",
+  "/images/supplier-factory.png",
+  "/images/product-ceramics.png",
+  "/images/product-leather.png",
+  "/images/product-dates.png",
+  "/images/hero-trade.png",
+]
+
+function PremiumCard({
+  href,
+  image,
+  name,
+  meta,
+}: {
+  href: string
+  image: string
+  name: string
+  meta?: string
+}) {
+  return (
+    <Link
+      href={href}
+      className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl border border-border bg-secondary shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg sm:aspect-[3/2]"
+    >
+      <Image
+        src={image}
+        alt={name}
+        fill
+        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        className="object-cover transition-transform duration-500 group-hover:scale-105"
+      />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+      <div className="relative p-4 text-white">
+        <h3 className="text-base font-bold leading-tight sm:text-lg">{name}</h3>
+        {meta && (
+          <p className="mt-1 flex items-center gap-1 text-xs text-white/85">
+            {meta}
+            <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5 rtl:rotate-180" />
+          </p>
+        )}
+      </div>
+    </Link>
+  )
+}
 
 export function CategoriesListing() {
   const { t } = useLanguage()
@@ -26,7 +75,6 @@ export function CategoriesListing() {
     }
   }, [])
 
-  // Top-level categories only; children surface on the detail page.
   const topLevel = categories.filter((c) => !c.parentId)
   const childCount = (id: string) => categories.filter((c) => c.parentId === id).length
 
@@ -37,37 +85,33 @@ export function CategoriesListing() {
         <ListingHeader title={m.title} subtitle={m.subtitle} />
         {status === "loading" ? (
           <CardGridSkeleton />
-        ) : topLevel.length === 0 ? (
-          <MessageState icon={<Layers className="size-7" />} title={m.empty} />
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {topLevel.map((cat) => {
+        ) : topLevel.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+            {topLevel.map((cat, i) => {
               const kids = childCount(cat.id)
               return (
-                <Link
+                <PremiumCard
                   key={cat.id}
                   href={`/categories/${cat.slug}`}
-                  className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-                >
-                  <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                    <Tag className="size-6" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate font-semibold text-foreground">{cat.name}</span>
-                    {cat.description && (
-                      <span className="mt-0.5 line-clamp-2 block text-sm text-muted-foreground">
-                        {cat.description}
-                      </span>
-                    )}
-                    {kids > 0 && (
-                      <span className="mt-1 block text-xs text-muted-foreground">
-                        {kids} {m.subcategories}
-                      </span>
-                    )}
-                  </span>
-                </Link>
+                  image={CATEGORY_IMAGES[i % CATEGORY_IMAGES.length] ?? CATEGORY_IMAGES[0]}
+                  name={cat.name}
+                  meta={kids > 0 ? `${kids} ${m.subcategories}` : undefined}
+                />
               )
             })}
+          </div>
+        ) : (
+          // Presentation fallback so browsing feels alive before live categories are seeded.
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+            {t.categories.items.map((cat, i) => (
+              <PremiumCard
+                key={cat.name}
+                href="/products"
+                image={CATEGORY_IMAGES[i % CATEGORY_IMAGES.length] ?? CATEGORY_IMAGES[0]}
+                name={cat.name}
+                meta={`${cat.count} ${t.categories.suppliersLabel}`}
+              />
+            ))}
           </div>
         )}
       </div>
