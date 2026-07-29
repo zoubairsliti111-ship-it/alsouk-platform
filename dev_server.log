@@ -5,10 +5,11 @@
 ▲ Next.js 16.2.6 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 582ms
+✓ Ready in 518ms
 
 ○ Compiling / ...
- HEAD / 200 in 4.2s (next.js: 3.8s, application-code: 388ms)
- GET / 200 in 199ms (next.js: 11ms, application-code: 189ms)
+ GET / 200 in 4.9s (next.js: 4.2s, application-code: 637ms)
 [browser] Image with src "/images/product-oliveoil.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
 Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+ GET /register 200 in 766ms (next.js: 627ms, application-code: 138ms)
+ GET /supplier/dashboard?data=%7B%22fullName%22%3A%22Noureddine+El+Sfaxi%22%2C%22email%22%3A%22noureddine%40carthageoliveoil.tn%22%2C%22phone%22%3A%22%2B216+98+456+123%22%2C%22password%22%3A%22password123%22%2C%22confirmPassword%22%3A%22password123%22%2C%22companyName%22%3A%22Carthage+Olive+Oil+Co.%22%2C%22businessType%22%3A%22Exporter%22%2C%22country%22%3A%22Tunisia%22%2C%22governorate%22%3A%22Sfax%22%2C%22city%22%3A%22Sfax+Industrial+Zone%22%2C%22businessAddress%22%3A%22Route+de+Gab%C3%A8s+Km+4%2C+Sfax%2C+3000%22%2C%22website%22%3A%22https%3A%2F%2Fwww.carthageoliveoil.tn%22%2C%22businessDescription%22%3A%22Premium+extra+virgin+Tunisian+olive+oil+producer+with+fully+automated+cold-press+facilities%2C+exporting+globally.%22%2C%22storeLogo%22%3A%22%2Fimages%2Fproduct-textiles.png%22%2C%22coverImage%22%3A%22%2Fimages%2Fproduct-dates.png%22%2C%22storeName%22%3A%22Carthage+Olive+Oil+Co.%22%2C%22storeUrl%22%3A%22carthage-olive-oil-co%22%2C%22storeDescription%22%3A%22Direct+factory+store+for+award-winning+extra+virgin+olive+oils%2C+organic+blends%2C+and+bulk+packaging+options.%22%2C%22profilePhoto%22%3A%22%2Fimages%2Fproduct-ceramics.png%22%2C%22ownerName%22%3A%22Noureddine+El+Sfaxi%22%2C%22position%22%3A%22Managing+Director%22%2C%22shortBio%22%3A%223rd+generation+olive+mill+master%2C+dedicated+to+showcasing+premium+Tunisian+agricultural+products+to+the+world.%22%2C%22businessPhone%22%3A%22%2B216+74+200+400%22%2C%22businessEmail%22%3A%22sales%40carthageoliveoil.tn%22%2C%22facebook%22%3A%22https%3A%2F%2Ffacebook.com%2Fcarthageoliveoil%22%2C%22linkedin%22%3A%22https%3A%2F%2Flinkedin.com%2Fcompany%2Fcarthageoliveoil%22%2C%22instagram%22%3A%22carthage.oils%22%2C%22tiktok%22%3A%22carthage.oils%22%7D 200 in 735ms (next.js: 668ms, application-code: 67ms)

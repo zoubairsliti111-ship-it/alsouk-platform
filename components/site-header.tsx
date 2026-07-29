@@ -151,9 +151,11 @@ export function SiteHeader() {
             <User className="size-4" />
             {t.nav.signIn}
           </Button>
-          <Button className="hidden bg-primary text-primary-foreground hover:bg-primary/90 sm:inline-flex">
-            {t.nav.joinFree}
-          </Button>
+          <Link href="/register">
+            <Button className="hidden bg-primary text-primary-foreground hover:bg-primary/90 sm:inline-flex">
+              {t.nav.joinFree}
+            </Button>
+          </Link>
 
           <button
             className="rounded-lg p-2 text-foreground lg:hidden"
@@ -197,9 +199,11 @@ export function SiteHeader() {
                   <User className="size-4" />
                   {t.nav.signIn}
                 </Button>
-                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  {t.nav.joinFree}
-                </Button>
+                <Link href="/register" onClick={() => setMobileOpen(false)}>
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    {t.nav.joinFree}
+                  </Button>
+                </Link>
               </div>
             </div>
           </nav>
