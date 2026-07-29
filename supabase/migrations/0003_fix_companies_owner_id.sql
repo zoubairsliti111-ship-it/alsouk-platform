@@ -1,0 +1,5 @@
+ALTER TABLE public.companies
+ADD COLUMN IF NOT EXISTS owner_id uuid REFERENCES auth.users(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS companies_owner_id_idx
+ON public.companies(owner_id);
