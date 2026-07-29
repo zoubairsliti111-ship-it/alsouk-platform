@@ -58,6 +58,41 @@ create table if not exists public.companies (
   updated_at   timestamptz not null default now()
 );
 
+-- Ensure columns exist if public.companies table already existed before this migration was run
+alter table public.companies add column if not exists owner_id uuid references auth.users (id) on delete set null;
+alter table public.companies add column if not exists supplier_id uuid references public.suppliers (id) on delete set null;
+alter table public.companies add column if not exists name text;
+alter table public.companies add column if not exists slug text;
+alter table public.companies add column if not exists description text;
+alter table public.companies add column if not exists country text;
+alter table public.companies add column if not exists city text;
+alter table public.companies add column if not exists website text;
+alter table public.companies add column if not exists logo_url text;
+alter table public.companies add column if not exists verified boolean not null default false;
+alter table public.companies add column if not exists created_at timestamptz not null default now();
+alter table public.companies add column if not exists updated_at timestamptz not null default now();
+
+-- Ensure non-null constraints and defaults are set correctly
+alter table public.companies alter column name set not null;
+alter table public.companies alter column slug set not null;
+alter table public.companies alter column verified set default false;
+alter table public.companies alter column verified set not null;
+alter table public.companies alter column created_at set default now();
+alter table public.companies alter column created_at set not null;
+alter table public.companies alter column updated_at set default now();
+alter table public.companies alter column updated_at set not null;
+
+-- Ensure slug uniqueness constraint exists
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'companies_slug_key'
+  ) then
+    alter table public.companies add constraint companies_slug_key unique (slug);
+  end if;
+end;
+$$;
+
 create index if not exists companies_owner_id_idx on public.companies (owner_id);
 create index if not exists companies_supplier_id_idx on public.companies (supplier_id);
 create index if not exists companies_verified_idx on public.companies (verified);
