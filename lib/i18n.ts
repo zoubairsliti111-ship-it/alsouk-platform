@@ -185,6 +185,13 @@ type Dict = {
       notFound: string
       notFoundDesc: string
       back: string
+      specifications: string
+      relatedProducts: string
+      requestQuote: string
+      save: string
+      saved: string
+      visitStore: string
+      stock: string
     }
   }
   search: {
@@ -545,6 +552,13 @@ export const translations: Record<Lang, Dict> = {
         notFound: "Product not found",
         notFoundDesc: "This product doesn't exist or is no longer available.",
         back: "Back to products",
+        specifications: "Specifications",
+        relatedProducts: "Related products",
+        requestQuote: "Request Quote",
+        save: "Save",
+        saved: "Saved",
+        visitStore: "Visit store",
+        stock: "Availability",
       },
     },
     search: {
@@ -917,6 +931,13 @@ export const translations: Record<Lang, Dict> = {
         notFound: "Produit introuvable",
         notFoundDesc: "Ce produit n'existe pas ou n'est plus disponible.",
         back: "Retour aux produits",
+        specifications: "Spécifications",
+        relatedProducts: "Produits similaires",
+        requestQuote: "Demander un devis",
+        save: "Enregistrer",
+        saved: "Enregistré",
+        visitStore: "Voir la boutique",
+        stock: "Disponibilité",
       },
     },
     search: {
@@ -1289,6 +1310,13 @@ export const translations: Record<Lang, Dict> = {
         notFound: "المنتج غير موجود",
         notFoundDesc: "هذا المنتج غير موجود أو لم يعد متاحًا.",
         back: "العودة إلى المنتجات",
+        specifications: "المواصفات",
+        relatedProducts: "منتجات ذات صلة",
+        requestQuote: "طلب عرض سعر",
+        save: "حفظ",
+        saved: "محفوظ",
+        visitStore: "زيارة المتجر",
+        stock: "التوفر",
       },
     },
     search: {
