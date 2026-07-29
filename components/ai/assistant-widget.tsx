@@ -47,6 +47,15 @@ export function AssistantWidget() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
   }, [messages, pending])
 
+  // Allow other components (e.g. the homepage AI CTA) to open the assistant.
+  useEffect(() => {
+    function onOpen() {
+      setOpen(true)
+    }
+    window.addEventListener("alsouk:open-assistant", onOpen)
+    return () => window.removeEventListener("alsouk:open-assistant", onOpen)
+  }, [])
+
   async function send() {
     const text = input.trim()
     if (!text || pending) return
@@ -78,7 +87,7 @@ export function AssistantWidget() {
         onClick={() => setOpen((o) => !o)}
         aria-label={a.launch}
         aria-expanded={open}
-        className="fixed bottom-5 end-5 z-40 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-primary-foreground shadow-lg transition-transform hover:scale-105"
+        className="fixed bottom-20 end-4 z-50 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-primary-foreground shadow-lg transition-transform hover:scale-105 lg:bottom-5 lg:end-5"
       >
         {open ? <X className="size-5" /> : <Sparkles className="size-5" />}
         <span className="hidden text-sm font-semibold sm:inline">{a.launch}</span>
@@ -87,7 +96,7 @@ export function AssistantWidget() {
       {open && (
         <div
           dir={dir}
-          className="fixed bottom-20 end-5 z-40 flex h-[70vh] max-h-[560px] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl"
+          className="fixed bottom-36 end-4 z-50 flex h-[70vh] max-h-[560px] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl lg:bottom-20 lg:end-5"
           role="dialog"
           aria-label={a.title}
         >

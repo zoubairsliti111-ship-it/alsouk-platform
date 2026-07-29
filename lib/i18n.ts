@@ -185,6 +185,13 @@ type Dict = {
       notFound: string
       notFoundDesc: string
       back: string
+      specifications: string
+      relatedProducts: string
+      requestQuote: string
+      save: string
+      saved: string
+      visitStore: string
+      stock: string
     }
   }
   search: {
@@ -239,6 +246,76 @@ type Dict = {
       stat: string
       statLabel: string
     }[]
+  }
+  home: {
+    searchPlaceholder: string
+    liveTag: string
+    activityTitle: string
+    activitySubtitle: string
+    listed: string
+    joined: string
+    requested: string
+    trendingTag: string
+    trendingTitle: string
+    trendingSubtitle: string
+    hotBadge: string
+    opportunitiesTag: string
+    opportunitiesTitle: string
+    opportunitiesSubtitle: string
+    buyerIn: string
+    sourcing: string
+    quoteNow: string
+    openLabel: string
+    videosTag: string
+    videosTitle: string
+    videosSubtitle: string
+    watchNow: string
+    companiesTag: string
+    companiesTitle: string
+    companiesSubtitle: string
+    visitStore: string
+    followLabel: string
+    tradeShowsTag: string
+    tradeShowsTitle: string
+    tradeShowsSubtitle: string
+    register: string
+    tradeShowItems: { name: string; date: string; city: string }[]
+    aiCtaTag: string
+    aiCtaTitle: string
+    aiCtaSubtitle: string
+    aiCtaButton: string
+    browseSuppliers: string
+    browseProducts: string
+    viewAll: string
+    locations: string[]
+    videoItems: { title: string; supplier: string; views: string }[]
+    companyItems: { name: string; category: string; products: string; location: string }[]
+  }
+  bottomNav: {
+    home: string
+    discover: string
+    categories: string
+    messages: string
+    account: string
+  }
+  soon: {
+    badge: string
+    messagesTitle: string
+    messagesBody: string
+    accountTitle: string
+    accountBody: string
+    browseProducts: string
+    backHome: string
+  }
+  discover: {
+    title: string
+    subtitle: string
+    viewProduct: string
+    visitSupplier: string
+    sendRfq: string
+    contact: string
+    save: string
+    saved: string
   }
 }
 
@@ -485,6 +562,13 @@ export const translations: Record<Lang, Dict> = {
         notFound: "Product not found",
         notFoundDesc: "This product doesn't exist or is no longer available.",
         back: "Back to products",
+        specifications: "Specifications",
+        relatedProducts: "Related products",
+        requestQuote: "Request Quote",
+        save: "Save",
+        saved: "Saved",
+        visitStore: "Visit store",
+        stock: "Availability",
       },
     },
     search: {
@@ -539,6 +623,90 @@ export const translations: Record<Lang, Dict> = {
         { title: "Skilled & Vetted Craftsmanship", desc: "Access a rich heritage of precision engineering, handcrafts, and high-quality food production.", stat: "100%", statLabel: "Vetted Standards" },
         { title: "Modern Deep-Water Ports", desc: "Highly connected maritime network with world-class facilities and streamlined export processing.", stat: "7+", statLabel: "Active Commercial Ports" }
       ]
+    },
+    home: {
+      searchPlaceholder: "Search products, suppliers or companies…",
+      liveTag: "Live",
+      activityTitle: "Live marketplace activity",
+      activitySubtitle: "Verified suppliers and buyers trading across the region right now.",
+      listed: "listed new products",
+      joined: "is now a verified supplier",
+      requested: "posted a new buying request",
+      trendingTag: "Trending now",
+      trendingTitle: "Trending products",
+      trendingSubtitle: "The products buyers are sourcing the most this week.",
+      hotBadge: "Hot",
+      opportunitiesTag: "Open buying requests",
+      opportunitiesTitle: "Business opportunities",
+      opportunitiesSubtitle: "Buyers are sourcing these products now — send your quote and win the order.",
+      buyerIn: "Buyer in",
+      sourcing: "is sourcing",
+      quoteNow: "Quote now",
+      openLabel: "Open",
+      videosTag: "Watch & source",
+      videosTitle: "Business shorts",
+      videosSubtitle: "See factories and products in action, then source in one tap.",
+      watchNow: "Watch",
+      companiesTag: "Recommended for you",
+      companiesTitle: "Companies to discover",
+      companiesSubtitle: "Handpicked verified companies matched to regional demand.",
+      visitStore: "Visit store",
+      followLabel: "Follow",
+      tradeShowsTag: "Trade shows",
+      tradeShowsTitle: "Upcoming exhibitions",
+      tradeShowsSubtitle: "Meet suppliers in person at the region's leading B2B events.",
+      register: "Register interest",
+      tradeShowItems: [
+        { name: "Tunis Industrial Expo", date: "12–15 Sep 2026", city: "Tunis" },
+        { name: "North Africa Food & Agri", date: "03–06 Oct 2026", city: "Sfax" },
+        { name: "Maghreb Textile Summit", date: "18–20 Nov 2026", city: "Casablanca" },
+      ],
+      aiCtaTag: "AI-powered sourcing",
+      aiCtaTitle: "Let ALSOUK AI find your suppliers",
+      aiCtaSubtitle: "Describe what you need and get matched with verified suppliers and ready-to-send RFQs in seconds.",
+      aiCtaButton: "Ask ALSOUK AI",
+      browseSuppliers: "Browse all suppliers",
+      browseProducts: "Browse all products",
+      viewAll: "View all",
+      locations: ["Tunis", "Sfax", "Casablanca", "Algiers", "Cairo", "Tripoli"],
+      videoItems: [
+        { title: "Inside our olive oil press", supplier: "Medina Olive Co.", views: "12.4K" },
+        { title: "Cotton weaving in Monastir", supplier: "Carthage Textiles", views: "8.1K" },
+        { title: "Date sorting & packing line", supplier: "Sahara Dates Export", views: "15.7K" },
+        { title: "Handcrafted ceramic firing", supplier: "Atlas Ceramics", views: "6.9K" },
+      ],
+      companyItems: [
+        { name: "Medina Olive Co.", category: "Food & Agriculture", products: "48 products", location: "Sfax" },
+        { name: "Carthage Textiles", category: "Textiles & Apparel", products: "120 products", location: "Monastir" },
+        { name: "Atlas Ceramics", category: "Handicrafts & Ceramics", products: "64 products", location: "Nabeul" },
+        { name: "Tunis Metalworks", category: "Industrial Machinery", products: "89 products", location: "Tunis" },
+      ],
+    },
+    bottomNav: {
+      home: "Home",
+      discover: "Discover",
+      categories: "Categories",
+      messages: "Messages",
+      account: "Account",
+    },
+    soon: {
+      badge: "Coming soon",
+      messagesTitle: "Messages",
+      messagesBody: "Chat directly with suppliers about quotes and orders. Messaging is on the way — for now, send a request and suppliers will reply to you.",
+      accountTitle: "Your account",
+      accountBody: "Manage your company profile, saved suppliers and requests here. Accounts are coming soon — keep sourcing in the meantime.",
+      browseProducts: "Browse products",
+      backHome: "Back to home",
+    },
+    discover: {
+      title: "Discover",
+      subtitle: "Short business videos from verified suppliers",
+      viewProduct: "View product",
+      visitSupplier: "Visit supplier",
+      sendRfq: "Send RFQ",
+      contact: "Contact",
+      save: "Save",
+      saved: "Saved",
     },
   },
   fr: {
@@ -783,6 +951,13 @@ export const translations: Record<Lang, Dict> = {
         notFound: "Produit introuvable",
         notFoundDesc: "Ce produit n'existe pas ou n'est plus disponible.",
         back: "Retour aux produits",
+        specifications: "Spécifications",
+        relatedProducts: "Produits similaires",
+        requestQuote: "Demander un devis",
+        save: "Enregistrer",
+        saved: "Enregistré",
+        visitStore: "Voir la boutique",
+        stock: "Disponibilité",
       },
     },
     search: {
@@ -837,6 +1012,90 @@ export const translations: Record<Lang, Dict> = {
         { title: "Savoir-Faire Qualifié & Audité", desc: "Accédez à un riche patrimoine d'ingénierie, d'artisanat et de production alimentaire de qualité.", stat: "100%", statLabel: "Normes Vérifiées" },
         { title: "Ports Commerciaux Modernes", desc: "Réseau maritime hautement connecté doté d'installations de classe mondiale pour simplifier l'export.", stat: "7+", statLabel: "Ports Commerciaux" }
       ]
+    },
+    home: {
+      searchPlaceholder: "Rechercher produits, fournisseurs ou entreprises…",
+      liveTag: "En direct",
+      activityTitle: "Activité en direct de la marketplace",
+      activitySubtitle: "Fournisseurs vérifiés et acheteurs qui commercent dans la région en ce moment.",
+      listed: "a publié de nouveaux produits",
+      joined: "est désormais un fournisseur vérifié",
+      requested: "a publié une nouvelle demande d'achat",
+      trendingTag: "Tendance",
+      trendingTitle: "Produits tendance",
+      trendingSubtitle: "Les produits les plus recherchés par les acheteurs cette semaine.",
+      hotBadge: "Populaire",
+      opportunitiesTag: "Demandes d'achat ouvertes",
+      opportunitiesTitle: "Opportunités d'affaires",
+      opportunitiesSubtitle: "Des acheteurs sourcent ces produits maintenant — envoyez votre devis et remportez la commande.",
+      buyerIn: "Acheteur à",
+      sourcing: "recherche",
+      quoteNow: "Devis maintenant",
+      openLabel: "Ouvert",
+      videosTag: "Regarder & sourcer",
+      videosTitle: "Vidéos business",
+      videosSubtitle: "Découvrez usines et produits en action, puis sourcez en un geste.",
+      watchNow: "Regarder",
+      companiesTag: "Recommandé pour vous",
+      companiesTitle: "Entreprises à découvrir",
+      companiesSubtitle: "Entreprises vérifiées sélectionnées selon la demande régionale.",
+      visitStore: "Voir la boutique",
+      followLabel: "Suivre",
+      tradeShowsTag: "Salons professionnels",
+      tradeShowsTitle: "Salons à venir",
+      tradeShowsSubtitle: "Rencontrez des fournisseurs en personne aux principaux événements B2B de la région.",
+      register: "Manifester son intérêt",
+      tradeShowItems: [
+        { name: "Tunis Industrial Expo", date: "12–15 sept. 2026", city: "Tunis" },
+        { name: "North Africa Food & Agri", date: "03–06 oct. 2026", city: "Sfax" },
+        { name: "Maghreb Textile Summit", date: "18–20 nov. 2026", city: "Casablanca" },
+      ],
+      aiCtaTag: "Sourcing par IA",
+      aiCtaTitle: "Laissez l'IA d'ALSOUK trouver vos fournisseurs",
+      aiCtaSubtitle: "Décrivez votre besoin et soyez mis en relation avec des fournisseurs vérifiés et des demandes de devis prêtes à envoyer en quelques secondes.",
+      aiCtaButton: "Demander à l'IA ALSOUK",
+      browseSuppliers: "Voir tous les fournisseurs",
+      browseProducts: "Voir tous les produits",
+      viewAll: "Tout voir",
+      locations: ["Tunis", "Sfax", "Casablanca", "Alger", "Le Caire", "Tripoli"],
+      videoItems: [
+        { title: "Dans notre pressoir à huile d'olive", supplier: "Medina Olive Co.", views: "12,4K" },
+        { title: "Tissage du coton à Monastir", supplier: "Carthage Textiles", views: "8,1K" },
+        { title: "Ligne de tri et d'emballage de dattes", supplier: "Sahara Dates Export", views: "15,7K" },
+        { title: "Cuisson de céramique artisanale", supplier: "Atlas Ceramics", views: "6,9K" },
+      ],
+      companyItems: [
+        { name: "Medina Olive Co.", category: "Alimentation & Agriculture", products: "48 produits", location: "Sfax" },
+        { name: "Carthage Textiles", category: "Textile & Habillement", products: "120 produits", location: "Monastir" },
+        { name: "Atlas Ceramics", category: "Artisanat & Céramique", products: "64 produits", location: "Nabeul" },
+        { name: "Tunis Metalworks", category: "Machines industrielles", products: "89 produits", location: "Tunis" },
+      ],
+    },
+    bottomNav: {
+      home: "Accueil",
+      discover: "Découvrir",
+      categories: "Catégories",
+      messages: "Messages",
+      account: "Compte",
+    },
+    soon: {
+      badge: "Bientôt disponible",
+      messagesTitle: "Messages",
+      messagesBody: "Discutez directement avec les fournisseurs de vos devis et commandes. La messagerie arrive bientôt — envoyez une demande et les fournisseurs vous répondront.",
+      accountTitle: "Votre compte",
+      accountBody: "Gérez votre profil d'entreprise, vos fournisseurs enregistrés et vos demandes ici. Les comptes arrivent bientôt — continuez votre sourcing en attendant.",
+      browseProducts: "Parcourir les produits",
+      backHome: "Retour à l'accueil",
+    },
+    discover: {
+      title: "Découvrir",
+      subtitle: "Courtes vidéos d'affaires de fournisseurs vérifiés",
+      viewProduct: "Voir le produit",
+      visitSupplier: "Voir le fournisseur",
+      sendRfq: "Envoyer un devis",
+      contact: "Contacter",
+      save: "Enregistrer",
+      saved: "Enregistré",
     },
   },
   ar: {
@@ -1081,6 +1340,13 @@ export const translations: Record<Lang, Dict> = {
         notFound: "المنتج غير موجود",
         notFoundDesc: "هذا المنتج غير موجود أو لم يعد متاحًا.",
         back: "العودة إلى المنتجات",
+        specifications: "المواصفات",
+        relatedProducts: "منتجات ذات صلة",
+        requestQuote: "طلب عرض سعر",
+        save: "حفظ",
+        saved: "محفوظ",
+        visitStore: "زيارة المتجر",
+        stock: "التوفر",
       },
     },
     search: {
@@ -1135,6 +1401,90 @@ export const translations: Record<Lang, Dict> = {
         { title: "مهارة يدوية معتمدة وعريقة", desc: "وصول إلى إرث غني من الدقة الهندسية والحرف الفنية والأغذية الزراعية الفاخرة المعتمدة دولياً.", stat: "100%", statLabel: "معايير موثقة" },
         { title: "موانئ تجارية حديثة", desc: "شبكة نقل بحري متكاملة مع بنية تحتية وموانئ تجارية مجهزة لتسريع إجراءات التصدير.", stat: "7+ موانئ", statLabel: "نشطة للتصدير" }
       ]
+    },
+    home: {
+      searchPlaceholder: "ابحث عن منتجات أو موردين أو شركات…",
+      liveTag: "مباشر",
+      activityTitle: "نشاط السوق المباشر",
+      activitySubtitle: "موردون موثّقون ومشترون يتاجرون في المنطقة الآن.",
+      listed: "أضاف منتجات جديدة",
+      joined: "أصبح الآن مورّداً موثّقاً",
+      requested: "نشر طلب شراء جديد",
+      trendingTag: "الأكثر رواجاً",
+      trendingTitle: "منتجات رائجة",
+      trendingSubtitle: "المنتجات الأكثر طلباً من المشترين هذا الأسبوع.",
+      hotBadge: "رائج",
+      opportunitiesTag: "طلبات شراء مفتوحة",
+      opportunitiesTitle: "فرص تجارية",
+      opportunitiesSubtitle: "يبحث المشترون عن هذه المنتجات الآن — أرسل عرضك واربح الطلب.",
+      buyerIn: "مشترٍ في",
+      sourcing: "يبحث عن",
+      quoteNow: "قدّم عرضاً",
+      openLabel: "مفتوح",
+      videosTag: "شاهد واطلب",
+      videosTitle: "فيديوهات الأعمال",
+      videosSubtitle: "شاهد المصانع والمنتجات أثناء العمل، ثم اطلب بنقرة واحدة.",
+      watchNow: "شاهد",
+      companiesTag: "موصى به لك",
+      companiesTitle: "شركات لاكتشافها",
+      companiesSubtitle: "شركات موثّقة مختارة بعناية وفق الطلب الإقليمي.",
+      visitStore: "زيارة المتجر",
+      followLabel: "متابعة",
+      tradeShowsTag: "المعارض التجارية",
+      tradeShowsTitle: "معارض قادمة",
+      tradeShowsSubtitle: "قابل الموردين شخصياً في أبرز فعاليات الأعمال في المنطقة.",
+      register: "سجّل اهتمامك",
+      tradeShowItems: [
+        { name: "معرض تونس الصناعي", date: "12–15 سبتمبر 2026", city: "تونس" },
+        { name: "معرض شمال إفريقيا للغذاء والزراعة", date: "03–06 أكتوبر 2026", city: "صفاقس" },
+        { name: "قمة المغرب للنسيج", date: "18–20 نوفمبر 2026", city: "الدار البيضاء" },
+      ],
+      aiCtaTag: "بحث مدعوم بالذكاء الاصطناعي",
+      aiCtaTitle: "دع ذكاء ALSOUK يجد موردّيك",
+      aiCtaSubtitle: "صِف ما تحتاجه واحصل على موردين موثّقين وطلبات عروض أسعار جاهزة للإرسال في ثوانٍ.",
+      aiCtaButton: "اسأل ذكاء ALSOUK",
+      browseSuppliers: "تصفّح كل الموردين",
+      browseProducts: "تصفّح كل المنتجات",
+      viewAll: "عرض الكل",
+      locations: ["تونس", "صفاقس", "الدار البيضاء", "الجزائر", "القاهرة", "طرابلس"],
+      videoItems: [
+        { title: "داخل معصرة زيت الزيتون لدينا", supplier: "Medina Olive Co.", views: "12.4K" },
+        { title: "نسج القطن في المنستير", supplier: "Carthage Textiles", views: "8.1K" },
+        { title: "خط فرز وتعبئة التمور", supplier: "Sahara Dates Export", views: "15.7K" },
+        { title: "حرق الخزف اليدوي", supplier: "Atlas Ceramics", views: "6.9K" },
+      ],
+      companyItems: [
+        { name: "Medina Olive Co.", category: "الغذاء والزراعة", products: "48 منتجاً", location: "صفاقس" },
+        { name: "Carthage Textiles", category: "النسيج والملابس", products: "120 منتجاً", location: "المنستير" },
+        { name: "Atlas Ceramics", category: "الحرف والخزف", products: "64 منتجاً", location: "نابل" },
+        { name: "Tunis Metalworks", category: "الآلات الصناعية", products: "89 منتجاً", location: "تونس" },
+      ],
+    },
+    bottomNav: {
+      home: "الرئيسية",
+      discover: "اكتشف",
+      categories: "الفئات",
+      messages: "الرسائل",
+      account: "الحساب",
+    },
+    soon: {
+      badge: "قريباً",
+      messagesTitle: "الرسائل",
+      messagesBody: "تواصل مباشرة مع المورّدين حول عروض الأسعار والطلبات. المراسلة قادمة قريباً — أرسل طلبك وسيرد عليك المورّدون.",
+      accountTitle: "حسابك",
+      accountBody: "أدر ملف شركتك والمورّدين المحفوظين وطلباتك من هنا. الحسابات قادمة قريباً — واصل البحث عن المنتجات في هذه الأثناء.",
+      browseProducts: "تصفح المنتجات",
+      backHome: "العودة إلى الرئيسية",
+    },
+    discover: {
+      title: "اكتشف",
+      subtitle: "مقاطع فيديو تجارية قصيرة من موردين موثوقين",
+      viewProduct: "عرض المنتج",
+      visitSupplier: "زيارة المورّد",
+      sendRfq: "إرسال طلب عرض سعر",
+      contact: "تواصل",
+      save: "حفظ",
+      saved: "محفوظ",
     },
   },
 }

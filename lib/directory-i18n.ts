@@ -118,6 +118,19 @@ type DirectoryDict = {
     errorTitle: string
     errorSubtitle: string
     retry: string
+    storeBadge: string
+    overview: string
+    follow: string
+    following: string
+    factory: string
+    factoryEmpty: string
+    videos: string
+    videosEmpty: string
+    catalogs: string
+    catalogsEmpty: string
+    reviewsTitle: string
+    reviewsEmpty: string
+    reviewsSummary: (n: number) => string
   }
   rfq: {
     title: string
@@ -343,6 +356,19 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       errorTitle: "Couldn't load this supplier",
       errorSubtitle: "We couldn't reach the suppliers database. Please try again in a moment.",
       retry: "Try again",
+      storeBadge: "Official Store",
+      overview: "Overview",
+      follow: "Follow",
+      following: "Following",
+      factory: "Factory & capabilities",
+      factoryEmpty: "Factory details aren't published yet — request a quote to learn about production capacity and lead times.",
+      videos: "Videos",
+      videosEmpty: "This supplier hasn't published any videos yet.",
+      catalogs: "Catalogs & documents",
+      catalogsEmpty: "No downloadable catalogs have been shared yet — request a quote to receive them.",
+      reviewsTitle: "Buyer reviews",
+      reviewsEmpty: "No written reviews yet. Be the first to work with this supplier.",
+      reviewsSummary: (n) => `Based on ${n} buyer rating${n === 1 ? "" : "s"}`,
     },
     rfq: {
       title: "Request a quote",
@@ -563,6 +589,19 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       contactSupplier: "Contacter le fournisseur",
       notFoundTitle: "Fournisseur introuvable",
       notFoundSubtitle: "Nous n'avons pas trouvé le fournisseur recherché. Il a peut-être été supprimé.",
+      storeBadge: "Boutique officielle",
+      overview: "Aperçu",
+      follow: "Suivre",
+      following: "Suivi",
+      factory: "Usine et capacités",
+      factoryEmpty: "Les détails de l'usine ne sont pas encore publiés — demandez un devis pour connaître la capacité de production et les délais.",
+      videos: "Vidéos",
+      videosEmpty: "Ce fournisseur n'a pas encore publié de vidéos.",
+      catalogs: "Catalogues et documents",
+      catalogsEmpty: "Aucun catalogue téléchargeable n'a encore été partagé — demandez un devis pour les recevoir.",
+      reviewsTitle: "Avis des acheteurs",
+      reviewsEmpty: "Aucun avis écrit pour le moment. Soyez le premier à travailler avec ce fournisseur.",
+      reviewsSummary: (n) => `Basé sur ${n} évaluation${n === 1 ? "" : "s"} d'acheteurs`,
       errorTitle: "Impossible de charger ce fournisseur",
       errorSubtitle: "Nous n'avons pas pu joindre la base de données des fournisseurs. Veuillez réessayer dans un instant.",
       retry: "Réessayer",
@@ -786,6 +825,19 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       contactSupplier: "تواصل مع المورّد",
       notFoundTitle: "المورّد غير موجود",
       notFoundSubtitle: "تعذّر العثور على المورّد المطلوب. ربما تمت إزالته.",
+      storeBadge: "متجر رسمي",
+      overview: "نظرة عامة",
+      follow: "متابعة",
+      following: "تتابع",
+      factory: "المصنع والقدرات",
+      factoryEmpty: "لم يتم نشر تفاصيل المصنع بعد — اطلب عرض سعر لمعرفة الطاقة الإنتاجية ومدد التسليم.",
+      videos: "الفيديوهات",
+      videosEmpty: "لم ينشر هذا المورّد أي فيديوهات بعد.",
+      catalogs: "الكتالوجات والمستندات",
+      catalogsEmpty: "لم تتم مشاركة أي كتالوجات قابلة للتنزيل بعد — اطلب عرض سعر لاستلامها.",
+      reviewsTitle: "تقييمات المشترين",
+      reviewsEmpty: "لا توجد مراجعات مكتوبة بعد. كن أول من يتعامل مع هذا المورّد.",
+      reviewsSummary: (n) => `بناءً على ${n} تقييم من المشترين`,
       errorTitle: "تعذّر تحميل هذا المورّد",
       errorSubtitle: "تعذّر الوصول إلى قاعدة بيانات الموردين. يُرجى المحاولة مرة أخرى بعد قليل.",
       retry: "إعادة المحاولة",

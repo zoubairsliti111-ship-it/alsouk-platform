@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { SupplierProfile } from "@/components/directory/supplier-profile"
 import { AssistantWidget } from "@/components/ai/assistant-widget"
+import { MobileBottomNav } from "@/components/mobile-bottom-nav"
 
 export default function SupplierProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -14,11 +15,12 @@ export default function SupplierProfilePage({ params }: { params: Promise<{ id: 
     <LanguageProvider>
       <div className="flex min-h-screen flex-col bg-background">
         <SiteHeader />
-        <main className="flex-1">
+        <main className="flex-1 pb-16 lg:pb-0">
           <SupplierProfile id={id} />
         </main>
         <SiteFooter />
         <AssistantWidget />
+        <MobileBottomNav />
       </div>
     </LanguageProvider>
   )
