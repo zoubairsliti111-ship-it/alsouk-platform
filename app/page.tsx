@@ -40,6 +40,7 @@ import {
 import { LanguageProvider, useLanguage } from "@/components/language-provider"
 import { AssistantWidget } from "@/components/ai/assistant-widget"
 import { LANGS } from "@/lib/i18n"
+import { formatPrice } from "@/lib/format"
 
 // --- LOCALIZED DICTIONARY ---
 const LOCAL_TRANS = {
@@ -160,18 +161,18 @@ const OPPORTUNITIES = [
     name_en: "Extra Virgin Olive Oil Bulk",
     name_fr: "Huile d'olive extra vierge en vrac",
     name_ar: "زيت زيتون بكر ممتاز سائب",
-    price: "15.950",
+    price: 15.950,
     image: "/images/product-oliveoil.png",
     badge: "LIVE",
     moq: "2,000 L",
-    badgeColor: "bg-[#EF4444] text-white animate-pulse"
+    badgeColor: "bg-red-500 text-white animate-pulse"
   },
   {
     id: "opp-2",
     name_en: "Premium Cotton Fabric Yarn Rolls",
     name_fr: "Rouleau de fil de coton premium",
     name_ar: "رول خيوط قطنية فاخرة",
-    price: "7.200",
+    price: 7.200,
     image: "/images/product-textiles.png",
     badge: "35% OFF",
     moq: "500 m",
@@ -182,31 +183,31 @@ const OPPORTUNITIES = [
     name_en: "Handcrafted Tunisian Ceramic Set",
     name_fr: "Service de table en céramique artisanale",
     name_ar: "طقم مائدة خزفي يدوي الصنع",
-    price: "34.500",
+    price: 34.500,
     image: "/images/product-ceramics.png",
-    badge: "READY TO SHIP",
+    badge: "Ready to Ship",
     moq: "100 sets",
-    badgeColor: "bg-[#16A34A] text-white"
+    badgeColor: "bg-emerald-500 text-white"
   },
   {
     id: "opp-4",
     name_en: "Deglet Nour Organic Dates Pallets",
     name_fr: "Palette de dattes Deglet Nour biologiques",
     name_ar: "تمور دقلة النور الفاخرة العضوية",
-    price: "11.200",
+    price: 11.200,
     image: "/images/product-dates.png",
-    badge: "TOP DEAL",
+    badge: "Top Deal",
     moq: "1,000 kg",
-    badgeColor: "bg-[#2563EB] text-white"
+    badgeColor: "bg-blue-500 text-white"
   },
   {
     id: "opp-5",
     name_en: "Industrial Packaging Kraft Boxes",
     name_fr: "Boîtes kraft d'emballage industriel",
     name_ar: "صناديق كرافت للتعبئة الصناعية",
-    price: "1.850",
+    price: 1.850,
     image: "/images/product-machinery.png",
-    badge: "EXPORT READY",
+    badge: "Export Ready",
     moq: "5,000 pcs",
     badgeColor: "bg-purple-600 text-white"
   }
@@ -266,7 +267,7 @@ const PRODUCTS = [
     name_en: "Premium Handpainted Ceramic Wall Tiles",
     name_fr: "Carreaux muraux artisanaux peints à la main",
     name_ar: "بلاط حائط خزفي ملون يدويًا بالكامل",
-    price: "45.000",
+    price: 45.000,
     image: "/images/product-ceramics.png",
     supplier: "Atlas Ceramic Artisans",
     moq: "200 pcs"
@@ -276,7 +277,7 @@ const PRODUCTS = [
     name_en: "Genuine Leather Handbags & Accessories",
     name_fr: "Sacs à main et accessoires en cuir véritable",
     name_ar: "حقائب يد وإكسسوارات من الجلد الطبيعي",
-    price: "85.000",
+    price: 85.000,
     image: "/images/product-leather.png",
     supplier: "Kairouan Leather Craft",
     moq: "50 pcs"
@@ -286,7 +287,7 @@ const PRODUCTS = [
     name_en: "High-Capacity Olive Oil Pressing Machine",
     name_fr: "Presse à huile d'olive haute capacité",
     name_ar: "آلة كبس زيت الزيتون عالية القدرة",
-    price: "18500.000",
+    price: 18500.000,
     image: "/images/product-machinery.png",
     supplier: "Tunis Metalworks & Machining",
     moq: "1 unit"
@@ -303,7 +304,7 @@ const LIVE_STREAMS = [
     product_ar: "عرض حي لعصر زيت الزيتون البكر الممتاز",
     viewerCount: "1,240",
     thumbnail: "/images/product-oliveoil.png",
-    avatarColor: "bg-[#16A34A]"
+    avatarColor: "bg-emerald-600"
   },
   {
     id: "live-2",
@@ -314,7 +315,7 @@ const LIVE_STREAMS = [
     product_ar: "جولة في مصنع الغزل والنسيج الدائري المؤتمت",
     viewerCount: "845",
     thumbnail: "/images/product-textiles.png",
-    avatarColor: "bg-[#2563EB]"
+    avatarColor: "bg-blue-600"
   },
   {
     id: "live-3",
@@ -352,28 +353,20 @@ function HomepageContent() {
     return item[`${field}_${lang}`] || item[`${field}_en`] || item[field]
   }
 
-  // Format currency dynamically to follow strict TN millimes standard
-  const formatTND = (priceStr: string) => {
-    const num = parseFloat(priceStr.replace(/,/g, ""))
-    if (isNaN(num)) return priceStr
-    const formatted = num.toFixed(3)
-    return lang === "ar" ? `${formatted} د.ت` : `${formatted} DT`
-  }
-
   return (
-    <div className="flex min-h-screen flex-col bg-[#F8FAFC] selection:bg-[#2563EB]/10 selection:text-[#2563EB] pb-[70px]" dir={dir}>
+    <div className="flex min-h-screen flex-col bg-[#F8FAFC] selection:bg-blue-600/10 selection:text-blue-600 pb-[80px]" dir={dir}>
 
       {/* 1. STICKY HEADER */}
-      <header className="sticky top-0 z-50 w-full h-[64px] border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
-        <div className="mx-auto h-full flex items-center justify-between px-6">
+      <header className="sticky top-0 z-50 w-full h-[60px] border-b border-slate-150 bg-white/90 backdrop-blur-md shadow-sm">
+        <div className="mx-auto h-full flex items-center justify-between px-6 max-w-7xl">
 
           {/* ALSOUK Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-[#2563EB] text-lg font-bold text-white shadow-sm">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-blue-600 text-lg font-black text-white shadow-sm">
               A
             </span>
-            <span className="text-xl font-bold tracking-tight text-slate-900">
-              AL<span className="text-[#2563EB]">SOUK</span>
+            <span className="text-xl font-black tracking-tight text-slate-900">
+              AL<span className="text-blue-600">SOUK</span>
             </span>
           </Link>
 
@@ -386,7 +379,7 @@ function HomepageContent() {
                 onClick={() => setLangOpen(!langOpen)}
                 className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm"
               >
-                <Globe className="size-4 text-[#2563EB]" />
+                <Globe className="size-4 text-blue-600" />
                 <span>{currentLang.native}</span>
                 <ChevronDown className={`size-3 transition-transform duration-200 ${langOpen ? "rotate-180" : ""}`} />
               </button>
@@ -403,7 +396,7 @@ function HomepageContent() {
                       className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                     >
                       <span className="w-full text-start">{l.native}</span>
-                      {l.code === lang && <Check className="size-4 text-[#2563EB]" />}
+                      {l.code === lang && <Check className="size-4 text-blue-600" />}
                     </button>
                   ))}
                 </div>
@@ -413,7 +406,7 @@ function HomepageContent() {
             {/* Notification */}
             <button className="relative flex size-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all shadow-sm">
               <Bell className="size-[18px]" />
-              <span className="absolute top-2 right-2 flex size-2 rounded-full bg-[#EF4444]" />
+              <span className="absolute top-2 right-2 flex size-2 rounded-full bg-red-500" />
             </button>
 
             {/* Menu */}
@@ -425,7 +418,7 @@ function HomepageContent() {
         </div>
       </header>
 
-      {/* Main Sections */}
+      {/* Main Container */}
       <main className="flex-1 space-y-6 px-6 py-6 mx-auto w-full max-w-7xl">
 
         {/* 2. SEARCH */}
@@ -438,12 +431,12 @@ function HomepageContent() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className={`w-full h-12 ${dir === "rtl" ? "pr-12 pl-4" : "pl-12 pr-4"} rounded-full border border-slate-200 bg-slate-50 text-sm font-normal text-slate-900 outline-none placeholder:text-slate-400 focus:border-[#2563EB] focus:bg-white transition-all shadow-inner`}
+                className={`w-full h-12 ${dir === "rtl" ? "pr-12 pl-4" : "pl-12 pr-4"} rounded-full border border-slate-250 bg-slate-50 text-sm font-normal text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-600 focus:bg-white transition-all shadow-inner`}
               />
             </div>
             <button
               type="submit"
-              className="h-12 shrink-0 rounded-full bg-[#2563EB] px-6 text-sm font-semibold text-white shadow-sm hover:bg-[#2563EB]/95 transition-all flex items-center justify-center gap-2"
+              className="h-12 shrink-0 rounded-full bg-blue-600 px-6 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
             >
               <Search className="size-4" />
               <span>{t.searchBtn}</span>
@@ -451,16 +444,16 @@ function HomepageContent() {
           </form>
         </section>
 
-        {/* 3. TODAY'S OPPORTUNITIES */}
+        {/* 3. 🔥 TODAY'S OPPORTUNITIES */}
         <section className="bg-white rounded-[20px] p-4 shadow-sm border border-slate-100 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-red-50 text-[#EF4444]">
-                <Flame className="size-4 fill-[#EF4444]" />
+              <span className="flex size-7 items-center justify-center rounded-lg bg-red-50 text-red-500">
+                <Flame className="size-4 fill-red-500" />
               </span>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">{t.todayOpportunities}</h2>
+              <h2 className="text-lg font-black text-slate-900 tracking-tight">{t.todayOpportunities}</h2>
             </div>
-            <Link href="/products" className="text-xs font-semibold text-[#2563EB] flex items-center gap-0.5 hover:underline">
+            <Link href="/products" className="text-xs font-semibold text-blue-600 flex items-center gap-0.5 hover:underline">
               <span>{t.viewAll}</span>
               <ChevronRight className="size-3" />
             </Link>
@@ -483,12 +476,12 @@ function HomepageContent() {
                       sizes="224px"
                       className="object-cover"
                     />
-                    <span className={`absolute top-2 left-2 rounded-full px-2 py-1 text-[9px] font-bold tracking-wider uppercase shadow-sm ${opp.badgeColor}`}>
+                    <span className={`absolute top-2 left-2 rounded-full px-2.5 py-1 text-[9px] font-bold tracking-wider uppercase shadow-sm ${opp.badgeColor}`}>
                       {opp.badge}
                     </span>
                   </div>
 
-                  <h3 className="text-xs font-bold text-slate-800 line-clamp-2 leading-snug mb-1">
+                  <h3 className="text-xs font-black text-slate-850 line-clamp-2 leading-snug mb-1">
                     {getName(opp, "name")}
                   </h3>
                   <p className="text-[10px] text-slate-400 font-normal mb-1">{t.moq}: {opp.moq}</p>
@@ -497,10 +490,10 @@ function HomepageContent() {
                 <div className="mt-3 pt-3 border-t border-slate-100">
                   <div className="flex items-baseline justify-between mb-3">
                     <span className="text-[9px] font-semibold text-slate-400 uppercase">{t.tnd}</span>
-                    <span className="text-sm font-bold text-[#2563EB]">{formatTND(opp.price)}</span>
+                    <span className="text-sm font-bold text-blue-600">{formatPrice(opp.price, "TND", lang)}</span>
                   </div>
                   <Link href="/rfq" className="block w-full">
-                    <button className="w-full rounded-xl bg-[#2563EB] py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#2563EB]/95 active:scale-95 transition-all">
+                    <button className="w-full rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all">
                       {t.requestQuote}
                     </button>
                   </Link>
@@ -514,12 +507,12 @@ function HomepageContent() {
         <section className="bg-white rounded-[20px] p-4 shadow-sm border border-slate-100 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-[#2563EB]">
+              <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                 <Grid className="size-4" />
               </span>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">{t.categoriesTitle}</h2>
+              <h2 className="text-lg font-black text-slate-900 tracking-tight">{t.categoriesTitle}</h2>
             </div>
-            <Link href="/categories" className="text-xs font-semibold text-[#2563EB] flex items-center gap-0.5 hover:underline">
+            <Link href="/categories" className="text-xs font-semibold text-blue-600 flex items-center gap-0.5 hover:underline">
               <span>{t.viewAll}</span>
               <ChevronRight className="size-3" />
             </Link>
@@ -551,12 +544,12 @@ function HomepageContent() {
         <section className="bg-white rounded-[20px] p-4 shadow-sm border border-slate-100 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-green-50 text-[#16A34A]">
-                <ShieldCheck className="size-4 fill-green-50" />
+              <span className="flex size-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                <ShieldCheck className="size-4 fill-emerald-50" />
               </span>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">{t.featuredSuppliers}</h2>
+              <h2 className="text-lg font-black text-slate-900 tracking-tight">{t.featuredSuppliers}</h2>
             </div>
-            <Link href="/suppliers" className="text-xs font-semibold text-[#2563EB] flex items-center gap-0.5 hover:underline">
+            <Link href="/suppliers" className="text-xs font-semibold text-blue-600 flex items-center gap-0.5 hover:underline">
               <span>{t.viewAll}</span>
               <ChevronRight className="size-3" />
             </Link>
@@ -582,11 +575,11 @@ function HomepageContent() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <h3 className="text-sm font-bold text-slate-800 truncate">
+                      <h3 className="text-sm font-black text-slate-800 truncate">
                         {sup.name}
                       </h3>
                       {sup.verified && (
-                        <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-[#2563EB]/10 text-[#2563EB]" title={t.verified}>
+                        <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-blue-600/10 text-blue-600" title={t.verified}>
                           <Check className="size-3 stroke-[3]" />
                         </span>
                       )}
@@ -604,7 +597,7 @@ function HomepageContent() {
 
                 <div className="mt-4">
                   <Link href={`/suppliers/${sup.id}`} className="block w-full">
-                    <button className="w-full rounded-xl border border-[#2563EB]/20 bg-[#2563EB]/5 py-2 text-xs font-semibold text-[#2563EB] hover:bg-[#2563EB] hover:text-white transition-all shadow-sm">
+                    <button className="w-full rounded-xl border border-blue-600/20 bg-blue-600/5 py-2.5 text-xs font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
                       {t.visitStore}
                     </button>
                   </Link>
@@ -618,12 +611,12 @@ function HomepageContent() {
         <section className="bg-white rounded-[20px] p-4 shadow-sm border border-slate-100 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-[#2563EB]">
+              <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                 <Box className="size-4" />
               </span>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">{t.featuredProducts}</h2>
+              <h2 className="text-lg font-black text-slate-900 tracking-tight">{t.featuredProducts}</h2>
             </div>
-            <Link href="/products" className="text-xs font-semibold text-[#2563EB] flex items-center gap-0.5 hover:underline">
+            <Link href="/products" className="text-xs font-semibold text-blue-600 flex items-center gap-0.5 hover:underline">
               <span>{t.viewAll}</span>
               <ChevronRight className="size-3" />
             </Link>
@@ -646,7 +639,7 @@ function HomepageContent() {
                     />
                   </div>
 
-                  <h3 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug">
+                  <h3 className="text-sm font-black text-slate-800 line-clamp-2 leading-snug">
                     {getName(prod, "name")}
                   </h3>
                   <p className="text-[11px] text-slate-400 font-semibold mt-2 flex items-center gap-1.5">
@@ -662,10 +655,10 @@ function HomepageContent() {
                 <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
                   <div>
                     <span className="text-[9px] font-semibold text-slate-400 block uppercase leading-none mb-1">{t.tnd}</span>
-                    <span className="text-base font-bold text-[#2563EB]">{formatTND(prod.price)}</span>
+                    <span className="text-base font-bold text-blue-600">{formatPrice(prod.price, "TND", lang)}</span>
                   </div>
                   <Link href="/rfq">
-                    <button className="rounded-xl bg-[#2563EB] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#2563EB]/95 active:scale-95 transition-all flex items-center gap-1.5">
+                    <button className="rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 active:scale-95 transition-all flex items-center gap-1.5">
                       <span>{t.requestQuote}</span>
                       <ArrowUpRight className="size-3.5" />
                     </button>
@@ -680,12 +673,12 @@ function HomepageContent() {
         <section className="bg-white rounded-[20px] p-4 shadow-sm border border-slate-100 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="flex size-7 items-center justify-center rounded-lg bg-red-50 text-[#EF4444]">
+              <span className="flex size-7 items-center justify-center rounded-lg bg-red-50 text-red-500">
                 <Tv2 className="size-4" />
               </span>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">{t.liveMarketplace}</h2>
+              <h2 className="text-lg font-black text-slate-900 tracking-tight">{t.liveMarketplace}</h2>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-[10px] font-bold text-[#EF4444] uppercase tracking-wider animate-pulse">
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-[10px] font-bold text-red-500 uppercase tracking-wider animate-pulse">
               {t.liveBadge}
             </span>
           </div>
@@ -708,8 +701,8 @@ function HomepageContent() {
                   {/* LIVE Overlay gradient */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
 
-                  <div className="absolute top-3 left-3 flex items-center gap-1.5">
-                    <span className="rounded-md bg-[#EF4444] px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white uppercase animate-pulse">
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5" dir="ltr">
+                    <span className="rounded-md bg-red-500 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-white uppercase animate-pulse">
                       {t.liveBadge}
                     </span>
                     <span className="rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-semibold text-white backdrop-blur-sm flex items-center gap-1">
@@ -736,7 +729,7 @@ function HomepageContent() {
                     </p>
                   </div>
 
-                  <button className="w-full rounded-xl bg-[#EF4444] py-2 text-xs font-semibold text-white shadow-sm hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center gap-1.5">
+                  <button className="w-full rounded-xl bg-red-500 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center gap-1.5">
                     <Tv2 className="size-4" />
                     <span>{t.openLive}</span>
                   </button>
@@ -747,8 +740,8 @@ function HomepageContent() {
         </section>
 
         {/* 8. RFQ BANNER */}
-        <section className="relative overflow-hidden rounded-[20px] bg-[#2563EB] px-6 py-8 text-white shadow-lg border border-[#2563EB]/20">
-          <div className="absolute right-0 top-0 h-full w-1/3 bg-radial-[circle_at_right] from-white/10 to-transparent pointer-events-none" />
+        <section className="relative overflow-hidden rounded-[20px] bg-blue-600 px-6 py-8 text-white shadow-lg border border-blue-600/20">
+          <div className="absolute right-0 top-0 h-full w-1/3 bg-[radial-gradient(circle_at_right,_var(--tw-gradient-stops))] from-white/10 to-transparent pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="max-w-xl">
               <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1 text-[10px] font-bold tracking-wider uppercase mb-3">
@@ -760,7 +753,7 @@ function HomepageContent() {
               </h2>
             </div>
             <Link href="/rfq" className="shrink-0">
-              <button className="rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-[#2563EB] hover:bg-slate-50 active:scale-95 transition-all shadow-md flex items-center gap-1.5">
+              <button className="rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-blue-600 hover:bg-slate-50 active:scale-95 transition-all shadow-md flex items-center gap-1.5">
                 <span>{t.rfqBtn}</span>
                 <Send className="size-4 rotate-45" />
               </button>
@@ -774,7 +767,7 @@ function HomepageContent() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 h-[70px] border-t border-slate-200 bg-white/95 backdrop-blur-md px-6 shadow-lg">
         <div className="mx-auto h-full flex items-center justify-between max-w-lg">
 
-          <Link href="/" className="flex flex-col items-center gap-1 text-[#2563EB]">
+          <Link href="/" className="flex flex-col items-center gap-1 text-blue-600">
             <Home className="size-5" />
             <span className="text-[10px] font-semibold">{t.bottomHome}</span>
           </Link>
@@ -792,7 +785,7 @@ function HomepageContent() {
           <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors relative">
             <MessageSquare className="size-5" />
             <span className="text-[10px] font-semibold">{t.bottomMsg}</span>
-            <span className="absolute top-0 right-2 flex size-1.5 rounded-full bg-[#2563EB]" />
+            <span className="absolute top-0 right-2 flex size-1.5 rounded-full bg-blue-600" />
           </button>
 
           <button className="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
