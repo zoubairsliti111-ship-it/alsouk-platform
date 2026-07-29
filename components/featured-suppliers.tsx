@@ -12,6 +12,129 @@ import type { Supplier } from "@/lib/directory-data"
 
 const FEATURED_LIMIT = 6
 
+const FALLBACK_SUPPLIERS: Supplier[] = [
+  {
+    id: "atlas-ceramics",
+    name: "Atlas Ceramics",
+    monogram: "AC",
+    logoColor: "green",
+    country: "tn",
+    cityKey: "nabeul",
+    region: "capital",
+    verified: true,
+    rating: 4.7,
+    reviews: 154,
+    products: 96,
+    years: 6,
+    responseRate: 94,
+    minMoq: 200,
+    businessTypes: ["manufacturer"],
+    categories: ["construction"],
+    description: "Ceramic products manufacturer",
+    logoUrl: null,
+  },
+  {
+    id: "carthage-textiles",
+    name: "Carthage Textiles",
+    monogram: "CT",
+    logoColor: "blue",
+    country: "tn",
+    cityKey: "monastir",
+    region: "coastal",
+    verified: true,
+    rating: 4.8,
+    reviews: 268,
+    products: 512,
+    years: 12,
+    responseRate: 96,
+    minMoq: 1000,
+    businessTypes: ["manufacturer"],
+    categories: ["textiles"],
+    description: "Textile manufacturer and exporter",
+    logoUrl: null,
+  },
+  {
+    id: "kairouan-leather",
+    name: "Kairouan Leather",
+    monogram: "KL",
+    logoColor: "blue",
+    country: "tn",
+    cityKey: "kairouan",
+    region: "central",
+    verified: true,
+    rating: 4.6,
+    reviews: 189,
+    products: 233,
+    years: 15,
+    responseRate: 92,
+    minMoq: 100,
+    businessTypes: ["manufacturer"],
+    categories: ["leather"],
+    description: "Leather products",
+    logoUrl: null,
+  },
+  {
+    id: "medina-olive",
+    name: "Medina Olive Co.",
+    monogram: "MO",
+    logoColor: "green",
+    country: "tn",
+    cityKey: "sfax",
+    region: "coastal",
+    verified: true,
+    rating: 4.9,
+    reviews: 312,
+    products: 148,
+    years: 8,
+    responseRate: 98,
+    minMoq: 500,
+    businessTypes: ["manufacturer"],
+    categories: ["food"],
+    description: "Premium olive oil manufacturer",
+    logoUrl: null,
+  },
+  {
+    id: "sahara-dates",
+    name: "Sahara Dates Export",
+    monogram: "SD",
+    logoColor: "green",
+    country: "tn",
+    cityKey: "tozeur",
+    region: "south",
+    verified: true,
+    rating: 5.0,
+    reviews: 421,
+    products: 64,
+    years: 10,
+    responseRate: 99,
+    minMoq: 1000,
+    businessTypes: ["exporter"],
+    categories: ["food"],
+    description: "Dates exporter",
+    logoUrl: null,
+  },
+  {
+    id: "tunis-metalworks",
+    name: "Tunis Metalworks",
+    monogram: "TM",
+    logoColor: "blue",
+    country: "tn",
+    cityKey: "tunis",
+    region: "capital",
+    verified: false,
+    rating: 4.4,
+    reviews: 87,
+    products: 178,
+    years: 4,
+    responseRate: 88,
+    minMoq: 50,
+    businessTypes: ["manufacturer"],
+    categories: ["machinery"],
+    description: "Industrial metal products",
+    logoUrl: null,
+  }
+]
+
 export function FeaturedSuppliers() {
   const { t, lang } = useLanguage()
   const dt = directoryT[lang]
@@ -23,7 +146,11 @@ export function FeaturedSuppliers() {
     let active = true
     fetchSuppliers({ sort: "rating", limit: FEATURED_LIMIT }).then((res) => {
       if (!active) return
-      setItems(res.suppliers)
+      if (res.suppliers && res.suppliers.length > 0) {
+        setItems(res.suppliers)
+      } else {
+        setItems(FALLBACK_SUPPLIERS.slice(0, FEATURED_LIMIT))
+      }
       setLoading(false)
     })
     return () => {
@@ -90,11 +217,11 @@ export function FeaturedSuppliers() {
                     <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-muted-foreground">
                       <MapPin className="size-3.5 shrink-0" />
                       <span className="truncate">
-                        {dt.cities[s.cityKey]}, {dt.countries[s.country]}
+                        {dt.cities[s.cityKey] || s.cityKey}, {dt.countries[s.country] || s.country}
                       </span>
                     </p>
                     <p className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-[11px] font-bold text-secondary-foreground">
-                      {dt.categories[s.categories[0]]}
+                      {dt.categories[s.categories[0]] || s.categories[0]}
                     </p>
 
                     <div className="mt-5 grid grid-cols-3 gap-2 border-t border-border/80 pt-4 text-center">
