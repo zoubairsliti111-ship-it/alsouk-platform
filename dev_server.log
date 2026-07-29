@@ -5,11 +5,10 @@
 ▲ Next.js 16.2.6 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 585ms
+✓ Ready in 582ms
 
 ○ Compiling / ...
- GET / 200 in 6.4s (next.js: 5.7s, application-code: 701ms)
-[api/suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).
- GET /api/suppliers?sort=rating&limit=4 200 in 897ms (next.js: 864ms, application-code: 33ms)
- GET /search?q=Textiles 200 in 903ms (next.js: 823ms, application-code: 80ms)
- GET /search?q=Textiles 200 in 34ms (next.js: 7ms, application-code: 27ms)
+ HEAD / 200 in 4.2s (next.js: 3.8s, application-code: 388ms)
+ GET / 200 in 199ms (next.js: 11ms, application-code: 189ms)
+[browser] Image with src "/images/product-oliveoil.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
