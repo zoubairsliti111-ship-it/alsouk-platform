@@ -37,14 +37,15 @@ export function CategoriesSection() {
         </Link>
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
+      {/* Horizontal scrolling on mobile/tablet, grid on desktop */}
+      <div className="no-scrollbar -mx-6 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4 md:mx-0 md:grid md:grid-cols-4 lg:grid-cols-8 md:overflow-visible md:px-0">
         {t.categories.items.map((cat, i) => {
           const Icon = ICONS[i % ICONS.length]
           return (
             <Link
               key={cat.name}
               href="/categories"
-              className="group flex flex-col items-center gap-3.5 rounded-[20px] border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/5 active:scale-[0.98]"
+              className="group flex w-[35%] shrink-0 snap-start min-w-[120px] flex-col items-center gap-3.5 rounded-[20px] border border-border bg-card p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/5 active:scale-[0.98] sm:w-[22%] md:w-auto"
             >
               <span className="flex size-14 items-center justify-center rounded-[20px] bg-secondary text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:shadow-md group-hover:shadow-primary/10">
                 <Icon className="size-6.5" />
