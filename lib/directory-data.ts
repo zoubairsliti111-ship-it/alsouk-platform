@@ -11,6 +11,82 @@ export type CategoryKey =
   | "chemicals"
 export type BusinessTypeKey = "manufacturer" | "supplier" | "exporter" | "wholesaler"
 
+export type CompanyWebsiteMode = "external" | "alsouk" | "both"
+export type CompanyVerificationTier = "basic" | "verified" | "premium"
+
+export type Company = {
+  id: string
+  supplierId: string | null
+  name: string
+  slug: string
+  tagline: string | null
+  description: string | null
+  logoUrl: string | null
+  bannerUrl: string | null
+
+  // Digital Presence
+  facebookUrl: string | null
+  instagramUrl: string | null
+  tiktokUrl: string | null
+  linkedinUrl: string | null
+  youtubeUrl: string | null
+
+  // Website strategy
+  websiteUrl: string | null
+  websiteMode: CompanyWebsiteMode
+
+  // Contact & Location
+  businessEmail: string | null
+  phoneNumber: string | null
+  whatsappNumber: string | null
+  country: string
+  city: string | null
+  postalCode: string | null
+  streetAddress: string | null
+
+  // Business classification
+  businessType: string | null
+  primaryIndustry: string | null
+  yearEstablished: number | null
+  companySize: string | null
+  taxIdentifier: string | null
+
+  // Profile progress & verification
+  profileCompletion: number
+  verified: boolean
+  verificationTier: CompanyVerificationTier
+  verifiedAt: string | null
+  licenseDocumentUrl: string | null
+
+  // Arrays
+  supportedLanguages: string[]
+  exportMarkets: string[]
+
+  metadata: Record<string, any>
+  createdAt: string
+  updatedAt: string
+}
+
+export type CompanyMember = {
+  id: string
+  companyId: string
+  userId: string
+  role: "owner" | "admin" | "member"
+  createdAt: string
+}
+
+export type CompanyMedia = {
+  id: string
+  companyId: string
+  mediaType: "factory_photo" | "product_gallery" | "video" | "certificate"
+  storageBucket: string
+  storagePath: string
+  url: string
+  caption: string | null
+  position: number
+  createdAt: string
+}
+
 export type Supplier = {
   id: string
   name: string
