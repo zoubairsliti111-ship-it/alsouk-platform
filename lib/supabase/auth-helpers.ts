@@ -61,9 +61,9 @@ export function isStrongPassword(password: string): boolean {
  */
 export function phoneToSyntheticEmail(phone: string): string {
   const cleaned = cleanPhoneNumber(phone)
-  // E.g., +21621345678 -> phone_21621345678@phone.alsouk.com
+  // E.g., +21621345678 -> phone21621345678@alsouk.com
   const digitsOnly = cleaned.replace("+", "")
-  return `phone_${digitsOnly}@phone.alsouk.com`
+  return `phone${digitsOnly}@alsouk.com`
 }
 
 /**

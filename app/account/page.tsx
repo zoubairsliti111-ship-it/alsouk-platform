@@ -119,7 +119,13 @@ function AccountScreen() {
   const metadata = user.user_metadata || {}
   const fullName = metadata.full_name || t.auth.notSet
   const phoneVal = metadata.phone_number || t.auth.notSet
-  const emailVal = user.email && !user.email.endsWith("@phone.alsouk.com") ? user.email : (metadata.email_address || t.auth.notSet)
+
+  // Hide synthetic phone-based emails from displaying as actual emails
+  const isSyntheticEmail = user.email && (
+    user.email.endsWith("@phone.alsouk.com") ||
+    /^phone\d+@alsouk\.com$/i.test(user.email)
+  )
+  const emailVal = user.email && !isSyntheticEmail ? user.email : (metadata.email_address || t.auth.notSet)
   const accountType = metadata.account_type || ""
 
   return (

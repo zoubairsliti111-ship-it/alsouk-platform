@@ -334,6 +334,8 @@ type Dict = {
     haveAccount: string
     noAccount: string
     forgotPasswordLink: string
+    newToAlsouk: string
+    createFreeAccountBtn: string
     chooseRoleTitle: string
     chooseRoleDesc: string
     buyer: string
@@ -773,6 +775,8 @@ export const translations: Record<Lang, Dict> = {
       haveAccount: "Already have an account? Sign In",
       noAccount: "New to ALSOUK? Join Free",
       forgotPasswordLink: "Forgot password?",
+      newToAlsouk: "New to ALSOUK?",
+      createFreeAccountBtn: "Create Free Account",
       chooseRoleTitle: "Who are you?",
       chooseRoleDesc: "Select your account type to personalize your experience. You can browse both ways, but this tells other businesses your primary focus.",
       buyer: "Buyer",
@@ -783,7 +787,7 @@ export const translations: Record<Lang, Dict> = {
       welcomeBack: "Welcome back!",
       requiredField: "This field is required",
       invalidEmail: "Please enter a valid email address",
-      invalidPhone: "Please enter a valid Tunisian phone number (8 digits, or starting with +216)",
+    invalidPhone: "Please enter a valid Tunisian phone number (8 digits)",
       passwordLength: "Password must be at least 8 characters long",
       passwordRequirements: "Password must contain at least one uppercase letter, one lowercase letter, and one number",
       passwordsDoNotMatch: "Passwords do not match",
@@ -792,7 +796,7 @@ export const translations: Record<Lang, Dict> = {
       resetSuccess: "Your password has been successfully reset!",
       phoneTab: "Phone Number",
       emailTab: "Email Address",
-      phonePlaceholder: "e.g. 21 345 678",
+      phonePlaceholder: "21345678",
       emailPlaceholder: "e.g. name@company.com",
       passwordPlaceholder: "Enter your password",
       fullNamePlaceholder: "e.g. Mohamed Ben Ali",
@@ -1210,6 +1214,8 @@ export const translations: Record<Lang, Dict> = {
       haveAccount: "Vous avez déjà un compte ? Se connecter",
       noAccount: "Nouveau sur ALSOUK ? S'inscrire gratuitement",
       forgotPasswordLink: "Mot de passe oublié ?",
+      newToAlsouk: "Nouveau sur ALSOUK ?",
+      createFreeAccountBtn: "Créer un compte gratuit",
       chooseRoleTitle: "Qui êtes-vous ?",
       chooseRoleDesc: "Sélectionnez votre type de compte pour personnaliser votre expérience. Vous pouvez naviguer des deux manières, mais cela indique aux autres entreprises votre objectif principal.",
       buyer: "Acheteur",
@@ -1220,7 +1226,7 @@ export const translations: Record<Lang, Dict> = {
       welcomeBack: "Bon retour !",
       requiredField: "Ce champ est requis",
       invalidEmail: "Veuillez entrer une adresse e-mail valide",
-      invalidPhone: "Veuillez entrer un numéro de téléphone tunisien valide (8 chiffres, ou commençant par +216)",
+    invalidPhone: "Veuillez entrer un numéro de téléphone tunisien valide (8 chiffres)",
       passwordLength: "Le mot de passe doit contenir au moins 8 caractères",
       passwordRequirements: "Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule et un chiffre",
       passwordsDoNotMatch: "Les mots de passe ne correspondent pas",
@@ -1229,7 +1235,7 @@ export const translations: Record<Lang, Dict> = {
       resetSuccess: "Votre mot de passe a été réinitialisé avec succès !",
       phoneTab: "Numéro de téléphone",
       emailTab: "Adresse e-mail",
-      phonePlaceholder: "ex. 21 345 678",
+      phonePlaceholder: "21345678",
       emailPlaceholder: "ex. nom@entreprise.com",
       passwordPlaceholder: "Entrez votre mot de passe",
       fullNamePlaceholder: "ex. Mohamed Ben Ali",
@@ -1647,6 +1653,8 @@ export const translations: Record<Lang, Dict> = {
       haveAccount: "هل لديك حساب بالفعل؟ تسجيل الدخول",
       noAccount: "جديد في ألسوق؟ انضم مجاناً",
       forgotPasswordLink: "هل نسيت كلمة المرور؟",
+      newToAlsouk: "هل أنت جديد في ألسوق؟",
+      createFreeAccountBtn: "إنشاء حساب مجاني",
       chooseRoleTitle: "من أنت؟",
       chooseRoleDesc: "حدد نوع حسابك لتخصيص تجربتك. يمكنك التصفح بكلا الطريقتين، ولكن هذا يخبر الشركات الأخرى بتركيزك الأساسي.",
       buyer: "مشتري",
@@ -1657,7 +1665,7 @@ export const translations: Record<Lang, Dict> = {
       welcomeBack: "مرحباً بعودتك!",
       requiredField: "هذا الحقل مطلوب",
       invalidEmail: "يرجى إدخال بريد إلكتروني صحيح",
-      invalidPhone: "يرجى إدخال رقم هاتف تونسي صحيح (8 أرقام، أو يبدأ بـ 216+)",
+      invalidPhone: "يرجى إدخال رقم هاتف تونسي صحيح (8 أرقام)",
       passwordLength: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
       passwordRequirements: "يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل، وحرف صغير واحد، ورقم واحد",
       passwordsDoNotMatch: "كلمات المرور غير متطابقة",
@@ -1666,7 +1674,7 @@ export const translations: Record<Lang, Dict> = {
       resetSuccess: "تم إعادة تعيين كلمة المرور بنجاح!",
       phoneTab: "رقم الهاتف",
       emailTab: "البريد الإلكتروني",
-      phonePlaceholder: "مثال: 678 345 21",
+      phonePlaceholder: "21345678",
       emailPlaceholder: "مثال: name@company.com",
       passwordPlaceholder: "أدخل كلمة المرور الخاصة بك",
       fullNamePlaceholder: "مثال: محمد بن علي",

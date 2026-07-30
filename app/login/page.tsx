@@ -44,7 +44,7 @@ function LoginScreen() {
     if (activeTab === "phone") {
       if (!phone.trim()) {
         errors.phone = t.auth.requiredField
-      } else if (!isValidTunisianPhone(phone)) {
+      } else if (phone.trim().length !== 8 || !isValidTunisianPhone(phone)) {
         errors.phone = t.auth.invalidPhone
       }
     } else {
@@ -99,7 +99,7 @@ function LoginScreen() {
 
   return (
     <div className="flex min-h-[75vh] items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-secondary/20" dir={dir}>
-      <div className="w-full max-w-[420px] rounded-[24px] border border-border/80 bg-card p-6 sm:p-8 shadow-xl shadow-primary/5 transition-all">
+      <div className="w-full max-w-[390px] rounded-[20px] border border-border/80 bg-card p-6 shadow-xl shadow-primary/5 transition-all animate-in fade-in zoom-in-95 duration-200">
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -174,16 +174,21 @@ function LoginScreen() {
               <label className="text-xs font-bold text-foreground">
                 {t.auth.phone}
               </label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-muted-foreground">
                   <Phone className="size-4" />
                 </span>
+                <span className="absolute start-9 flex items-center gap-1.5 text-xs font-bold text-muted-foreground border-e pe-2 border-border h-5">
+                  <span className="text-sm">🇹🇳</span>
+                  <span>+216</span>
+                </span>
                 <input
                   type="tel"
+                  maxLength={8}
                   placeholder={t.auth.phonePlaceholder}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className={`w-full rounded-xl border bg-card py-3 pe-4 ps-10 text-xs font-medium transition-all outline-none focus:ring-2 focus:ring-primary/20 ${
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                  className={`w-full rounded-xl border bg-card py-3 pe-4 ps-[110px] text-xs font-medium tracking-wider transition-all outline-none focus:ring-2 focus:ring-primary/20 ${
                     validationErrors.phone
                       ? "border-destructive focus:border-destructive"
                       : "border-border/80 focus:border-primary"
@@ -289,13 +294,16 @@ function LoginScreen() {
           </button>
         </form>
 
-        {/* Account Redirect */}
-        <div className="mt-8 text-center border-t border-border/60 pt-4">
+        {/* Account Redirect CTA Button */}
+        <div className="mt-8 text-center border-t border-border/60 pt-6">
+          <p className="text-xs font-bold text-muted-foreground mb-3">
+            {t.auth.newToAlsouk}
+          </p>
           <Link
             href="/register"
-            className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-xs font-extrabold text-white py-3.5 transition-all active:scale-98 shadow-md shadow-primary/10"
           >
-            {t.auth.noAccount}
+            <span>{t.auth.createFreeAccountBtn}</span>
           </Link>
         </div>
 
