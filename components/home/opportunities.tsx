@@ -62,7 +62,7 @@ export function Opportunities() {
               className="group flex w-[280px] shrink-0 snap-start flex-col rounded-[20px] border border-border bg-card p-4 transition-all duration-300 hover:border-primary/20 hover:shadow-md sm:w-auto"
             >
               {/* Product Image & Badge */}
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[16px] bg-secondary mb-3">
+              <div className="relative aspect-[4/3.5] w-full overflow-hidden rounded-[16px] bg-secondary mb-3">
                 <Image
                   src={o.image}
                   alt={o.name}

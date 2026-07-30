@@ -92,7 +92,7 @@ export function LiveMarketplace() {
           {LIVE_STORES.map((live, idx) => (
             <div
               key={idx}
-              className="group relative aspect-[9/16] w-[220px] shrink-0 snap-start overflow-hidden rounded-[20px] border border-border bg-secondary shadow-sm transition-all duration-300 hover:border-primary/20 sm:w-auto"
+              className="group relative aspect-[9/18] w-[220px] shrink-0 snap-start overflow-hidden rounded-[20px] border border-border bg-secondary shadow-sm transition-all duration-300 hover:border-primary/20 sm:w-auto"
             >
               {/* Thumbnail Background Image */}
               <Image
@@ -103,7 +103,7 @@ export function LiveMarketplace() {
                 className="object-cover transition-transform duration-700 group-hover:scale-102"
               />
               {/* Ambient Dark Gradient Overlay */}
-              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/30" />
+              <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/25" />
 
               {/* LIVE Badge & Viewer Count Header */}
               <div className="absolute inset-x-3 top-3 flex items-center justify-between">
