@@ -3,14 +3,14 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useState } from "react"
-import { ArrowRight, BadgeCheck, Crown, MapPin, ShieldCheck, Star } from "lucide-react"
+import { ArrowRight, BadgeCheck, MapPin, Star } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { fetchSuppliers } from "@/lib/supabase/suppliers-service"
 import type { Supplier } from "@/lib/directory-data"
 
-const FEATURED_LIMIT = 6
+const FEATURED_LIMIT = 4
 
 const FALLBACK_SUPPLIERS: Supplier[] = [
   {
@@ -92,46 +92,6 @@ const FALLBACK_SUPPLIERS: Supplier[] = [
     categories: ["food"],
     description: "Premium olive oil manufacturer",
     logoUrl: null,
-  },
-  {
-    id: "sahara-dates",
-    name: "Sahara Dates Export",
-    monogram: "SD",
-    logoColor: "green",
-    country: "tn",
-    cityKey: "tozeur",
-    region: "south",
-    verified: true,
-    rating: 5.0,
-    reviews: 421,
-    products: 64,
-    years: 10,
-    responseRate: 99,
-    minMoq: 1000,
-    businessTypes: ["exporter"],
-    categories: ["food"],
-    description: "Dates exporter",
-    logoUrl: null,
-  },
-  {
-    id: "tunis-metalworks",
-    name: "Tunis Metalworks",
-    monogram: "TM",
-    logoColor: "blue",
-    country: "tn",
-    cityKey: "tunis",
-    region: "capital",
-    verified: false,
-    rating: 4.4,
-    reviews: 87,
-    products: 178,
-    years: 4,
-    responseRate: 88,
-    minMoq: 50,
-    businessTypes: ["manufacturer"],
-    categories: ["machinery"],
-    description: "Industrial metal products",
-    logoUrl: null,
   }
 ]
 
@@ -149,7 +109,7 @@ export function FeaturedSuppliers() {
       if (res.suppliers && res.suppliers.length > 0) {
         setItems(res.suppliers)
       } else {
-        setItems(FALLBACK_SUPPLIERS.slice(0, FEATURED_LIMIT))
+        setItems(FALLBACK_SUPPLIERS)
       }
       setLoading(false)
     })
@@ -161,104 +121,92 @@ export function FeaturedSuppliers() {
   if (!loading && items.length === 0) return null
 
   return (
-    <section id="suppliers" className="bg-secondary/30 py-10 lg:py-16">
+    <section id="suppliers" className="py-6 bg-background">
       <div className="mx-auto max-w-7xl px-6">
-        <div className="flex items-end justify-between gap-4 border-b border-border/60 pb-5">
+        {/* Section Heading */}
+        <div className="flex items-end justify-between gap-4 border-b border-border/60 pb-3">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/8 px-2.5 py-1 text-xs font-bold text-primary">
-              <ShieldCheck className="size-3.5" />
-              {t.suppliers.verified}
-            </span>
-            <h2 className="mt-2.5 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
               {t.suppliers.title}
             </h2>
-            <p className="mt-1.5 text-sm text-muted-foreground">{t.suppliers.subtitle}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t.suppliers.subtitle}</p>
           </div>
           <Link
             href="/suppliers"
-            className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/80"
+            className="group inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
           >
             {t.home.viewAll}
-            <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180" />
+            <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180" />
           </Link>
         </div>
 
-        <div className="no-scrollbar -mx-6 mt-8 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-4 lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0">
+        {/* Horizontal scroll rail on mobile, grid on desktop */}
+        <div className="no-scrollbar -mx-6 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:overflow-visible sm:px-0 sm:mx-0">
           {loading
-            ? Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-72 w-[82%] shrink-0 animate-pulse rounded-[20px] border border-border bg-card sm:w-[48%] lg:w-auto" />
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-64 w-[280px] shrink-0 animate-pulse rounded-[20px] border border-border bg-card sm:w-auto" />
               ))
             : items.map((s) => (
                 <div
                   key={s.id}
-                  className="group flex w-[82%] shrink-0 snap-start flex-col overflow-hidden rounded-[20px] border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/25 hover:shadow-xl hover:shadow-primary/5 sm:w-[48%] lg:w-auto"
+                  className="group flex w-[280px] shrink-0 snap-start flex-col rounded-[20px] border border-border bg-card p-4 transition-all duration-300 hover:border-primary/25 sm:w-auto"
                 >
-                  <div className="relative h-32 overflow-hidden">
+                  {/* Supplier Logo/Thumbnail with factory background */}
+                  <div className="relative h-28 overflow-hidden rounded-[16px] mb-3 bg-secondary">
                     <Image
                       src="/images/supplier-factory.png"
                       alt={`${s.name} facility`}
                       fill
-                      sizes="(max-width: 1024px) 82vw, 30vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                      sizes="(max-width: 640px) 280px, 20vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-102"
                     />
-                    {s.verified && (
-                      <span className="absolute start-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground shadow-sm backdrop-blur-sm bg-accent/95">
-                        <Crown className="size-3.5" />
-                        {t.suppliers.goldSupplier}
+                    {/* Centered monogram overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px]">
+                      <span className="flex size-11 items-center justify-center rounded-full bg-[#2563EB] text-xs font-black text-white shadow-md">
+                        {s.monogram}
                       </span>
-                    )}
+                    </div>
                   </div>
 
-                  <div className="flex flex-1 flex-col p-5">
-                    <div className="flex items-center gap-2">
-                      <h3 className="truncate text-base font-extrabold text-foreground">{s.name}</h3>
-                      {s.verified && <BadgeCheck className="size-4.5 shrink-0 text-primary" />}
+                  {/* Company Info */}
+                  <div className="flex flex-1 flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="truncate text-sm font-bold text-foreground leading-tight">{s.name}</h3>
+                      {s.verified && <BadgeCheck className="size-4 shrink-0 text-[#2563EB]" />}
                     </div>
-                    <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                      <MapPin className="size-3.5 shrink-0" />
+
+                    <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                      <MapPin className="size-3.5 shrink-0 text-muted-foreground/60" />
                       <span className="truncate">
                         {dt.cities[s.cityKey] || s.cityKey}, {dt.countries[s.country] || s.country}
                       </span>
                     </p>
-                    <p className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-[11px] font-bold text-secondary-foreground">
-                      {dt.categories[s.categories[0]] || s.categories[0]}
-                    </p>
 
-                    <div className="mt-5 grid grid-cols-3 gap-2 border-t border-border/80 pt-4 text-center">
-                      <div>
-                        <p className="flex items-center justify-center gap-0.5 text-sm font-extrabold text-foreground">
-                          <Star className="size-3.5 fill-amber-400 text-amber-400" />
-                          {s.rating}
-                        </p>
-                        <p className="text-[10px] font-semibold text-muted-foreground">{s.reviews}</p>
+                    {/* Stats & Rating */}
+                    <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-xs">
+                      <div className="flex items-center gap-0.5 font-bold text-foreground">
+                        <Star className="size-3.5 fill-amber-400 text-amber-400" />
+                        <span>{s.rating}</span>
                       </div>
-                      <div>
-                        <p className="text-sm font-extrabold text-foreground">{s.responseRate}%</p>
-                        <p className="text-[10px] font-semibold text-muted-foreground">{t.suppliers.responseRate}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-extrabold text-foreground">{s.years}</p>
-                        <p className="text-[10px] font-semibold text-muted-foreground">{t.suppliers.yearsLabel}</p>
-                      </div>
+                      <span className="text-[10px] font-semibold text-muted-foreground">
+                        {s.reviews} reviews
+                      </span>
                     </div>
 
+                    {/* Visit Store Button */}
                     <Link
                       href={`/suppliers/${s.id}`}
-                      className={buttonVariants({ variant: "outline", className: "mt-5 w-full rounded-xl py-5 text-sm font-semibold hover:bg-muted" })}
+                      className={buttonVariants({
+                        size: "sm",
+                        className: "mt-4 w-full rounded-xl bg-secondary hover:bg-muted text-[11px] font-semibold text-foreground flex items-center justify-center border border-border/60",
+                      })}
                     >
-                      {t.suppliers.viewProfile}
-                      <ArrowRight className="size-4 ms-1 rtl:rotate-180" />
+                      Visit Store
+                      <ArrowRight className="size-3.5 ms-1 rtl:rotate-180" />
                     </Link>
                   </div>
                 </div>
               ))}
-        </div>
-
-        <div className="mt-8 flex justify-center">
-          <Link href="/suppliers" className={buttonVariants({ variant: "outline", size: "lg", className: "rounded-xl px-6 font-semibold" })}>
-            {t.home.browseSuppliers}
-            <ArrowRight className="size-4 ms-1 rtl:rotate-180" />
-          </Link>
         </div>
       </div>
     </section>
