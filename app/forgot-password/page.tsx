@@ -3,16 +3,11 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 import { MarketplaceShell } from "@/components/marketplace/shell"
 import { useLanguage } from "@/components/language-provider"
-import {
-  cleanPhoneNumber,
-  isValidTunisianPhone,
-  isValidEmail,
-  isStrongPassword,
-  adminResetPassword
-} from "@/lib/supabase/auth-helpers"
-import { Mail, Phone, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle, ArrowLeft, KeyRound } from "lucide-react"
+import { isValidEmail } from "@/lib/supabase/auth-helpers"
+import { Mail, Phone, Loader2, AlertCircle, CheckCircle, ArrowLeft, KeyRound, Info } from "lucide-react"
 
 function ForgotPasswordScreen() {
   const { t, dir } = useLanguage()
@@ -20,11 +15,7 @@ function ForgotPasswordScreen() {
   const [activeTab, setActiveTab] = useState<"phone" | "email">("phone")
 
   // Fields state
-  const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
 
   // UI states
   const [loading, setLoading] = useState(false)
@@ -34,6 +25,11 @@ function ForgotPasswordScreen() {
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (activeTab === "phone") {
+      // Phone is not supported yet
+      return
+    }
+
     setLoading(true)
     setError(null)
     setSuccess(null)
@@ -42,30 +38,10 @@ function ForgotPasswordScreen() {
     const errors: { [key: string]: string } = {}
 
     // 1. Validation
-    if (activeTab === "phone") {
-      if (!phone.trim()) {
-        errors.phone = t.auth.requiredField
-      } else if (phone.trim().length !== 8 || !isValidTunisianPhone(phone)) {
-        errors.phone = t.auth.invalidPhone
-      }
-    } else {
-      if (!email.trim()) {
-        errors.email = t.auth.requiredField
-      } else if (!isValidEmail(email)) {
-        errors.email = t.auth.invalidEmail
-      }
-    }
-
-    if (!password) {
-      errors.password = t.auth.requiredField
-    } else if (!isStrongPassword(password)) {
-      errors.password = `${t.auth.passwordLength}. ${t.auth.passwordRequirements}.`
-    }
-
-    if (!confirmPassword) {
-      errors.confirmPassword = t.auth.requiredField
-    } else if (password !== confirmPassword) {
-      errors.confirmPassword = t.auth.passwordsDoNotMatch
+    if (!email.trim()) {
+      errors.email = t.auth.requiredField
+    } else if (!isValidEmail(email)) {
+      errors.email = t.auth.invalidEmail
     }
 
     if (Object.keys(errors).length > 0) {
@@ -74,32 +50,24 @@ function ForgotPasswordScreen() {
       return
     }
 
-    // 2. Call backend admin helper to update immediately (no SMS/email required)
-    const params: any = {
-      newPassword: password,
-    }
-
-    if (activeTab === "phone") {
-      params.phone = cleanPhoneNumber(phone)
-    } else {
-      params.email = email.trim().toLowerCase()
-    }
-
     try {
-      const result = await adminResetPassword(params)
+      const supabase = createClient()
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: `${window.location.origin}/account`,
+      })
 
-      if (!result.success) {
-        setError(result.message)
+      if (resetError) {
+        setError(resetError.message)
         setLoading(false)
         return
       }
 
-      setSuccess(t.auth.resetSuccess)
+      setSuccess("If the email address exists, a password reset link has been sent.")
 
-      // Delay redirect to login to allow user to see success checkmark
+      // Delay redirect to login
       setTimeout(() => {
         router.push("/login")
-      }, 1500)
+      }, 3000)
 
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred.")
@@ -183,43 +151,32 @@ function ForgotPasswordScreen() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleReset} className="space-y-4">
-
-          {/* Phone Reset */}
-          {activeTab === "phone" ? (
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-foreground">
-                {t.auth.phone}
-              </label>
-              <div className="relative flex items-center">
-                <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-muted-foreground">
-                  <Phone className="size-4" />
-                </span>
-                <span className="absolute start-9 flex items-center gap-1.5 text-xs font-bold text-muted-foreground border-e pe-2 border-border h-5">
-                  <span className="text-sm">🇹🇳</span>
-                  <span>+216</span>
-                </span>
-                <input
-                  type="tel"
-                  maxLength={8}
-                  placeholder={t.auth.phonePlaceholder}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                  className={`w-full rounded-xl border bg-card py-3 pe-4 ps-[110px] text-xs font-medium tracking-wider transition-all outline-none focus:ring-2 focus:ring-primary/20 ${
-                    validationErrors.phone
-                      ? "border-destructive focus:border-destructive"
-                      : "border-border/80 focus:border-primary"
-                  }`}
-                />
-              </div>
-              {validationErrors.phone && (
-                <p className="text-[10px] text-destructive font-semibold mt-1">
-                  {validationErrors.phone}
-                </p>
-              )}
+        {activeTab === "phone" ? (
+          /* Phone Reset Info State (TODO: Real OTP verification in future release) */
+          <div className="space-y-4 text-center py-4 animate-in fade-in duration-200">
+            <div className="mx-auto size-12 rounded-full bg-blue-500/10 flex items-center justify-center text-primary mb-2">
+              <Info className="size-6" />
             </div>
-          ) : (
-            /* Email Reset */
+            <h3 className="text-sm font-bold text-foreground">
+              Phone Recovery Coming Soon
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Standard SMS OTP recovery for Tunisian phone numbers (+216) is under active development.
+              Please register or log in using an email address to manage your account recovery options,
+              or contact ALSOUK support for immediate help.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center rounded-xl bg-secondary hover:bg-secondary/80 text-xs font-bold py-2.5 px-4 transition-all"
+              >
+                Back to Login
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleReset} className="space-y-4">
+            {/* Email Reset */}
             <div className="space-y-1">
               <label className="text-xs font-bold text-foreground">
                 {t.auth.email}
@@ -246,90 +203,27 @@ function ForgotPasswordScreen() {
                 </p>
               )}
             </div>
-          )}
 
-          {/* New Password input */}
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-foreground">
-              {t.auth.newPassword}
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-muted-foreground">
-                <Lock className="size-4" />
-              </span>
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder={t.auth.passwordPlaceholder}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`w-full rounded-xl border bg-card py-3 pe-10 ps-10 text-xs font-medium transition-all outline-none focus:ring-2 focus:ring-primary/20 ${
-                  validationErrors.password
-                    ? "border-destructive focus:border-destructive"
-                    : "border-border/80 focus:border-primary"
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 end-0 flex items-center pe-3 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </button>
-            </div>
-            {validationErrors.password && (
-              <p className="text-[10px] text-destructive font-semibold mt-1">
-                {validationErrors.password}
-              </p>
-            )}
-          </div>
-
-          {/* Confirm Password input */}
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-foreground">
-              {t.auth.confirmPassword}
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-muted-foreground">
-                <Lock className="size-4" />
-              </span>
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder={t.auth.passwordPlaceholder}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className={`w-full rounded-xl border bg-card py-3 pe-4 ps-10 text-xs font-medium transition-all outline-none focus:ring-2 focus:ring-primary/20 ${
-                  validationErrors.confirmPassword
-                    ? "border-destructive focus:border-destructive"
-                    : "border-border/80 focus:border-primary"
-                }`}
-              />
-            </div>
-            {validationErrors.confirmPassword && (
-              <p className="text-[10px] text-destructive font-semibold mt-1">
-                {validationErrors.confirmPassword}
-              </p>
-            )}
-          </div>
-
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-xs font-extrabold text-white py-3.5 mt-2 transition-all active:scale-98 shadow-md shadow-primary/10 disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                <span>{t.marketplace.loading}</span>
-              </>
-            ) : (
-              <>
-                <KeyRound className="size-4" />
-                <span>{t.auth.resetPasswordBtn}</span>
-              </>
-            )}
-          </button>
-        </form>
+            {/* Submit button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-xs font-extrabold text-white py-3.5 mt-2 transition-all active:scale-98 shadow-md shadow-primary/10 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>{t.marketplace.loading}</span>
+                </>
+              ) : (
+                <>
+                  <KeyRound className="size-4" />
+                  <span>{t.auth.resetPasswordBtn}</span>
+                </>
+              )}
+            </button>
+          </form>
+        )}
 
       </div>
     </div>
