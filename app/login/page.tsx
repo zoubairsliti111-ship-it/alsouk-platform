@@ -99,7 +99,7 @@ function LoginScreen() {
 
   return (
     <div className="flex min-h-[75vh] items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-secondary/20" dir={dir}>
-      <div className="w-full max-w-[420px] rounded-[24px] border border-border/80 bg-card p-6 sm:p-8 shadow-xl shadow-primary/5 transition-all">
+      <div className="w-full max-w-[390px] rounded-[20px] border border-border/80 bg-card p-6 shadow-xl shadow-primary/5 transition-all animate-in fade-in zoom-in-95 duration-200">
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -301,7 +301,7 @@ function LoginScreen() {
           </p>
           <Link
             href="/register"
-            className="w-full flex items-center justify-center gap-2 rounded-xl border border-primary/30 hover:bg-primary/5 text-xs font-extrabold text-primary py-3 transition-all hover:border-primary active:scale-98"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 hover:from-blue-600 hover:to-primary text-xs font-extrabold text-white py-3.5 transition-all active:scale-98 shadow-md shadow-primary/10"
           >
             <span>{t.auth.createFreeAccountBtn}</span>
           </Link>

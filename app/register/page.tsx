@@ -146,7 +146,7 @@ function RegisterScreen() {
 
   return (
     <div className="flex min-h-[85vh] items-center justify-center px-4 py-12 bg-gradient-to-b from-background to-secondary/20" dir={dir}>
-      <div className="w-full max-w-[440px] rounded-[24px] border border-border/80 bg-card p-6 sm:p-8 shadow-xl shadow-primary/5 transition-all">
+      <div className="w-full max-w-[390px] rounded-[20px] border border-border/80 bg-card p-6 shadow-xl shadow-primary/5 transition-all animate-in fade-in zoom-in-95 duration-200">
 
         {/* Header */}
         <div className="text-center mb-8">
