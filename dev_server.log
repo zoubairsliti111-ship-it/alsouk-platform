@@ -1,0 +1,56 @@
+
+> my-project@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env
+✓ Ready in 517ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+○ Compiling / ...
+ GET / 200 in 5.0s (next.js: 4.3s, proxy.ts: 210ms, application-code: 488ms)
+[browser] Image with src "/images/product-oliveoil.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[api/suppliers] Unexpected error loading suppliers: TypeError: fetch failed
+    at async GET (app/api/suppliers/route.ts:116:17)
+  114 |
+  115 |   try {
+> 116 |     const res = await fetch(endpoint, {
+      |                 ^
+  117 |       headers: { apikey: key, Authorization: `Bearer ${key}` },
+  118 |       cache: "no-store",
+  119 |     }) {
+  [cause]: Error: getaddrinfo ENOTFOUND testproject.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'testproject.supabase.co'
+  }
+}
+ GET /api/suppliers?sort=rating&limit=4 200 in 928ms (next.js: 547ms, proxy.ts: 16ms, application-code: 366ms)
+ GET /account 200 in 1021ms (next.js: 840ms, proxy.ts: 11ms, application-code: 170ms)
+ GET / 200 in 378ms (next.js: 61ms, proxy.ts: 70ms, application-code: 248ms)
+[browser] Image with src "/images/product-oliveoil.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+[api/suppliers] Unexpected error loading suppliers: TypeError: fetch failed
+    at async GET (app/api/suppliers/route.ts:116:17)
+  114 |
+  115 |   try {
+> 116 |     const res = await fetch(endpoint, {
+      |                 ^
+  117 |       headers: { apikey: key, Authorization: `Bearer ${key}` },
+  118 |       cache: "no-store",
+  119 |     }) {
+  [cause]: Error: getaddrinfo ENOTFOUND testproject.supabase.co
+      at ignore-listed frames {
+    errno: -3008,
+    code: 'ENOTFOUND',
+    syscall: 'getaddrinfo',
+    hostname: 'testproject.supabase.co'
+  }
+}
+ GET /api/suppliers?sort=rating&limit=4 200 in 238ms (next.js: 33ms, proxy.ts: 14ms, application-code: 191ms)
+ GET /account 200 in 160ms (next.js: 10ms, proxy.ts: 16ms, application-code: 134ms)
