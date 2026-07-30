@@ -334,6 +334,8 @@ type Dict = {
     haveAccount: string
     noAccount: string
     forgotPasswordLink: string
+    newToAlsouk: string
+    createFreeAccountBtn: string
     chooseRoleTitle: string
     chooseRoleDesc: string
     buyer: string
@@ -773,6 +775,8 @@ export const translations: Record<Lang, Dict> = {
       haveAccount: "Already have an account? Sign In",
       noAccount: "New to ALSOUK? Join Free",
       forgotPasswordLink: "Forgot password?",
+      newToAlsouk: "New to ALSOUK?",
+      createFreeAccountBtn: "Create Free Account",
       chooseRoleTitle: "Who are you?",
       chooseRoleDesc: "Select your account type to personalize your experience. You can browse both ways, but this tells other businesses your primary focus.",
       buyer: "Buyer",
@@ -1210,6 +1214,8 @@ export const translations: Record<Lang, Dict> = {
       haveAccount: "Vous avez déjà un compte ? Se connecter",
       noAccount: "Nouveau sur ALSOUK ? S'inscrire gratuitement",
       forgotPasswordLink: "Mot de passe oublié ?",
+      newToAlsouk: "Nouveau sur ALSOUK ?",
+      createFreeAccountBtn: "Créer un compte gratuit",
       chooseRoleTitle: "Qui êtes-vous ?",
       chooseRoleDesc: "Sélectionnez votre type de compte pour personnaliser votre expérience. Vous pouvez naviguer des deux manières, mais cela indique aux autres entreprises votre objectif principal.",
       buyer: "Acheteur",
@@ -1647,6 +1653,8 @@ export const translations: Record<Lang, Dict> = {
       haveAccount: "هل لديك حساب بالفعل؟ تسجيل الدخول",
       noAccount: "جديد في ألسوق؟ انضم مجاناً",
       forgotPasswordLink: "هل نسيت كلمة المرور؟",
+      newToAlsouk: "هل أنت جديد في ألسوق؟",
+      createFreeAccountBtn: "إنشاء حساب مجاني",
       chooseRoleTitle: "من أنت؟",
       chooseRoleDesc: "حدد نوع حسابك لتخصيص تجربتك. يمكنك التصفح بكلا الطريقتين، ولكن هذا يخبر الشركات الأخرى بتركيزك الأساسي.",
       buyer: "مشتري",

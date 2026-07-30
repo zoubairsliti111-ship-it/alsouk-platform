@@ -53,7 +53,7 @@ function RegisterScreen() {
     if (activeTab === "phone") {
       if (!phone.trim()) {
         errors.phone = t.auth.requiredField
-      } else if (!isValidTunisianPhone(phone)) {
+      } else if (phone.trim().length !== 8 || !isValidTunisianPhone(phone)) {
         errors.phone = t.auth.invalidPhone
       }
     } else {
@@ -250,8 +250,9 @@ function RegisterScreen() {
                 <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-muted-foreground">
                   <Phone className="size-4" />
                 </span>
-                <span className="absolute start-9 flex items-center text-xs font-bold text-muted-foreground border-e pe-2 border-border h-5">
-                  +216
+                <span className="absolute start-9 flex items-center gap-1.5 text-xs font-bold text-muted-foreground border-e pe-2 border-border h-5">
+                  <span className="text-sm">🇹🇳</span>
+                  <span>+216</span>
                 </span>
                 <input
                   type="tel"
@@ -259,7 +260,7 @@ function RegisterScreen() {
                   placeholder={t.auth.phonePlaceholder}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                  className={`w-full rounded-xl border bg-card py-3 pe-4 ps-[76px] text-xs font-medium tracking-wider transition-all outline-none focus:ring-2 focus:ring-primary/20 ${
+                  className={`w-full rounded-xl border bg-card py-3 pe-4 ps-[110px] text-xs font-medium tracking-wider transition-all outline-none focus:ring-2 focus:ring-primary/20 ${
                     validationErrors.phone
                       ? "border-destructive focus:border-destructive"
                       : "border-border/80 focus:border-primary"
