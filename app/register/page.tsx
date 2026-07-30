@@ -116,25 +116,46 @@ function RegisterScreen() {
     }
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: finalEmail,
-        password: password,
-        options: {
-          data: userMetadata,
+      if (activeTab === "phone") {
+        // Phone registration: POST to our register API to bypass email confirmation
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone,
+            password,
+            fullName,
+          }),
+        })
+        const regData = await res.json()
+        if (regData.error) {
+          setError(regData.message || "Registration failed")
+          setLoading(false)
+          return
         }
-      })
+      } else {
+        // Email registration: keep the original sign up flow unmodified
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: finalEmail,
+          password: password,
+          options: {
+            data: userMetadata,
+          }
+        })
 
-      if (signUpError) {
-        setError(signUpError.message)
-        setLoading(false)
-        return
+        if (signUpError) {
+          setError(signUpError.message)
+          setLoading(false)
+          return
+        }
       }
 
       setSuccess(t.auth.signUpSuccess)
 
       // Delay redirect slightly to show success checkmark
       setTimeout(() => {
-        router.push("/account")
+        const dest = activeTab === "phone" ? "/login" : "/account"
+        router.push(dest)
         router.refresh()
       }, 1200)
 

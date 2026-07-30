@@ -20,30 +20,7 @@ export async function POST(request: Request) {
     const cleaned = cleanPhoneNumber(phone)
     const syntheticEmail = phoneToSyntheticEmail(cleaned)
 
-    // 1. Check for duplicate phone number
-    const { data: existing, error: checkError } = await admin
-      .schema("auth")
-      .from("users")
-      .select("id")
-      .or(`email.eq.${syntheticEmail.toLowerCase()},raw_user_meta_data->>phone_number.eq.${cleaned}`)
-      .limit(1)
-
-    if (checkError) {
-      console.error("Register check error:", checkError)
-      return NextResponse.json(
-        { error: true, message: "Database lookup failed" },
-        { status: 500 }
-      )
-    }
-
-    if (existing && existing.length > 0) {
-      return NextResponse.json(
-        { error: true, message: "Duplicate phone number" },
-        { status: 400 }
-      )
-    }
-
-    // 2. Create the user with email_confirm: true using the admin API
+    // Create the user with email_confirm: true using the admin API
     // This bypasses sending confirmation emails entirely for phone registrants
     const { data: newUser, error: createError } = await admin.auth.admin.createUser({
       email: syntheticEmail,
