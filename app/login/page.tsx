@@ -174,16 +174,20 @@ function LoginScreen() {
               <label className="text-xs font-bold text-foreground">
                 {t.auth.phone}
               </label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-muted-foreground">
                   <Phone className="size-4" />
                 </span>
+                <span className="absolute start-9 flex items-center text-xs font-bold text-muted-foreground border-e pe-2 border-border h-5">
+                  +216
+                </span>
                 <input
                   type="tel"
+                  maxLength={8}
                   placeholder={t.auth.phonePlaceholder}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className={`w-full rounded-xl border bg-card py-3 pe-4 ps-10 text-xs font-medium transition-all outline-none focus:ring-2 focus:ring-primary/20 ${
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                  className={`w-full rounded-xl border bg-card py-3 pe-4 ps-[76px] text-xs font-medium tracking-wider transition-all outline-none focus:ring-2 focus:ring-primary/20 ${
                     validationErrors.phone
                       ? "border-destructive focus:border-destructive"
                       : "border-border/80 focus:border-primary"
