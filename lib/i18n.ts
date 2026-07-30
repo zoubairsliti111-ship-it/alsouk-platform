@@ -317,6 +317,54 @@ type Dict = {
     save: string
     saved: string
   }
+  auth: {
+    loginTitle: string
+    registerTitle: string
+    forgotTitle: string
+    fullName: string
+    phone: string
+    email: string
+    password: string
+    confirmPassword: string
+    newPassword: string
+    signIn: string
+    signUp: string
+    logout: string
+    resetPasswordBtn: string
+    haveAccount: string
+    noAccount: string
+    forgotPasswordLink: string
+    chooseRoleTitle: string
+    chooseRoleDesc: string
+    buyer: string
+    buyerDesc: string
+    supplier: string
+    supplierDesc: string
+    saveRoleBtn: string
+    welcomeBack: string
+    requiredField: string
+    invalidEmail: string
+    invalidPhone: string
+    passwordLength: string
+    passwordRequirements: string
+    passwordsDoNotMatch: string
+    signUpSuccess: string
+    signInSuccess: string
+    resetSuccess: string
+    phoneTab: string
+    emailTab: string
+    phonePlaceholder: string
+    emailPlaceholder: string
+    passwordPlaceholder: string
+    fullNamePlaceholder: string
+    duplicateEmail: string
+    duplicatePhone: string
+    profileTitle: string
+    profileSubtitle: string
+    accountTypeLabel: string
+    notSet: string
+    backToLogin: string
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -708,6 +756,54 @@ export const translations: Record<Lang, Dict> = {
       save: "Save",
       saved: "Saved",
     },
+    auth: {
+      loginTitle: "Sign in to ALSOUK",
+      registerTitle: "Create your free account",
+      forgotTitle: "Reset your password",
+      fullName: "Full Name",
+      phone: "Phone Number",
+      email: "Email Address",
+      password: "Password",
+      confirmPassword: "Confirm Password",
+      newPassword: "New Password",
+      signIn: "Sign In",
+      signUp: "Create Account",
+      logout: "Sign Out",
+      resetPasswordBtn: "Reset Password",
+      haveAccount: "Already have an account? Sign In",
+      noAccount: "New to ALSOUK? Join Free",
+      forgotPasswordLink: "Forgot password?",
+      chooseRoleTitle: "Who are you?",
+      chooseRoleDesc: "Select your account type to personalize your experience. You can browse both ways, but this tells other businesses your primary focus.",
+      buyer: "Buyer",
+      buyerDesc: "I want to source products, submit RFQs, and connect with Tunisian suppliers.",
+      supplier: "Supplier / Manufacturer",
+      supplierDesc: "I want to showcase my products, receive RFQs, and export to regional/global markets.",
+      saveRoleBtn: "Continue to ALSOUK",
+      welcomeBack: "Welcome back!",
+      requiredField: "This field is required",
+      invalidEmail: "Please enter a valid email address",
+      invalidPhone: "Please enter a valid Tunisian phone number (8 digits, or starting with +216)",
+      passwordLength: "Password must be at least 8 characters long",
+      passwordRequirements: "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      passwordsDoNotMatch: "Passwords do not match",
+      signUpSuccess: "Your account has been created successfully!",
+      signInSuccess: "Signed in successfully!",
+      resetSuccess: "Your password has been successfully reset!",
+      phoneTab: "Phone Number",
+      emailTab: "Email Address",
+      phonePlaceholder: "e.g. 21 345 678",
+      emailPlaceholder: "e.g. name@company.com",
+      passwordPlaceholder: "Enter your password",
+      fullNamePlaceholder: "e.g. Mohamed Ben Ali",
+      duplicateEmail: "This email address is already registered",
+      duplicatePhone: "This phone number is already registered",
+      profileTitle: "My Profile",
+      profileSubtitle: "Manage your B2B account information and preferences",
+      accountTypeLabel: "Account Type",
+      notSet: "Not specified",
+      backToLogin: "Back to Sign In",
+    },
   },
   fr: {
     nav: {
@@ -1097,6 +1193,54 @@ export const translations: Record<Lang, Dict> = {
       save: "Enregistrer",
       saved: "Enregistré",
     },
+    auth: {
+      loginTitle: "Se connecter à ALSOUK",
+      registerTitle: "Créer votre compte gratuit",
+      forgotTitle: "Réinitialiser votre mot de passe",
+      fullName: "Nom complet",
+      phone: "Numéro de téléphone",
+      email: "Adresse e-mail",
+      password: "Mot de passe",
+      confirmPassword: "Confirmer le mot de passe",
+      newPassword: "Nouveau mot de passe",
+      signIn: "Se connecter",
+      signUp: "Créer un compte",
+      logout: "Se déconnecter",
+      resetPasswordBtn: "Réinitialiser le mot de passe",
+      haveAccount: "Vous avez déjà un compte ? Se connecter",
+      noAccount: "Nouveau sur ALSOUK ? S'inscrire gratuitement",
+      forgotPasswordLink: "Mot de passe oublié ?",
+      chooseRoleTitle: "Qui êtes-vous ?",
+      chooseRoleDesc: "Sélectionnez votre type de compte pour personnaliser votre expérience. Vous pouvez naviguer des deux manières, mais cela indique aux autres entreprises votre objectif principal.",
+      buyer: "Acheteur",
+      buyerDesc: "Je souhaite sourcer des produits, soumettre des RFQ et entrer en contact avec des fournisseurs tunisiens.",
+      supplier: "Fournisseur / Fabricant",
+      supplierDesc: "Je souhaite présenter mes produits, recevoir des RFQ et exporter vers les marchés régionaux/globaux.",
+      saveRoleBtn: "Continuer vers ALSOUK",
+      welcomeBack: "Bon retour !",
+      requiredField: "Ce champ est requis",
+      invalidEmail: "Veuillez entrer une adresse e-mail valide",
+      invalidPhone: "Veuillez entrer un numéro de téléphone tunisien valide (8 chiffres, ou commençant par +216)",
+      passwordLength: "Le mot de passe doit contenir au moins 8 caractères",
+      passwordRequirements: "Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule et un chiffre",
+      passwordsDoNotMatch: "Les mots de passe ne correspondent pas",
+      signUpSuccess: "Votre compte a été créé avec succès !",
+      signInSuccess: "Connexion réussie !",
+      resetSuccess: "Votre mot de passe a été réinitialisé avec succès !",
+      phoneTab: "Numéro de téléphone",
+      emailTab: "Adresse e-mail",
+      phonePlaceholder: "ex. 21 345 678",
+      emailPlaceholder: "ex. nom@entreprise.com",
+      passwordPlaceholder: "Entrez votre mot de passe",
+      fullNamePlaceholder: "ex. Mohamed Ben Ali",
+      duplicateEmail: "Cette adresse e-mail est déjà enregistrée",
+      duplicatePhone: "Ce numéro de téléphone est déjà enregistré",
+      profileTitle: "Mon profil",
+      profileSubtitle: "Gérez les informations de votre compte B2B et vos préférences",
+      accountTypeLabel: "Type de compte",
+      notSet: "Non spécifié",
+      backToLogin: "Retour à la connexion",
+    },
   },
   ar: {
     nav: {
@@ -1485,6 +1629,54 @@ export const translations: Record<Lang, Dict> = {
       contact: "تواصل",
       save: "حفظ",
       saved: "محفوظ",
+    },
+    auth: {
+      loginTitle: "تسجيل الدخول إلى ألسوق",
+      registerTitle: "أنشئ حسابك المجاني",
+      forgotTitle: "إعادة تعيين كلمة المرور",
+      fullName: "الاسم الكامل",
+      phone: "رقم الهاتف",
+      email: "البريد الإلكتروني",
+      password: "كلمة المرور",
+      confirmPassword: "تأكيد كلمة المرور",
+      newPassword: "كلمة المرور الجديدة",
+      signIn: "تسجيل الدخول",
+      signUp: "إنشاء حساب",
+      logout: "تسجيل الخروج",
+      resetPasswordBtn: "إعادة تعيين كلمة المرور",
+      haveAccount: "هل لديك حساب بالفعل؟ تسجيل الدخول",
+      noAccount: "جديد في ألسوق؟ انضم مجاناً",
+      forgotPasswordLink: "هل نسيت كلمة المرور؟",
+      chooseRoleTitle: "من أنت؟",
+      chooseRoleDesc: "حدد نوع حسابك لتخصيص تجربتك. يمكنك التصفح بكلا الطريقتين، ولكن هذا يخبر الشركات الأخرى بتركيزك الأساسي.",
+      buyer: "مشتري",
+      buyerDesc: "أريد توريد المنتجات، وتقديم طلبات عروض الأسعار، والتواصل مع الموردين التونسيين.",
+      supplier: "مورد / مصنع",
+      supplierDesc: "أريد عرض منتجاتي، واستلام طلبات عروض الأسعار، والتصدير إلى الأسواق الإقليمية والعالمية.",
+      saveRoleBtn: "المتابعة إلى ألسوق",
+      welcomeBack: "مرحباً بعودتك!",
+      requiredField: "هذا الحقل مطلوب",
+      invalidEmail: "يرجى إدخال بريد إلكتروني صحيح",
+      invalidPhone: "يرجى إدخال رقم هاتف تونسي صحيح (8 أرقام، أو يبدأ بـ 216+)",
+      passwordLength: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+      passwordRequirements: "يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل، وحرف صغير واحد، ورقم واحد",
+      passwordsDoNotMatch: "كلمات المرور غير متطابقة",
+      signUpSuccess: "تم إنشاء حسابك بنجاح!",
+      signInSuccess: "تم تسجيل الدخول بنجاح!",
+      resetSuccess: "تم إعادة تعيين كلمة المرور بنجاح!",
+      phoneTab: "رقم الهاتف",
+      emailTab: "البريد الإلكتروني",
+      phonePlaceholder: "مثال: 678 345 21",
+      emailPlaceholder: "مثال: name@company.com",
+      passwordPlaceholder: "أدخل كلمة المرور الخاصة بك",
+      fullNamePlaceholder: "مثال: محمد بن علي",
+      duplicateEmail: "هذا البريد الإلكتروني مسجل بالفعل",
+      duplicatePhone: "رقم الهاتف هذا مسجل بالفعل",
+      profileTitle: "ملفي الشخصي",
+      profileSubtitle: "إدارة معلومات حسابك B2B وتفضيلاتك",
+      accountTypeLabel: "نوع الحساب",
+      notSet: "غير محدد",
+      backToLogin: "العودة لتسجيل الدخول",
     },
   },
 }
