@@ -22,8 +22,43 @@ export function HomeSearch() {
     ar: "البحث عن المنتجات أو الموردين أو المصانع..."
   }
 
-  const { lang } = useLanguage()
+  const { lang, dir } = useLanguage()
   const placeholderText = placeholders[lang] || placeholders["en"]
+
+  const chipsData: Record<string, { term: string; label: string }[]> = {
+    en: [
+      { term: "Olive Oil", label: "Olive Oil" },
+      { term: "Dates", label: "Dates" },
+      { term: "Textiles", label: "Textiles" },
+      { term: "Machinery", label: "Machinery" },
+      { term: "Packaging", label: "Packaging" },
+      { term: "Ceramics", label: "Ceramics" },
+      { term: "Furniture", label: "Furniture" },
+      { term: "Chemicals", label: "Chemicals" },
+    ],
+    fr: [
+      { term: "Olive Oil", label: "Huile d'olive" },
+      { term: "Dates", label: "Dattes" },
+      { term: "Textiles", label: "Textiles" },
+      { term: "Machinery", label: "Machines" },
+      { term: "Packaging", label: "Emballage" },
+      { term: "Ceramics", label: "Céramique" },
+      { term: "Furniture", label: "Meubles" },
+      { term: "Chemicals", label: "Produits chimiques" },
+    ],
+    ar: [
+      { term: "Olive Oil", label: "زيت زيتون" },
+      { term: "Dates", label: "تمور" },
+      { term: "Textiles", label: "منسوجات" },
+      { term: "Machinery", label: "آلات" },
+      { term: "Packaging", label: "تغليف" },
+      { term: "Ceramics", label: "خزف" },
+      { term: "Furniture", label: "أثاث" },
+      { term: "Chemicals", label: "مواد كيميائية" },
+    ],
+  }
+
+  const currentChips = chipsData[lang] || chipsData["en"]
 
   return (
     <section className="bg-background py-6 px-6">
@@ -54,6 +89,20 @@ export function HomeSearch() {
             <span>{t.hero.searchButton}</span>
           </button>
         </form>
+
+        {/* Quick Search Chips directly below the search bar */}
+        <div className="no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto pb-1" dir={dir}>
+          {currentChips.map((chip) => (
+            <button
+              key={chip.label}
+              type="button"
+              onClick={() => goSearch(chip.label)}
+              className="shrink-0 rounded-full bg-card px-3.5 py-1.5 text-[11px] font-semibold text-muted-foreground border border-border/60 shadow-xs hover:text-primary hover:border-primary/30 hover:shadow-sm transition-all duration-300 active:scale-95 cursor-pointer"
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   )
