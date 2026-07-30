@@ -31,7 +31,11 @@ import {
   Edit2,
   Save,
   X,
-  FileText
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
+  Plus
 } from "lucide-react"
 
 // Predefined Tunisian/North African countries and cities matching directory-data
@@ -84,15 +88,15 @@ const PREDEFINED_EMOJIS = ["👤", "💼", "🏭", "📦", "🛒", "🏢", "🧑
 
 const localT = {
   en: {
-    personalInfo: "Personal Information",
+    personalInfo: "User Information",
     saveChanges: "Save Changes",
     cancel: "Cancel",
-    editProfile: "Edit Profile",
+    editProfile: "Edit Account",
     avatar: "Avatar",
     country: "Country",
     city: "City",
     accountType: "Account Type",
-    companyInfo: "Company Information",
+    companyInfo: "Company Profile",
     editCompany: "Edit Company Profile",
     completeCompanyCta: "Complete your company profile",
     completeCompanyDesc: "Showcase your capabilities, products, and verification to regional & global B2B buyers.",
@@ -138,18 +142,22 @@ const localT = {
     exportMarkets: "Target Export Markets",
     socialLinks: "Social Presence & Networks",
     profileProgress: "Profile Progress",
-    verificationStatus: "Verification Tier"
+    verificationStatus: "Verification Tier",
+    digitalPresence: "Digital Presence",
+    createStoreCta: "Create your ALSOUK Store",
+    connectWebsiteCta: "Connect your Website",
+    profileChecklist: "Profile Completion Checklist"
   },
   fr: {
-    personalInfo: "Informations Personnelles",
+    personalInfo: "Informations de l'utilisateur",
     saveChanges: "Enregistrer",
     cancel: "Annuler",
-    editProfile: "Modifier le profil",
+    editProfile: "Modifier le compte",
     avatar: "Avatar",
     country: "Pays",
     city: "Ville",
     accountType: "Type de compte",
-    companyInfo: "Informations sur l'Entreprise",
+    companyInfo: "Profil de l'entreprise",
     editCompany: "Modifier le profil de l'entreprise",
     completeCompanyCta: "Complétez le profil de votre entreprise",
     completeCompanyDesc: "Présentez vos capacités, vos produits et vos vérifications aux acheteurs B2B régionaux et mondiaux.",
@@ -195,18 +203,22 @@ const localT = {
     exportMarkets: "Marchés d'exportation cibles",
     socialLinks: "Présence sociale & Réseaux",
     profileProgress: "Progrès du profil",
-    verificationStatus: "Niveau de vérification"
+    verificationStatus: "Niveau de vérification",
+    digitalPresence: "Présence numérique",
+    createStoreCta: "Créer votre boutique ALSOUK",
+    connectWebsiteCta: "Connecter votre site Web",
+    profileChecklist: "Liste de contrôle du profil"
   },
   ar: {
-    personalInfo: "المعلومات الشخصية",
+    personalInfo: "بيانات الحساب",
     saveChanges: "حفظ التغييرات",
     cancel: "إلغاء",
-    editProfile: "تعديل الملف الشخصي",
+    editProfile: "تعديل الحساب",
     avatar: "الصورة الشخصية",
     country: "البلد",
     city: "المدينة",
     accountType: "نوع الحساب",
-    companyInfo: "معلومات الشركة",
+    companyInfo: "ملف الشركة",
     editCompany: "تعديل ملف الشركة",
     completeCompanyCta: "أكمل ملف تعريف شركتك",
     completeCompanyDesc: "اعرض قدراتك ومنتجاتك وتوثيقك لمشتري B2B الإقليميين والعالميين.",
@@ -252,7 +264,11 @@ const localT = {
     exportMarkets: "الأسواق التصديرية المستهدفة",
     socialLinks: "الحسابات الاجتماعية والشبكات",
     profileProgress: "مدى اكتمال الملف",
-    verificationStatus: "مستوى التوثيق"
+    verificationStatus: "مستوى التوثيق",
+    digitalPresence: "التواجد الرقمي",
+    createStoreCta: "أنشئ متجر ALSOUK الخاص بك",
+    connectWebsiteCta: "اربط موقعك الإلكتروني",
+    profileChecklist: "قائمة اكتمال الملف"
   }
 }
 
@@ -353,7 +369,7 @@ function AccountScreen() {
         setCompany(companyData)
         currentCompanyId = companyData.id
 
-        // Set up the company edit form
+        // Set up the company edit form (normalizing country code to lowercase)
         setCompanyForm({
           name: companyData.name || "",
           tagline: companyData.tagline || "",
@@ -365,7 +381,7 @@ function AccountScreen() {
           businessEmail: companyData.businessEmail || "",
           phoneNumber: companyData.phoneNumber || "",
           whatsappNumber: companyData.whatsappNumber || "",
-          country: companyData.country || "tn",
+          country: (companyData.country || "tn").toLowerCase(),
           city: companyData.city || "",
           postalCode: companyData.postalCode || "",
           streetAddress: companyData.streetAddress || "",
@@ -652,6 +668,28 @@ function AccountScreen() {
     })
   }
 
+  // Build Checklist of missing fields dynamically
+  const getMissingFieldsChecklist = () => {
+    if (!company) return []
+    const checklist: { label: string; done: boolean }[] = []
+
+    checklist.push({ label: dict.logoUrl, done: !!company.logoUrl })
+    checklist.push({ label: dict.tagline, done: !!company.tagline })
+    checklist.push({ label: dict.description, done: !!company.description })
+    checklist.push({ label: dict.businessType, done: !!company.businessType })
+    checklist.push({ label: dict.primaryIndustry, done: !!company.primaryIndustry })
+    checklist.push({ label: dict.yearEstablished, done: !!company.yearEstablished })
+    checklist.push({ label: dict.taxIdentifier, done: !!company.taxIdentifier })
+    checklist.push({ label: dict.city, done: !!company.city })
+    checklist.push({ label: dict.supportedLanguages, done: company.supportedLanguages?.length > 0 })
+    checklist.push({ label: dict.exportMarkets, done: company.exportMarkets?.length > 0 })
+    checklist.push({ label: dict.socialLinks, done: !!(company.facebookUrl || company.instagramUrl || company.tiktokUrl || company.linkedinUrl || company.youtubeUrl) })
+
+    return checklist
+  }
+
+  const checklistItems = getMissingFieldsChecklist()
+
   if (loading) {
     return (
       <div className="flex h-[70vh] items-center justify-center">
@@ -702,39 +740,32 @@ function AccountScreen() {
     )
   }
 
-  // Member Since date parsing (pure approach)
-  const memberSinceDate = new Date(user.created_at || "2026-07-30T00:00:00.000Z")
-  const memberSinceStr = memberSinceDate.toLocaleDateString(
-    lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "ar-TN",
-    { month: "short", year: "numeric" }
-  )
-
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8" dir={dir}>
 
       {/* Page title */}
       <div className="text-center sm:text-start">
         <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-          {t.auth.profileTitle}
+          {accountType === "supplier" ? "Business Profile" : t.auth.profileTitle}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t.auth.profileSubtitle}
+          {accountType === "supplier" ? "Manage and showcase your enterprise profile, digital presence, and marketplace alignment." : t.auth.profileSubtitle}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 items-start">
 
-        {/* Column 1: Sidebar Profile Overview & Account Type */}
+        {/* Left Hand Column: Sidebar Account Overview & Metrics */}
         <div className="space-y-6">
 
-          {/* Section 1 & 2: Overview Card */}
+          {/* Section 1: Overview Card */}
           <div className="rounded-[20px] border border-border bg-card p-6 text-center shadow-lg shadow-primary/5">
             <div className="flex justify-center mb-4">
               {renderAvatar(metadata.avatar_url, fullName)}
             </div>
             <h2 className="text-xl font-black text-foreground tracking-tight">{fullName}</h2>
 
-            {/* Section 2: Account Type Badge */}
+            {/* Account Type Badge */}
             <div className="mt-3 inline-flex items-center gap-1.5 transition-all">
               {accountType === "buyer" ? (
                 <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 bg-blue-500/10 px-3.5 py-1.5 rounded-full border border-blue-500/20 text-xs font-bold shadow-sm">
@@ -784,7 +815,7 @@ function AccountScreen() {
             </button>
           </div>
 
-          {/* Section 5: Account Summary Metrics */}
+          {/* Section 2: Account Summary Metrics */}
           <div className="rounded-[20px] border border-border bg-card p-6 shadow-lg shadow-primary/5 space-y-4">
             <h3 className="text-sm font-black text-foreground tracking-tight flex items-center gap-2">
               <Box className="size-4 text-primary" />
@@ -807,22 +838,17 @@ function AccountScreen() {
             </div>
           </div>
 
-        </div>
-
-        {/* Column 2: Profile Details, Company Profile & Security */}
-        <div className="lg:col-span-2 space-y-6">
-
-          {/* Section 1: Personal Information Card */}
-          <div className="rounded-[20px] border border-border bg-card p-6 sm:p-8 shadow-lg shadow-primary/5">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-base font-black text-foreground flex items-center gap-2">
-                <User className="size-5 text-primary" />
+          {/* Section 3: User Information (Always retained and kept simple) */}
+          <div className="rounded-[20px] border border-border bg-card p-6 shadow-lg shadow-primary/5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-foreground flex items-center gap-2">
+                <User className="size-4 text-primary" />
                 <span>{dict.personalInfo}</span>
               </h3>
               {!isEditingProfile && (
                 <button
                   onClick={() => setIsEditingProfile(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-extrabold text-primary hover:bg-primary/5 rounded-lg border border-primary/20 transition-all cursor-pointer"
+                  className="text-[10px] font-extrabold text-primary hover:underline flex items-center gap-1"
                 >
                   <Edit2 className="size-3" />
                   <span>{dict.editProfile}</span>
@@ -830,212 +856,63 @@ function AccountScreen() {
               )}
             </div>
 
-            {profileSuccess && (
-              <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl flex items-center gap-2">
-                <Sparkles className="size-4" />
-                <span>{profileSuccess}</span>
-              </div>
-            )}
-
-            {profileError && (
-              <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs font-bold rounded-xl">
-                {profileError}
-              </div>
-            )}
-
             {isEditingProfile ? (
-              <form onSubmit={handleUpdateProfile} className="space-y-5">
-
-                {/* Full Name */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground">{t.auth.fullName}</label>
-                  <input
-                    type="text"
-                    value={fullNameInput}
-                    onChange={(e) => setFullNameInput(e.target.value)}
-                    placeholder={t.auth.fullNamePlaceholder}
-                    className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                    required
-                  />
-                </div>
-
-                {/* Avatar Picker Choice */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted-foreground block">{dict.avatarOptionLabel}</label>
-                  <div className="flex flex-wrap gap-2 py-1">
-                    {PREDEFINED_EMOJIS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => setAvatarInput(emoji)}
-                        className={`size-10 rounded-xl flex items-center justify-center text-xl border transition-all cursor-pointer ${
-                          avatarInput === emoji
-                            ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                            : "border-border hover:bg-secondary/50"
-                        }`}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="pt-1.5">
-                    <input
-                      type="text"
-                      value={avatarInput}
-                      onChange={(e) => setAvatarInput(e.target.value)}
-                      placeholder={dict.customAvatarUrl}
-                      className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Country and City selection Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Country Selection */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground">{dict.country}</label>
-                    <select
-                      value={countryInput}
-                      onChange={(e) => {
-                        setCountryInput(e.target.value)
-                        setCityInput("") // Reset city upon changing country
-                      }}
-                      className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                    >
-                      <option value="">{dict.selectCountry}</option>
-                      {Object.keys(COUNTRY_TO_CITIES).map((key) => (
-                        <option key={key} value={key}>
-                          {dirT.countries[key as keyof typeof dirT.countries] || key}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* City Selection */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground">{dict.city}</label>
-                    {countryInput && COUNTRY_TO_CITIES[countryInput] ? (
-                      <select
-                        value={cityInput}
-                        onChange={(e) => setCityInput(e.target.value)}
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      >
-                        <option value="">{dict.selectCity}</option>
-                        {COUNTRY_TO_CITIES[countryInput].map((city) => (
-                          <option key={city} value={city}>
-                            {dirT.cities[city] || city}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={cityInput}
-                        onChange={(e) => setCityInput(e.target.value)}
-                        placeholder={dict.enterCity}
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      />
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="submit"
-                    disabled={updating}
-                    className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-xs font-extrabold text-white py-3 px-6 transition-all shadow-md shadow-primary/10 disabled:opacity-50 cursor-pointer"
-                  >
-                    {updating ? (
-                      <>
-                        <Loader2 className="size-4 animate-spin" />
-                        <span>{dict.savingChanges}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Save className="size-4" />
-                        <span>{dict.saveChanges}</span>
-                      </>
-                    )}
+              <form onSubmit={handleUpdateProfile} className="space-y-3">
+                <input
+                  type="text"
+                  value={fullNameInput}
+                  onChange={(e) => setFullNameInput(e.target.value)}
+                  placeholder={t.auth.fullNamePlaceholder}
+                  className="w-full px-3 py-2 text-xs font-semibold rounded-lg border border-border bg-secondary/20 focus:outline-none"
+                  required
+                />
+                <div className="flex gap-2">
+                  <button type="submit" disabled={updating} className="flex-1 text-[10px] font-bold bg-primary text-white py-1.5 rounded-lg">
+                    {dict.saveChanges}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditingProfile(false)
-                      initializeProfileForm(user)
-                    }}
-                    className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl border border-border hover:bg-secondary/50 text-xs font-bold text-foreground py-3 px-6 transition-all cursor-pointer"
-                  >
-                    <X className="size-4" />
-                    <span>{dict.cancel}</span>
+                  <button type="button" onClick={() => setIsEditingProfile(false)} className="flex-1 text-[10px] font-bold border border-border py-1.5 rounded-lg">
+                    {dict.cancel}
                   </button>
                 </div>
-
               </form>
             ) : (
-              <div className="space-y-4">
-
-                {/* Full Name display */}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-center sm:gap-4 border-b border-border/50 pb-4">
-                  <span className="text-xs font-bold text-muted-foreground">{t.auth.fullName}</span>
-                  <span className="text-xs font-black text-foreground sm:col-span-2">{fullName}</span>
+              <div className="space-y-2 text-xs font-medium text-muted-foreground">
+                <div className="flex justify-between border-b border-border/40 pb-1.5">
+                  <span>Name:</span>
+                  <span className="font-bold text-foreground">{fullName}</span>
                 </div>
-
-                {/* Phone display - read-only */}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-center sm:gap-4 border-b border-border/50 pb-4">
-                  <span className="text-xs font-bold text-muted-foreground">{t.auth.phone}</span>
-                  <span className="text-xs font-semibold text-foreground sm:col-span-2 flex items-center gap-2">
-                    <Phone className="size-4 text-muted-foreground" />
-                    <span>{phoneVal}</span>
-                  </span>
+                <div className="flex justify-between border-b border-border/40 pb-1.5">
+                  <span>Phone:</span>
+                  <span className="font-semibold text-foreground">{phoneVal}</span>
                 </div>
-
-                {/* Email display - read-only */}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-center sm:gap-4 border-b border-border/50 pb-4">
-                  <span className="text-xs font-bold text-muted-foreground">{t.auth.email}</span>
-                  <span className="text-xs font-semibold text-foreground sm:col-span-2 flex items-center gap-2">
-                    <Mail className="size-4 text-muted-foreground" />
-                    <span className="break-all">{emailVal}</span>
-                  </span>
+                <div className="flex justify-between">
+                  <span>Email:</span>
+                  <span className="font-semibold text-foreground break-all max-w-[120px] text-right">{emailVal}</span>
                 </div>
-
-                {/* Country display */}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-center sm:gap-4 border-b border-border/50 pb-4">
-                  <span className="text-xs font-bold text-muted-foreground">{dict.country}</span>
-                  <span className="text-xs font-semibold text-foreground sm:col-span-2 capitalize flex items-center gap-2">
-                    <Globe className="size-4 text-muted-foreground" />
-                    <span>
-                      {metadata.country && dirT.countries[metadata.country as keyof typeof dirT.countries]
-                        ? dirT.countries[metadata.country as keyof typeof dirT.countries]
-                        : metadata.country || t.auth.notSet}
-                    </span>
-                  </span>
-                </div>
-
-                {/* City display */}
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-center sm:gap-4">
-                  <span className="text-xs font-bold text-muted-foreground">{dict.city}</span>
-                  <span className="text-xs font-semibold text-foreground sm:col-span-2 capitalize flex items-center gap-2">
-                    <MapPin className="size-4 text-muted-foreground" />
-                    <span>
-                      {metadata.city && dirT.cities[metadata.city]
-                        ? dirT.cities[metadata.city]
-                        : metadata.city || t.auth.notSet}
-                    </span>
-                  </span>
-                </div>
-
               </div>
             )}
           </div>
 
-          {/* Section 3: Company Information Card (Visible only to Suppliers) */}
+        </div>
+
+        {/* Right Hand Column: Refined Primary "Company Profile" Focus */}
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* Section A: Primary Company Profile Card */}
           {accountType === "supplier" && (
-            <div className="rounded-[20px] border border-border bg-card p-6 sm:p-8 shadow-lg shadow-primary/5">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-base font-black text-foreground flex items-center gap-2">
-                  <Building2 className="size-5 text-primary" />
-                  <span>{dict.companyInfo}</span>
-                </h3>
+            <div className="rounded-[20px] border border-border bg-card p-6 sm:p-8 shadow-lg shadow-primary/5 space-y-6">
+
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-border/50 pb-4">
+                <div className="flex items-center gap-3">
+                  <span className="p-2.5 bg-primary/10 rounded-xl">
+                    <Building2 className="size-6 text-primary" />
+                  </span>
+                  <div>
+                    <h2 className="text-lg font-black text-foreground tracking-tight">{dict.companyInfo}</h2>
+                    <p className="text-xs text-muted-foreground">The foundation of your storefront, catalogue, and B2B reputation.</p>
+                  </div>
+                </div>
                 {company && !isEditingCompany && (
                   <button
                     onClick={() => setIsEditingCompany(true)}
@@ -1048,21 +925,21 @@ function AccountScreen() {
               </div>
 
               {companySuccess && (
-                <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl flex items-center gap-2">
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl flex items-center gap-2">
                   <Sparkles className="size-4" />
                   <span>{companySuccess}</span>
                 </div>
               )}
 
               {companyError && (
-                <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs font-bold rounded-xl">
+                <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs font-bold rounded-xl">
                   {companyError}
                 </div>
               )}
 
               {fetchingCompanyInfo ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="size-6 animate-spin text-primary" />
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="size-8 animate-spin text-primary" />
                 </div>
               ) : isEditingCompany ? (
                 <form onSubmit={handleUpdateCompanyProfile} className="space-y-6">
@@ -1210,7 +1087,7 @@ function AccountScreen() {
                         <option value="500+">More than 500</option>
                       </select>
                     </div>
-                    <div className="space-y-1.5 sm:col-span-1">
+                    <div className="space-y-1.5">
                       <label className="text-xs font-bold text-muted-foreground">{dict.taxIdentifier}</label>
                       <input
                         type="text"
@@ -1282,7 +1159,7 @@ function AccountScreen() {
                     />
                   </div>
 
-                  {/* Multi-language and Export Destination selections (Extensible arrays) */}
+                  {/* Multi-language and Export Destination selections */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 rounded-2xl bg-secondary/15 border border-border/50">
                     <div className="space-y-2">
                       <label className="text-xs font-black text-foreground block">{dict.supportedLanguages}</label>
@@ -1378,7 +1255,7 @@ function AccountScreen() {
                     </div>
                   </div>
 
-                  {/* Submission and Cancel CTA Buttons */}
+                  {/* Actions */}
                   <div className="flex gap-3 pt-2">
                     <button
                       type="submit"
@@ -1412,159 +1289,111 @@ function AccountScreen() {
 
                 </form>
               ) : company ? (
-                <div className="space-y-5">
-                  <div className="flex items-start gap-4">
-                    {/* Logo */}
+                <div className="space-y-6">
+
+                  {/* Company Visual Badge and Overview */}
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 p-5 bg-secondary/10 rounded-2xl border border-border/40">
                     {company.logoUrl ? (
-                      <div className="size-16 rounded-2xl border border-border bg-white overflow-hidden shrink-0 shadow-sm">
+                      <div className="size-20 rounded-2xl border border-border bg-white overflow-hidden shrink-0 shadow-sm flex items-center justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={company.logoUrl} alt={company.name} className="size-full object-contain p-1" />
+                        <img src={company.logoUrl} alt={company.name} className="size-full object-contain p-1.5" />
                       </div>
                     ) : (
-                      <div className="size-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-md">
+                      <div className="size-20 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white font-black text-3xl flex items-center justify-center shrink-0 shadow-md">
                         {company.name.charAt(0).toUpperCase()}
                       </div>
                     )}
 
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-base font-black text-foreground">{company.name}</h4>
-                        {company.verified && (
-                          <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                            {t.marketplace.companies.verified}
+                    <div className="text-center sm:text-start space-y-1.5 flex-1">
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                        <h3 className="text-xl font-black text-foreground tracking-tight">{company.name}</h3>
+                        <span className="flex items-center gap-1 text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 shadow-sm uppercase">
+                          <Shield className="size-3 shrink-0" />
+                          {company.verificationTier}
+                        </span>
+                      </div>
+
+                      {company.tagline && (
+                        <p className="text-xs font-bold text-primary tracking-wide">{company.tagline}</p>
+                      )}
+
+                      <div className="flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-2 text-xs text-muted-foreground pt-1">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="size-3.5" />
+                          <span>{company.city ? (dirT.cities[company.city] || company.city) : ""}, {company.country ? (dirT.countries[company.country as keyof typeof dirT.countries] || company.country) : ""}</span>
+                        </span>
+                        {company.yearEstablished && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="size-3.5" />
+                            <span>Established in {company.yearEstablished}</span>
                           </span>
                         )}
                       </div>
-
-                      {company.websiteUrl && (
-                        <a
-                          href={company.websiteUrl.startsWith("http") ? company.websiteUrl : `https://${company.websiteUrl}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-                        >
-                          <Globe className="size-3.5" />
-                          <span>{company.websiteUrl}</span>
-                        </a>
-                      )}
                     </div>
                   </div>
 
-                  {/* Profile Progress Indicator Bar */}
-                  <div className="bg-secondary/15 p-4 rounded-xl border border-border/50 space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-foreground">
-                      <span>{dict.profileProgress}</span>
-                      <span className="text-primary">{company.profileCompletion}%</span>
+                  {/* Profile Progress Score Bar */}
+                  <div className="bg-gradient-to-r from-primary/5 to-blue-500/5 p-5 rounded-2xl border border-primary/10 space-y-2.5">
+                    <div className="flex justify-between items-center text-xs font-bold">
+                      <span className="text-foreground tracking-tight">{dict.profileProgress}</span>
+                      <span className="text-primary font-black text-sm">{company.profileCompletion}%</span>
                     </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${company.profileCompletion}%` }}></div>
+                    <div className="w-full bg-secondary rounded-full h-2.5 overflow-hidden">
+                      <div className="bg-gradient-to-r from-primary to-blue-600 h-2.5 rounded-full transition-all duration-500" style={{ width: `${company.profileCompletion}%` }}></div>
                     </div>
                   </div>
 
+                  {/* Detailed Description */}
                   {company.description && (
-                    <div className="text-xs text-muted-foreground leading-relaxed bg-secondary/20 p-4 rounded-xl border border-border/55">
-                      {company.description}
+                    <div className="space-y-1.5">
+                      <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest">{dict.description}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed bg-secondary/15 p-4 rounded-xl border border-border/50">
+                        {company.description}
+                      </p>
                     </div>
                   )}
 
-                  {/* Structured Details Layout */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium border-t border-border/50 pt-4">
-
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="size-4 text-muted-foreground" />
-                      <span>
-                        {company.city ? (dirT.cities[company.city] || company.city) : ""}, {company.country ? (dirT.countries[company.country as keyof typeof dirT.countries] || company.country) : ""}
-                      </span>
-                    </div>
-
-                    {company.taxIdentifier && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <FileText className="size-4 text-muted-foreground" />
-                        <span>MF / RNE: <strong className="text-foreground">{company.taxIdentifier}</strong></span>
-                      </div>
-                    )}
-
+                  {/* Demographic Technical Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium border-t border-border/40 pt-4">
                     {company.businessType && (
-                      <div className="flex items-center gap-2 text-muted-foreground capitalize">
-                        <Building2 className="size-4 text-muted-foreground" />
-                        <span>Type: <strong className="text-foreground">{company.businessType.replace("_", " ")}</strong></span>
+                      <div className="flex justify-between items-center bg-secondary/10 p-3 rounded-xl border border-border/40">
+                        <span className="text-muted-foreground">{dict.businessType}</span>
+                        <span className="font-bold text-foreground capitalize">{company.businessType.replace("_", " ")}</span>
                       </div>
                     )}
-
                     {company.primaryIndustry && (
-                      <div className="flex items-center gap-2 text-muted-foreground capitalize">
-                        <Box className="size-4 text-muted-foreground" />
-                        <span>Industry: <strong className="text-foreground">{company.primaryIndustry}</strong></span>
+                      <div className="flex justify-between items-center bg-secondary/10 p-3 rounded-xl border border-border/40">
+                        <span className="text-muted-foreground">{dict.primaryIndustry}</span>
+                        <span className="font-bold text-foreground capitalize">{company.primaryIndustry}</span>
                       </div>
                     )}
-
                     {company.companySize && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <User className="size-4 text-muted-foreground" />
-                        <span>Size: <strong className="text-foreground">{company.companySize} employees</strong></span>
+                      <div className="flex justify-between items-center bg-secondary/10 p-3 rounded-xl border border-border/40">
+                        <span className="text-muted-foreground">{dict.companySize}</span>
+                        <span className="font-bold text-foreground">{company.companySize} employees</span>
                       </div>
                     )}
-
-                    {company.yearEstablished && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="size-4 text-muted-foreground" />
-                        <span>Est: <strong className="text-foreground">{company.yearEstablished}</strong></span>
+                    {company.taxIdentifier && (
+                      <div className="flex justify-between items-center bg-secondary/10 p-3 rounded-xl border border-border/40">
+                        <span className="text-muted-foreground">{dict.taxIdentifier}</span>
+                        <span className="font-bold text-foreground uppercase">{company.taxIdentifier}</span>
                       </div>
                     )}
-
-                  </div>
-
-                  {/* Target Export Destinations and Languages Tagging display */}
-                  {(company.supportedLanguages.length > 0 || company.exportMarkets.length > 0) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-secondary/15 p-4 rounded-xl border border-border/50">
-                      {company.supportedLanguages.length > 0 && (
-                        <div className="space-y-1">
-                          <span className="font-bold text-muted-foreground">{dict.supportedLanguages}</span>
-                          <div className="flex flex-wrap gap-1.5 pt-1">
-                            {company.supportedLanguages.map(l => (
-                              <span key={l} className="bg-card px-2.5 py-1 rounded-md border border-border text-[10px] font-bold text-foreground capitalize">
-                                {LANGUAGES_OPTIONS.find(o => o.key === l)?.label || l}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      {company.exportMarkets.length > 0 && (
-                        <div className="space-y-1">
-                          <span className="font-bold text-muted-foreground">{dict.exportMarkets}</span>
-                          <div className="flex flex-wrap gap-1.5 pt-1">
-                            {company.exportMarkets.map(m => (
-                              <span key={m} className="bg-card px-2.5 py-1 rounded-md border border-border text-[10px] font-bold text-foreground uppercase">
-                                {EXPORT_MARKETS_OPTIONS.find(o => o.key === m)?.label || m}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Verification Status */}
-                  <div className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <Shield className="size-4 shrink-0" />
-                      <span className="text-xs font-bold capitalize">{dict.verificationStatus}: <strong>{company.verificationTier}</strong></span>
-                    </div>
                   </div>
 
                 </div>
               ) : (
-                <div className="text-center py-8 px-4 bg-secondary/15 rounded-2xl border border-dashed border-border/80">
-                  <Building2 className="size-10 text-muted-foreground/60 mx-auto mb-3" />
-                  <h4 className="text-sm font-black text-foreground mb-1">{dict.completeCompanyCta}</h4>
-                  <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-normal mb-4">
+                <div className="text-center py-10 px-4 bg-secondary/15 rounded-2xl border border-dashed border-border/80">
+                  <Building2 className="size-12 text-muted-foreground/60 mx-auto mb-4" />
+                  <h4 className="text-base font-black text-foreground mb-1">{dict.completeCompanyCta}</h4>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-normal mb-5">
                     {dict.completeCompanyDesc}
                   </p>
                   <button
                     onClick={() => setIsEditingCompany(true)}
                     className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-xs font-extrabold text-white py-3 px-6 transition-all shadow-md shadow-primary/10 cursor-pointer"
                   >
-                    <PlusIcon className="size-4 shrink-0" />
+                    <Plus className="size-4 shrink-0" />
                     <span>Create Company Profile</span>
                   </button>
                 </div>
@@ -1572,7 +1401,164 @@ function AccountScreen() {
             </div>
           )}
 
-          {/* Section 4: Security Card (Change Password & LogOut) */}
+          {/* Section B: Digital Presence (Focus and website CTAs) */}
+          {accountType === "supplier" && company && !isEditingCompany && (
+            <div className="rounded-[20px] border border-border bg-card p-6 sm:p-8 shadow-lg shadow-primary/5 space-y-6">
+
+              {/* Header */}
+              <div className="border-b border-border/50 pb-4">
+                <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                  <Globe className="size-5 text-primary" />
+                  <span>{dict.digitalPresence}</span>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">Configure your B2B links, store modes, and direct communication networks.</p>
+              </div>
+
+              {/* Prominent Website Mode CTAs */}
+              {!company.websiteUrl ? (
+                <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-center space-y-2">
+                  <AlertCircle className="size-8 text-primary mx-auto" />
+                  <h4 className="text-sm font-black text-foreground">{dict.createStoreCta}</h4>
+                  <p className="text-xs text-muted-foreground max-w-md mx-auto">Generate a professional store catalog hosted directly on ALSOUK for maximum North African buyer discoverability.</p>
+                  <div className="pt-2">
+                    <button
+                      onClick={() => setIsEditingCompany(true)}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary text-white text-xs font-bold py-2.5 px-5 transition-all shadow-sm cursor-pointer"
+                    >
+                      <span>Create Store Profile</span>
+                      <ChevronRight className="size-3.5 rtl:rotate-180" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center space-y-2">
+                  <CheckCircle2 className="size-8 text-emerald-600 dark:text-emerald-400 mx-auto" />
+                  <h4 className="text-sm font-black text-foreground">{dict.connectWebsiteCta}</h4>
+                  <p className="text-xs text-muted-foreground max-w-md mx-auto">Your existing website is linked (<strong className="text-primary">{company.websiteUrl}</strong>). Set up DNS synchronization with ALSOUK.</p>
+                  <div className="pt-2">
+                    <a
+                      href={company.websiteUrl.startsWith("http") ? company.websiteUrl : `https://${company.websiteUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold py-2.5 px-5 transition-all shadow-sm cursor-pointer hover:bg-emerald-700"
+                    >
+                      <span>Visit Live Website</span>
+                      <ExternalLink className="size-3.5" />
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Digital Links Layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium pt-2">
+
+                {company.websiteUrl && (
+                  <div className="flex items-center justify-between bg-secondary/10 p-3 rounded-xl border border-border/40">
+                    <span className="text-muted-foreground">Website</span>
+                    <a href={company.websiteUrl.startsWith("http") ? company.websiteUrl : `https://${company.websiteUrl}`} target="_blank" rel="noreferrer" className="text-primary hover:underline font-bold break-all max-w-[150px] text-right">
+                      {company.websiteUrl}
+                    </a>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between bg-secondary/10 p-3 rounded-xl border border-border/40">
+                  <span className="text-muted-foreground">Website Mode</span>
+                  <span className="font-bold text-foreground capitalize">{company.websiteMode}</span>
+                </div>
+
+                {company.whatsappNumber && (
+                  <div className="flex items-center justify-between bg-secondary/10 p-3 rounded-xl border border-border/40">
+                    <span className="text-muted-foreground">WhatsApp</span>
+                    <a href={`https://wa.me/${company.whatsappNumber.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold">
+                      {company.whatsappNumber}
+                    </a>
+                  </div>
+                )}
+
+                {company.facebookUrl && (
+                  <div className="flex items-center justify-between bg-secondary/10 p-3 rounded-xl border border-border/40">
+                    <span className="text-muted-foreground">Facebook</span>
+                    <a href={company.facebookUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline font-bold truncate max-w-[150px]">
+                      View Profile
+                    </a>
+                  </div>
+                )}
+
+                {company.instagramUrl && (
+                  <div className="flex items-center justify-between bg-secondary/10 p-3 rounded-xl border border-border/40">
+                    <span className="text-muted-foreground">Instagram</span>
+                    <a href={company.instagramUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline font-bold truncate max-w-[150px]">
+                      View Profile
+                    </a>
+                  </div>
+                )}
+
+                {company.tiktokUrl && (
+                  <div className="flex items-center justify-between bg-secondary/10 p-3 rounded-xl border border-border/40">
+                    <span className="text-muted-foreground">TikTok</span>
+                    <a href={company.tiktokUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline font-bold truncate max-w-[150px]">
+                      View Profile
+                    </a>
+                  </div>
+                )}
+
+                {company.linkedinUrl && (
+                  <div className="flex items-center justify-between bg-secondary/10 p-3 rounded-xl border border-border/40">
+                    <span className="text-muted-foreground">LinkedIn</span>
+                    <a href={company.linkedinUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline font-bold truncate max-w-[150px]">
+                      View Profile
+                    </a>
+                  </div>
+                )}
+
+                {company.youtubeUrl && (
+                  <div className="flex items-center justify-between bg-secondary/10 p-3 rounded-xl border border-border/40">
+                    <span className="text-muted-foreground">YouTube</span>
+                    <a href={company.youtubeUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline font-bold truncate max-w-[150px]">
+                      View Channel
+                    </a>
+                  </div>
+                )}
+
+              </div>
+
+            </div>
+          )}
+
+          {/* Section C: Complete Your Profile Checklist */}
+          {accountType === "supplier" && company && !isEditingCompany && (
+            <div className="rounded-[20px] border border-border bg-card p-6 sm:p-8 shadow-lg shadow-primary/5 space-y-4">
+              <div className="border-b border-border/50 pb-3 flex items-center justify-between">
+                <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                  <Sparkles className="size-5 text-primary" />
+                  <span>{dict.profileChecklist}</span>
+                </h3>
+                <span className="text-xs font-bold text-muted-foreground">Onboarding Steps</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                {checklistItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex items-center gap-2.5 p-3 rounded-xl border transition-all ${
+                      item.done
+                        ? "bg-emerald-500/5 border-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                        : "bg-secondary/10 border-border/60 text-muted-foreground"
+                    }`}
+                  >
+                    {item.done ? (
+                      <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <AlertCircle className="size-4 shrink-0 text-muted-foreground/60" />
+                    )}
+                    <span className={`text-[11px] font-bold ${item.done ? "line-through opacity-60" : ""}`}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Section D: Security Card */}
           <div className="rounded-[20px] border border-border bg-card p-6 sm:p-8 shadow-lg shadow-primary/5 space-y-6">
             <h3 className="text-base font-black text-foreground flex items-center gap-2">
               <Shield className="size-5 text-primary" />
@@ -1760,21 +1746,6 @@ function AccountScreen() {
       )}
 
     </div>
-  )
-}
-
-function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2.5}
-      stroke="currentColor"
-      {...props}
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-    </svg>
   )
 }
 

@@ -144,15 +144,19 @@ export async function fetchCompanyForUser(userId: string): Promise<Company | nul
     .maybeSingle()
 
   if (memError || !membership) {
-    // Fallback: Check legacy owner_id column in case transition is progressive or seed is old
-    const { data: legacyCompany, error: legacyError } = await supabase
-      .from("companies")
-      .select("*")
-      .eq("owner_id", userId)
-      .maybeSingle()
+    // Fallback: Safe query using service check or fallback without owner_id column crashes
+    try {
+      const { data: legacyCompany, error: legacyError } = await supabase
+        .from("companies")
+        .select("*")
+        .eq("owner_id", userId)
+        .maybeSingle()
 
-    if (!legacyError && legacyCompany) {
-      return mapCompanyRow(legacyCompany as any)
+      if (!legacyError && legacyCompany) {
+        return mapCompanyRow(legacyCompany as any)
+      }
+    } catch {
+      // Ignored defensively if owner_id does not exist in schema
     }
     return null
   }
