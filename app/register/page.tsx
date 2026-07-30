@@ -133,18 +133,6 @@ function RegisterScreen() {
           setLoading(false)
           return
         }
-
-        // Log in immediately after creation to establish a persistent session
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: finalEmail,
-          password: password,
-        })
-
-        if (signInError) {
-          setError(signInError.message)
-          setLoading(false)
-          return
-        }
       } else {
         // Email registration: keep the original sign up flow unmodified
         const { data, error: signUpError } = await supabase.auth.signUp({
@@ -166,7 +154,8 @@ function RegisterScreen() {
 
       // Delay redirect slightly to show success checkmark
       setTimeout(() => {
-        router.push("/account")
+        const dest = activeTab === "phone" ? "/login" : "/account"
+        router.push(dest)
         router.refresh()
       }, 1200)
 
