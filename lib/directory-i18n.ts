@@ -131,6 +131,61 @@ type DirectoryDict = {
     reviewsTitle: string
     reviewsEmpty: string
     reviewsSummary: (n: number) => string
+    social: {
+      followers: string
+      following: string
+      posts: string
+      videos: string
+      products: string
+      message: string
+      share: string
+      shareCopied: string
+      goLive: string
+      editProfile: string
+      viewAs: string
+      asBuyer: string
+      asMember: string
+      tabPosts: string
+      tabProducts: string
+      tabVideos: string
+      tabLive: string
+      tabAbout: string
+      gridView: string
+      listView: string
+      like: string
+      comment: string
+      pin: string
+      unpin: string
+      pinnedBadge: string
+      edit: string
+      delete: string
+      createPost: string
+      postPlaceholder: string
+      publish: string
+      cancel: string
+      save: string
+      searchInStore: string
+      allCategories: string
+      uploadVideo: string
+      views: string
+      liveNow: string
+      liveUpcoming: string
+      livePrevious: string
+      joinLive: string
+      watchReplay: string
+      remindMe: string
+      contactChannels: string
+      website: string
+      phone: string
+      whatsapp: string
+      facebook: string
+      tiktok: string
+      businessHours: string
+      businessHoursSoon: string
+      postsEmpty: string
+      videosEmpty: string
+      liveEmpty: string
+    }
   }
   rfq: {
     title: string
@@ -369,6 +424,61 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       reviewsTitle: "Buyer reviews",
       reviewsEmpty: "No written reviews yet. Be the first to work with this supplier.",
       reviewsSummary: (n) => `Based on ${n} buyer rating${n === 1 ? "" : "s"}`,
+      social: {
+        followers: "Followers",
+        following: "Following",
+        posts: "Posts",
+        videos: "Videos",
+        products: "Products",
+        message: "Message",
+        share: "Share",
+        shareCopied: "Link copied",
+        goLive: "Go Live",
+        editProfile: "Edit Profile",
+        viewAs: "View as",
+        asBuyer: "Buyer",
+        asMember: "Member",
+        tabPosts: "Posts",
+        tabProducts: "Products",
+        tabVideos: "Videos",
+        tabLive: "Live",
+        tabAbout: "About",
+        gridView: "Grid",
+        listView: "List",
+        like: "Like",
+        comment: "Comment",
+        pin: "Pin",
+        unpin: "Unpin",
+        pinnedBadge: "Pinned",
+        edit: "Edit",
+        delete: "Delete",
+        createPost: "Create post",
+        postPlaceholder: "Share a product update, offer or announcement…",
+        publish: "Publish",
+        cancel: "Cancel",
+        save: "Save",
+        searchInStore: "Search in this store",
+        allCategories: "All",
+        uploadVideo: "Upload video",
+        views: "views",
+        liveNow: "Live now",
+        liveUpcoming: "Upcoming live",
+        livePrevious: "Previous lives",
+        joinLive: "Join live",
+        watchReplay: "Watch replay",
+        remindMe: "Remind me",
+        contactChannels: "Contact channels",
+        website: "Website",
+        phone: "Phone",
+        whatsapp: "WhatsApp",
+        facebook: "Facebook",
+        tiktok: "TikTok",
+        businessHours: "Business hours",
+        businessHoursSoon: "Business hours coming soon.",
+        postsEmpty: "No posts published yet.",
+        videosEmpty: "No videos uploaded yet.",
+        liveEmpty: "No live sessions scheduled yet.",
+      },
     },
     rfq: {
       title: "Request a quote",
@@ -605,6 +715,61 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       errorTitle: "Impossible de charger ce fournisseur",
       errorSubtitle: "Nous n'avons pas pu joindre la base de données des fournisseurs. Veuillez réessayer dans un instant.",
       retry: "Réessayer",
+      social: {
+        followers: "Abonnés",
+        following: "Abonnements",
+        posts: "Publications",
+        videos: "Vidéos",
+        products: "Produits",
+        message: "Message",
+        share: "Partager",
+        shareCopied: "Lien copié",
+        goLive: "Passer en direct",
+        editProfile: "Modifier le profil",
+        viewAs: "Voir en tant que",
+        asBuyer: "Acheteur",
+        asMember: "Membre",
+        tabPosts: "Publications",
+        tabProducts: "Produits",
+        tabVideos: "Vidéos",
+        tabLive: "Direct",
+        tabAbout: "À propos",
+        gridView: "Grille",
+        listView: "Liste",
+        like: "J'aime",
+        comment: "Commenter",
+        pin: "Épingler",
+        unpin: "Désépingler",
+        pinnedBadge: "Épinglé",
+        edit: "Modifier",
+        delete: "Supprimer",
+        createPost: "Créer une publication",
+        postPlaceholder: "Partagez une nouveauté produit, une offre ou une annonce…",
+        publish: "Publier",
+        cancel: "Annuler",
+        save: "Enregistrer",
+        searchInStore: "Rechercher dans cette boutique",
+        allCategories: "Toutes",
+        uploadVideo: "Téléverser une vidéo",
+        views: "vues",
+        liveNow: "En direct",
+        liveUpcoming: "Directs à venir",
+        livePrevious: "Directs précédents",
+        joinLive: "Rejoindre le direct",
+        watchReplay: "Voir le replay",
+        remindMe: "Me rappeler",
+        contactChannels: "Canaux de contact",
+        website: "Site web",
+        phone: "Téléphone",
+        whatsapp: "WhatsApp",
+        facebook: "Facebook",
+        tiktok: "TikTok",
+        businessHours: "Horaires d'ouverture",
+        businessHoursSoon: "Horaires d'ouverture bientôt disponibles.",
+        postsEmpty: "Aucune publication pour le moment.",
+        videosEmpty: "Aucune vidéo pour le moment.",
+        liveEmpty: "Aucune session en direct programmée.",
+      },
     },
     rfq: {
       title: "Demander un devis",
@@ -841,6 +1006,61 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       errorTitle: "تعذّر تحميل هذا المورّد",
       errorSubtitle: "تعذّر الوصول إلى قاعدة بيانات الموردين. يُرجى المحاولة مرة أخرى بعد قليل.",
       retry: "إعادة المحاولة",
+      social: {
+        followers: "المتابعون",
+        following: "يتابع",
+        posts: "المنشورات",
+        videos: "الفيديوهات",
+        products: "المنتجات",
+        message: "رسالة",
+        share: "مشاركة",
+        shareCopied: "تم نسخ الرابط",
+        goLive: "بث مباشر",
+        editProfile: "تعديل الملف",
+        viewAs: "العرض كـ",
+        asBuyer: "مشترٍ",
+        asMember: "عضو",
+        tabPosts: "المنشورات",
+        tabProducts: "المنتجات",
+        tabVideos: "الفيديوهات",
+        tabLive: "مباشر",
+        tabAbout: "حول",
+        gridView: "شبكة",
+        listView: "قائمة",
+        like: "إعجاب",
+        comment: "تعليق",
+        pin: "تثبيت",
+        unpin: "إلغاء التثبيت",
+        pinnedBadge: "مثبّت",
+        edit: "تعديل",
+        delete: "حذف",
+        createPost: "إنشاء منشور",
+        postPlaceholder: "شارك تحديث منتج أو عرضًا أو إعلانًا…",
+        publish: "نشر",
+        cancel: "إلغاء",
+        save: "حفظ",
+        searchInStore: "ابحث في هذا المتجر",
+        allCategories: "الكل",
+        uploadVideo: "رفع فيديو",
+        views: "مشاهدة",
+        liveNow: "مباشر الآن",
+        liveUpcoming: "بث مباشر قادم",
+        livePrevious: "بث مباشر سابق",
+        joinLive: "انضم للبث",
+        watchReplay: "مشاهدة الإعادة",
+        remindMe: "ذكّرني",
+        contactChannels: "قنوات التواصل",
+        website: "الموقع الإلكتروني",
+        phone: "الهاتف",
+        whatsapp: "واتساب",
+        facebook: "فيسبوك",
+        tiktok: "تيك توك",
+        businessHours: "ساعات العمل",
+        businessHoursSoon: "ساعات العمل قريبًا.",
+        postsEmpty: "لا توجد منشورات بعد.",
+        videosEmpty: "لا توجد فيديوهات بعد.",
+        liveEmpty: "لا توجد جلسات بث مباشر مجدولة بعد.",
+      },
     },
     rfq: {
       title: "طلب عرض سعر",
