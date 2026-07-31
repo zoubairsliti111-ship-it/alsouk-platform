@@ -1,57 +1,42 @@
 
-> my-project@0.1.0 dev
+> my-project@0.1.0 dev /app
 > next dev
 
 ▲ Next.js 16.2.6 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 1203ms
+✓ Ready in 559ms
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
 
-[api/companies] Failed to load companies: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getCompanies (lib/services/companies-service.ts:176:29)
-    at GET (app/api/companies/route.ts:9:41)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/companies 200 in 1415ms (next.js: 768ms, proxy.ts: 180ms, application-code: 467ms)
-○ Compiling /companies ...
- GET /companies 200 in 7.6s (next.js: 6.9s, proxy.ts: 12ms, application-code: 695ms)
-[api/companies] Failed to load companies: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getCompanies (lib/services/companies-service.ts:176:29)
-    at GET (app/api/companies/route.ts:9:41)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/companies 200 in 1737ms (next.js: 710ms, proxy.ts: 43ms, application-code: 984ms)
-[browser] Uncaught Error: @supabase/ssr: Your project's URL and API key are required to create a Supabase client!
-
-Check your Supabase project's API settings to find these values
-
-https://supabase.com/dashboard/project/_/settings/api
-    at <unknown> (https://supabase.com/dashboard/project/_/settings/api)
-    at createClient (lib/supabase/client.ts:14:29)
-    at AuthProvider.useEffect (components/auth-provider.tsx:22:34)
-    at RootLayout (app/layout.tsx:87:9)
-  12 |     ""
-  13 |
-> 14 |   return createBrowserClient(supabaseUrl, supabaseAnonKey)
-     |                             ^
-  15 | }
-  16 |
+○ Compiling /discover ...
+ GET /discover 200 in 6.4s (next.js: 5.3s, proxy.ts: 175ms, application-code: 871ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[browser] ⨯ unhandledRejection: TypeError: supabase.from(...).select(...).eq(...).is is not a function
+    at fetchFeedPosts (lib/services/posts-service.ts:252:6)
+    at loadFeed (components/discover-feed.tsx:50:37)
+    at DiscoverFeed.useEffect (components/discover-feed.tsx:39:5)
+  250 |     `)
+  251 |     .eq("status", "published")
+> 252 |     .is("deleted_at", null)
+      |      ^
+  253 |     .order("created_at", { ascending: false })
+  254 |
+  255 |   if (filterCompanyId) {
+ GET /discover 200 in 124ms (next.js: 6ms, proxy.ts: 10ms, application-code: 108ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[browser] ⨯ unhandledRejection: TypeError: supabase.from(...).select(...).eq(...).is is not a function
+    at fetchFeedPosts (lib/services/posts-service.ts:252:6)
+    at loadFeed (components/discover-feed.tsx:50:37)
+    at DiscoverFeed.useEffect (components/discover-feed.tsx:39:5)
+  250 |     `)
+  251 |     .eq("status", "published")
+> 252 |     .is("deleted_at", null)
+      |      ^
+  253 |     .order("created_at", { ascending: false })
+  254 |
+  255 |   if (filterCompanyId) {
+ GET /discover 200 in 152ms (next.js: 12ms, proxy.ts: 12ms, application-code: 129ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)

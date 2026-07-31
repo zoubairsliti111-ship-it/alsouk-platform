@@ -12,6 +12,7 @@ import {
   updateCompany
 } from "@/lib/supabase/company-service"
 import { type Company } from "@/lib/directory-data"
+import { MerchantPosts } from "@/components/marketplace/merchant-posts"
 import {
   User,
   Mail,
@@ -318,7 +319,7 @@ function AccountScreen() {
   const [selectedRole, setSelectedRole] = useState<"buyer" | "supplier" | null>(null)
 
   // Supplier Dashboard Navigation Tabs
-  const [activeTab, setActiveTab] = useState<"profile" | "digital" | "media" | "preview">("profile")
+  const [activeTab, setActiveTab] = useState<"profile" | "digital" | "media" | "preview" | "posts">("profile")
 
   // Personal Information editing state
   const [isEditingProfile, setIsEditingProfile] = useState(false)
@@ -1254,7 +1255,8 @@ function AccountScreen() {
                     {[
                       { id: "profile", label: "Profile", icon: Building2 },
                       { id: "digital", label: "Digital", icon: Globe },
-                        { id: "media", label: "Media", icon: ImageIcon },
+                      { id: "media", label: "Media", icon: ImageIcon },
+                      { id: "posts", label: "My Posts", icon: FileText },
                       { id: "preview", label: "Insights", icon: Sparkles }
                     ].map((tab) => (
                       <button
@@ -1620,6 +1622,11 @@ function AccountScreen() {
                         </div>
 
                       </div>
+                    )}
+
+                    {/* TAB 5: Commercial Posts manager */}
+                    {activeTab === "posts" && (
+                      <MerchantPosts companyId={company.id} lang={lang} />
                     )}
 
                     {/* TAB 4: Profile Insights, checklist & Preview links */}
