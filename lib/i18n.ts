@@ -18,6 +18,7 @@ type Dict = {
     forBuyers: string
     forSuppliers: string
     help: string
+    exhibitions: string
   }
   hero: {
     badge: string
@@ -414,6 +415,7 @@ export const translations: Record<Lang, Dict> = {
       forBuyers: "For Buyers",
       forSuppliers: "For Suppliers",
       help: "Help Center",
+      exhibitions: "Exhibitions",
     },
     hero: {
       badge: "Tunisia's leading B2B trade platform",
@@ -885,6 +887,7 @@ export const translations: Record<Lang, Dict> = {
       forBuyers: "Pour les acheteurs",
       forSuppliers: "Pour les fournisseurs",
       help: "Centre d'aide",
+      exhibitions: "Expositions",
     },
     hero: {
       badge: "La 1ère plateforme B2B de Tunisie",
@@ -1356,6 +1359,7 @@ export const translations: Record<Lang, Dict> = {
       forBuyers: "للمشترين",
       forSuppliers: "للموردين",
       help: "مركز المساعدة",
+      exhibitions: "المعارض",
     },
     hero: {
       badge: "المنصة التجارية B2B الرائدة في تونس",

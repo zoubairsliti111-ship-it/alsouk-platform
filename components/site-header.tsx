@@ -8,7 +8,7 @@ import { LANGS } from "@/lib/i18n"
 import { NotificationBell } from "@/components/marketplace/notification-bell"
 
 export function SiteHeader() {
-  const { lang, setLang } = useLanguage()
+  const { t, lang, setLang } = useLanguage()
   const [langOpen, setLangOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const langRef = useRef<HTMLDivElement>(null)
@@ -125,7 +125,14 @@ export function SiteHeader() {
               onClick={() => setMobileOpen(false)}
               className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
             >
-              Suppliers
+              {t.nav.suppliers}
+            </Link>
+            <Link
+              href="/exhibitions"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
+            >
+              {t.nav.exhibitions}
             </Link>
           </nav>
         </div>
