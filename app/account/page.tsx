@@ -13,6 +13,7 @@ import {
 } from "@/lib/supabase/company-service"
 import { type Company } from "@/lib/directory-data"
 import { MerchantPosts } from "@/components/marketplace/merchant-posts"
+import { MediaUploader } from "@/components/ui/media-uploader"
 import {
   User,
   Mail,
@@ -1514,29 +1515,22 @@ function AccountScreen() {
                             <ImageIcon className="size-4 text-primary" />
                             <span>{dict.addGalleryPhoto}</span>
                           </h4>
-                          <div className="flex flex-col sm:flex-row gap-3">
-                            <input
-                              type="text"
-                              placeholder="Photo Image URL (e.g. /photos/factory1.jpg)"
-                              value={photoUrl}
-                              onChange={(e) => setPhotoUrl(e.target.value)}
-                              className="flex-1 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
-                            />
+                          <div className="space-y-3">
                             <input
                               type="text"
                               placeholder="Photo Caption (e.g. Sfax Assembly Factory)"
                               value={photoCaption}
                               onChange={(e) => setPhotoCaption(e.target.value)}
-                              className="sm:w-64 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
+                              className="w-full max-w-sm px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none mx-auto block"
                             />
-                            <button
-                              type="button"
-                              onClick={() => handleAddMediaAsset("factory_photo", photoUrl, photoCaption)}
-                              disabled={updating || !photoUrl.trim()}
-                              className="rounded-xl bg-primary px-5 py-3 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
-                            >
-                              {dict.addBtn}
-                            </button>
+                            <MediaUploader
+                              companyId={company.id}
+                              mediaType="cover"
+                              onUploadSuccess={(media) => {
+                                handleAddMediaAsset("factory_photo", media.publicUrl, photoCaption || "Factory Photo")
+                              }}
+                              acceptLabel="PNG, JPG or WEBP under 5MB"
+                            />
                           </div>
 
                           {/* Render current photos */}
@@ -1567,29 +1561,22 @@ function AccountScreen() {
                             <Award className="size-4 text-primary" />
                             <span>{dict.addCertificate}</span>
                           </h4>
-                          <div className="flex flex-col sm:flex-row gap-3">
-                            <input
-                              type="text"
-                              placeholder="Certificate Document URL (e.g. /certs/iso9001.pdf)"
-                              value={certUrl}
-                              onChange={(e) => setCertUrl(e.target.value)}
-                              className="flex-1 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
-                            />
+                          <div className="space-y-3">
                             <input
                               type="text"
                               placeholder="Certificate Title (e.g. ISO 9001:2015 Quality cert)"
                               value={certCaption}
                               onChange={(e) => setCertCaption(e.target.value)}
-                              className="sm:w-64 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
+                              className="w-full max-w-sm px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none mx-auto block"
                             />
-                            <button
-                              type="button"
-                              onClick={() => handleAddMediaAsset("certificate", certUrl, certCaption)}
-                              disabled={updating || !certUrl.trim()}
-                              className="rounded-xl bg-primary px-5 py-3 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
-                            >
-                              {dict.addBtn}
-                            </button>
+                            <MediaUploader
+                              companyId={company.id}
+                              mediaType="certificate"
+                              onUploadSuccess={(media) => {
+                                handleAddMediaAsset("certificate", media.publicUrl, certCaption || "Quality Certificate")
+                              }}
+                              acceptLabel="PDF, PNG, or JPG under 5MB"
+                            />
                           </div>
 
                           {/* Render current certificates */}

@@ -2,49 +2,14 @@
 > my-project@0.1.0 dev /app
 > next dev
 
+⚠ Port 3000 is in use by an unknown process, using available port 3001 instead.
 ▲ Next.js 16.2.6 (Turbopack)
-- Local:         http://localhost:3000
-- Network:       http://192.168.0.2:3000
-✓ Ready in 559ms
-⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+- Local:         http://localhost:3001
+- Network:       http://192.168.0.2:3001
+✓ Ready in 969ms
+⨯ Another next dev server is already running.
 
-○ Compiling /discover ...
- GET /discover 200 in 6.4s (next.js: 5.3s, proxy.ts: 175ms, application-code: 871ms)
+- Local:         GET /account 200 in 2.9s (next.js: 2.1s, proxy.ts: 179ms, application-code: 613ms)
 [browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
 [browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[browser] ⨯ unhandledRejection: TypeError: supabase.from(...).select(...).eq(...).is is not a function
-    at fetchFeedPosts (lib/services/posts-service.ts:252:6)
-    at loadFeed (components/discover-feed.tsx:50:37)
-    at DiscoverFeed.useEffect (components/discover-feed.tsx:39:5)
-  250 |     `)
-  251 |     .eq("status", "published")
-> 252 |     .is("deleted_at", null)
-      |      ^
-  253 |     .order("created_at", { ascending: false })
-  254 |
-  255 |   if (filterCompanyId) {
- GET /discover 200 in 124ms (next.js: 6ms, proxy.ts: 10ms, application-code: 108ms)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[browser] ⨯ unhandledRejection: TypeError: supabase.from(...).select(...).eq(...).is is not a function
-    at fetchFeedPosts (lib/services/posts-service.ts:252:6)
-    at loadFeed (components/discover-feed.tsx:50:37)
-    at DiscoverFeed.useEffect (components/discover-feed.tsx:39:5)
-  250 |     `)
-  251 |     .eq("status", "published")
-> 252 |     .is("deleted_at", null)
-      |      ^
-  253 |     .order("created_at", { ascending: false })
-  254 |
-  255 |   if (filterCompanyId) {
- GET /discover 200 in 152ms (next.js: 12ms, proxy.ts: 12ms, application-code: 129ms)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-○ Compiling / ...
- GET / 200 in 5.0s (next.js: 4.0s, proxy.ts: 86ms, application-code: 913ms)
-[browser] Image with src "/images/product-oliveoil.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
-Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[api/suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).
- GET /api/suppliers?sort=rating&limit=4 200 in 1425ms (next.js: 1374ms, proxy.ts: 27ms, application-code: 24ms)
+ GET /login 200 in 1057ms (next.js: 967ms, proxy.ts: 24ms, application-code: 66ms)

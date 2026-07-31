@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
+import { MediaUploader } from "@/components/ui/media-uploader"
 import {
   FileText,
   Plus,
@@ -94,67 +95,6 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
     setVisibility(post.visibility)
     setFormError(null)
     setShowModal(true)
-  }
-
-  // Handles raw image upload directly to Supabase storage 'commercial-posts' bucket
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setFormError(null)
-
-    // 1. Validate File Size (< 5MB)
-    const MAX_SIZE = 5 * 1024 * 1024
-    if (file.size > MAX_SIZE) {
-      setFormError("File size exceeds 5MB limit. Please upload a smaller image.")
-      return
-    }
-
-    // 2. Validate File Type (must be PNG, JPEG, JPG, WEBP)
-    const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"]
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      setFormError("Invalid file type. Only PNG, JPEG, JPG, and WEBP formats are supported.")
-      return
-    }
-
-    setUploading(true)
-    const supabase = createClient()
-
-    try {
-      // 3. Construct unique file name path
-      const fileExt = file.name.split(".").pop() || "png"
-      const fileName = `post-${companyId}-${Math.random().toString(36).substring(2, 9)}.${fileExt}`
-      const filePath = `${companyId}/${fileName}`
-
-      // 4. Upload object
-      const { data, error: uploadError } = await supabase.storage
-        .from("commercial-posts")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false
-        })
-
-      if (uploadError) {
-        throw new Error(uploadError.message)
-      }
-
-      // 5. Get Public URL
-      const { data: publicUrlData } = supabase.storage
-        .from("commercial-posts")
-        .getPublicUrl(filePath)
-
-      if (publicUrlData?.publicUrl) {
-        setImages((prev) => [...prev, publicUrlData.publicUrl])
-      } else {
-        throw new Error("Could not retrieve public URL.")
-      }
-
-    } catch (err: any) {
-      console.error("Storage upload error:", err)
-      setFormError(err.message || "Failed to upload image. Ensure storage bucket is configured.")
-    } finally {
-      setUploading(false)
-    }
   }
 
   // Removes a thumbnail from the current post form
@@ -515,31 +455,16 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
                   </div>
                 )}
 
-                {/* Upload button wrapper */}
-                <div className="flex items-center gap-3">
-                  <label className="inline-flex items-center justify-center gap-2 rounded-xl border border-border hover:bg-secondary/40 text-xs font-bold text-foreground py-2.5 px-4 transition-all cursor-pointer">
-                    {uploading ? (
-                      <>
-                        <Loader2 className="size-4 animate-spin text-primary" />
-                        <span>Uploading...</span>
-                      </>
-                    ) : (
-                      <>
-                        <ImageIcon className="size-4 text-muted-foreground" />
-                        <span>Upload Photo</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/png, image/jpeg, image/jpg, image/webp"
-                      onChange={handleImageUpload}
-                      disabled={uploading || images.length >= 10}
-                      className="hidden"
-                    />
-                  </label>
-                  <span className="text-[10px] text-muted-foreground font-semibold">
-                    PNG, JPEG or WEBP under 5MB (Max 10 images)
-                  </span>
+                {/* Upload button wrapper using Unified MediaUploader */}
+                <div className="pt-2">
+                  <MediaUploader
+                    companyId={companyId}
+                    mediaType="post"
+                    onUploadSuccess={(media) => {
+                      setImages((prev) => [...prev, media.publicUrl])
+                    }}
+                    acceptLabel="PNG, JPG or WEBP under 5MB (Max 10 images)"
+                  />
                 </div>
               </div>
 
