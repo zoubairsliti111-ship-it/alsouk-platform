@@ -60,35 +60,63 @@ export async function POST(request: Request) {
 
   const headers = { apikey: key, Authorization: `Bearer ${key}` }
 
-  // When directed at a specific supplier, confirm it exists and snapshot its
-  // name for the admin view. A general RFQ (no supplierId) skips this.
+  // When directed at a specific supplier/company, confirm it exists and resolve its company_id.
   let supplierName: string | null = null
+  let companyId: string | null = null
+  let finalSupplierId: string | null = supplierId || null
+
   if (supplierId) {
     try {
-      const lookup = await fetch(
-        `${url}/rest/v1/${SUPPLIERS_TABLE}?select=company_name&id=eq.${encodeURIComponent(supplierId)}&limit=1`,
+      // 1. Try to look up as Company first
+      const compLookup = await fetch(
+        `${url}/rest/v1/companies?select=id,name,supplier_id&id=eq.${encodeURIComponent(supplierId)}&limit=1`,
         { headers, cache: "no-store" },
       )
-      if (lookup.status === 400) {
-        return NextResponse.json({ error: true, reason: "notFound" }, { status: 404 })
+      if (compLookup.ok) {
+        const compRows = (await compLookup.json()) as { id: string; name: string; supplier_id: string | null }[]
+        if (compRows && compRows[0]) {
+          companyId = compRows[0].id
+          supplierName = compRows[0].name
+          if (compRows[0].supplier_id) {
+            finalSupplierId = compRows[0].supplier_id
+          }
+        }
       }
-      if (!lookup.ok) {
-        console.error("[api/rfqs] Supplier lookup failed:", lookup.status)
-        return NextResponse.json({ error: true, reason: "error" }, { status: 502 })
+
+      // 2. If not found, try to look up as Supplier
+      if (!companyId) {
+        const lookup = await fetch(
+          `${url}/rest/v1/${SUPPLIERS_TABLE}?select=company_name,id&id=eq.${encodeURIComponent(supplierId)}&limit=1`,
+          { headers, cache: "no-store" },
+        )
+        if (lookup.ok) {
+          const rows = (await lookup.json()) as { company_name: string; id: string }[]
+          if (rows && rows[0]) {
+            supplierName = rows[0].company_name
+            finalSupplierId = rows[0].id
+
+            // Now find linked company
+            const companyLookup = await fetch(
+              `${url}/rest/v1/companies?select=id&supplier_id=eq.${encodeURIComponent(finalSupplierId)}&limit=1`,
+              { headers, cache: "no-store" },
+            )
+            if (companyLookup.ok) {
+              const compRows = (await companyLookup.json()) as { id: string }[]
+              if (compRows && compRows[0]) {
+                companyId = compRows[0].id
+              }
+            }
+          }
+        }
       }
-      const rows = (await lookup.json()) as { company_name: string }[]
-      if (!rows[0]) {
-        return NextResponse.json({ error: true, reason: "notFound" }, { status: 404 })
-      }
-      supplierName = rows[0].company_name
     } catch (err) {
-      console.error("[api/rfqs] Supplier lookup error:", err)
-      return NextResponse.json({ error: true, reason: "error" }, { status: 500 })
+      console.error("[api/rfqs] Supplier/Company lookup error:", err)
     }
   }
 
   const record = {
-    supplier_id: supplierId || null,
+    supplier_id: finalSupplierId,
+    company_id: companyId,
     supplier_name: supplierName,
     company_name: input.companyName,
     contact_person: input.contactPerson,

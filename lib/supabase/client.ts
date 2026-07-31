@@ -11,5 +11,34 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     ""
 
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // Return a dummy client so the UI doesn't crash fatally on unconfigured local builds
+    console.warn("Supabase is not configured. Returning dummy mock client.")
+    return {
+      auth: {
+        getSession: async () => ({ data: { session: null } }),
+        getUser: async () => ({ data: { user: null } }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        signOut: async () => {},
+        updateUser: async () => ({ data: { user: null }, error: null })
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            maybeSingle: async () => ({ data: null, error: null }),
+            order: () => ({
+              then: (cb: any) => cb({ data: [], error: null })
+            })
+          })
+        }),
+        insert: () => ({
+          select: () => ({
+            single: async () => ({ data: null, error: null })
+          })
+        })
+      })
+    } as any
+  }
+
   return createBrowserClient(supabaseUrl, supabaseAnonKey)
 }

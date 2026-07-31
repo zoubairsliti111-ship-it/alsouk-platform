@@ -232,6 +232,24 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
     console.error("Error adding initial owner membership:", memError)
   }
 
+  // Automatically create a matching storefront in the public.stores table for instant access
+  const { error: storeError } = await supabase
+    .from("stores")
+    .insert({
+      company_id: company.id,
+      name: company.name,
+      slug: company.slug,
+      tagline: insertData.tagline,
+      description: insertData.description,
+      logo_url: insertData.logo_url,
+      banner_url: insertData.banner_url,
+      is_active: true
+    })
+
+  if (storeError) {
+    console.error("Error creating default store for company:", storeError)
+  }
+
   return mapCompanyRow(company as any)
 }
 

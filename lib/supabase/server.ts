@@ -12,6 +12,16 @@ export async function createClient() {
   const url = firstDefined(URL_VARS).value || ""
   const key = firstDefined(KEY_VARS).value || ""
 
+  if (!url || !key) {
+    console.warn("Supabase is not configured on server. Returning dummy client.")
+    return {
+      auth: {
+        getSession: async () => ({ data: { session: null } }),
+        getUser: async () => ({ data: { user: null } }),
+      }
+    } as any
+  }
+
   return createServerClient(url, key, {
     cookies: {
       getAll() {
