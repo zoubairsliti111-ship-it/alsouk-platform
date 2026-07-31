@@ -31,7 +31,9 @@ import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { fetchCompanyBySlug } from "@/lib/services/companies-client"
 import { fetchProducts } from "@/lib/services/products-client"
+import { fetchFeedPosts } from "@/lib/services/posts-service"
 import type { CompanyDetails, CompanyMedia } from "@/lib/domains/company/types"
+import type { CommercialPost } from "@/lib/domains/post/types"
 import type { ProductSummary } from "@/lib/domains/product/types"
 import { Breadcrumbs, MessageState } from "@/components/marketplace/shell"
 import { ProductCard } from "@/components/marketplace/product-card"
@@ -201,6 +203,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
   const [reportSuccess, setReportSuccess] = useState(false)
 
   const [copied, setCopied] = useState(false)
+  const [companyPosts, setCompanyPosts] = useState<CommercialPost[]>([])
 
   useEffect(() => {
     let active = true
@@ -215,6 +218,13 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
       fetchProducts({ companyId: company.id, limit: 12 }).then((items) => {
         if (!active) return
         setState((prev) => (prev.slug === slug ? { ...prev, products: items } : prev))
+      })
+
+      // Fetch company commercial posts
+      fetchFeedPosts(10, 0, company.id).then((postsRes) => {
+        if (active && postsRes.success && postsRes.data) {
+          setCompanyPosts(postsRes.data)
+        }
       })
 
       // Fetch user session and verify if company owner
@@ -559,6 +569,44 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                 <span>{dict.certificates}</span>
               </h2>
               <p className="text-xs text-muted-foreground italic">{dict.noCertificates}</p>
+            </section>
+          )}
+
+          {/* Daily Updates Feed */}
+          {companyPosts && companyPosts.length > 0 && (
+            <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-6">
+              <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2">
+                <FileCheck className="size-5 text-primary" />
+                <span>Daily Feed Updates</span>
+              </h2>
+              <div className="space-y-4">
+                {companyPosts.map((post) => {
+                  const hasImages = post.images && post.images.length > 0
+                  const dateStr = new Date(post.createdAt).toLocaleDateString(
+                    lang === "en" ? "en-US" : lang === "fr" ? "fr-FR" : "ar-TN",
+                    { month: "short", day: "numeric" }
+                  )
+                  return (
+                    <div key={post.id} className="p-4 rounded-xl border border-border/60 bg-secondary/20 space-y-3">
+                      <div className="flex justify-between items-center text-[10px] text-muted-foreground font-bold">
+                        <span>Announced Update</span>
+                        <span>{dateStr}</span>
+                      </div>
+                      <p className="text-xs font-semibold text-foreground leading-relaxed whitespace-pre-wrap break-words">{post.content}</p>
+                      {hasImages && (
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                          {post.images.map((img, idx) => (
+                            <div key={idx} className="relative size-20 rounded-xl overflow-hidden border border-border/50 shrink-0">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={img} alt="Post media" className="size-full object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </section>
           )}
 
