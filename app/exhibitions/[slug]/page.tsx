@@ -42,7 +42,6 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
 
     Promise.all([
       fetchExhibitionBySlug(slug),

@@ -62,7 +62,6 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
 
   useEffect(() => {
     let active = true
-    setLoading(true)
 
     fetchBoothDetails(slug, id).then((res) => {
       if (!active) return
