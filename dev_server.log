@@ -1,42 +1,46 @@
 
-> my-project@0.1.0 dev /app
+> my-project@0.1.0 dev
 > next dev
 
 ▲ Next.js 16.2.6 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 559ms
+✓ Ready in 697ms
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
 
-○ Compiling /discover ...
- GET /discover 200 in 6.4s (next.js: 5.3s, proxy.ts: 175ms, application-code: 871ms)
+○ Compiling / ...
+ GET / 200 in 5.6s (next.js: 4.5s, proxy.ts: 166ms, application-code: 873ms)
+[browser] Image with src "/images/product-oliveoil.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
 [browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[api/suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).
+ GET /api/suppliers?sort=rating&limit=4 200 in 1527ms (next.js: 1431ms, proxy.ts: 56ms, application-code: 40ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications/unread-count 200 in 1777ms (next.js: 1694ms, proxy.ts: 66ms, application-code: 17ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications/unread-count 200 in 20ms (next.js: 8ms, proxy.ts: 5ms, application-code: 7ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications?limit=5 200 in 390ms (next.js: 332ms, proxy.ts: 6ms, application-code: 52ms)
+ GET / 200 in 125ms (next.js: 6ms, proxy.ts: 7ms, application-code: 112ms)
+[browser] Image with src "/images/product-oliveoil.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications/unread-count 200 in 29ms (next.js: 9ms, proxy.ts: 8ms, application-code: 12ms)
+[api/suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).
+ GET /api/suppliers?sort=rating&limit=4 200 in 36ms (next.js: 20ms, proxy.ts: 8ms, application-code: 8ms)
 [browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[browser] ⨯ unhandledRejection: TypeError: supabase.from(...).select(...).eq(...).is is not a function
-    at fetchFeedPosts (lib/services/posts-service.ts:252:6)
-    at loadFeed (components/discover-feed.tsx:50:37)
-    at DiscoverFeed.useEffect (components/discover-feed.tsx:39:5)
-  250 |     `)
-  251 |     .eq("status", "published")
-> 252 |     .is("deleted_at", null)
-      |      ^
-  253 |     .order("created_at", { ascending: false })
-  254 |
-  255 |   if (filterCompanyId) {
- GET /discover 200 in 124ms (next.js: 6ms, proxy.ts: 10ms, application-code: 108ms)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[browser] ⨯ unhandledRejection: TypeError: supabase.from(...).select(...).eq(...).is is not a function
-    at fetchFeedPosts (lib/services/posts-service.ts:252:6)
-    at loadFeed (components/discover-feed.tsx:50:37)
-    at DiscoverFeed.useEffect (components/discover-feed.tsx:39:5)
-  250 |     `)
-  251 |     .eq("status", "published")
-> 252 |     .is("deleted_at", null)
-      |      ^
-  253 |     .order("created_at", { ascending: false })
-  254 |
-  255 |   if (filterCompanyId) {
- GET /discover 200 in 152ms (next.js: 12ms, proxy.ts: 12ms, application-code: 129ms)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications/unread-count 200 in 45ms (next.js: 23ms, proxy.ts: 7ms, application-code: 15ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications?limit=5 200 in 16ms (next.js: 4ms, proxy.ts: 5ms, application-code: 7ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications/unread-count 200 in 57ms (next.js: 25ms, proxy.ts: 11ms, application-code: 21ms)
+ GET /notifications 200 in 1020ms (next.js: 947ms, proxy.ts: 11ms, application-code: 61ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications/unread-count 200 in 26ms (next.js: 10ms, proxy.ts: 8ms, application-code: 8ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications?limit=20 200 in 36ms (next.js: 17ms, proxy.ts: 4ms, application-code: 14ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications/unread-count 200 in 30ms (next.js: 14ms, proxy.ts: 8ms, application-code: 7ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications?limit=20 200 in 25ms (next.js: 10ms, proxy.ts: 7ms, application-code: 8ms)

@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { Check, ChevronDown, Globe, Menu, Bell, X } from "lucide-react"
+import { Check, ChevronDown, Globe, Menu, X } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 import { LANGS } from "@/lib/i18n"
+import { NotificationBell } from "@/components/marketplace/notification-bell"
 
 export function SiteHeader() {
   const { lang, setLang } = useLanguage()
@@ -80,14 +81,8 @@ export function SiteHeader() {
         <div className="flex items-center gap-2 sm:gap-3">
           {LangSwitcher}
 
-          {/* Notification Button */}
-          <button
-            className="relative inline-flex size-9 items-center justify-center rounded-full border border-border/50 bg-card/50 text-foreground/80 hover:bg-secondary hover:text-primary transition-all hover:scale-105 active:scale-95 shadow-sm"
-            aria-label="Notifications"
-          >
-            <Bell className="size-4" strokeWidth={2.2} />
-            <span className="absolute right-2.5 top-2.5 size-1.5 rounded-full bg-primary ring-2 ring-background" />
-          </button>
+          {/* Notification Dropdown Bell */}
+          <NotificationBell />
 
           {/* Menu Button */}
           <button
