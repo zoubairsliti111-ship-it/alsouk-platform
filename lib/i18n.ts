@@ -367,6 +367,38 @@ type Dict = {
     notSet: string
     backToLogin: string
   }
+  exhibitions: {
+    title: string
+    subtitle: string
+    organizer: string
+    startDate: string
+    endDate: string
+    categories: string
+    searchPlaceholder: string
+    exhibitorsCount: string
+    empty: string
+    boothsCount: string
+    viewBooth: string
+    noExhibits: string
+    catalogPdfs: string
+    contact: string
+    requestMeeting: string
+    requestMeetingTitle: string
+    requestMeetingDesc: string
+    meetingDate: string
+    meetingTime: string
+    meetingNotes: string
+    meetingNotesPlaceholder: string
+    meetingSuccess: string
+    meetingSubmitting: string
+    meetingSubmit: string
+    cancel: string
+    backToExhibition: string
+    activeUntil: string
+    archived: string
+    exploreExhibitions: string
+    exhibitors: string
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -808,6 +840,38 @@ export const translations: Record<Lang, Dict> = {
       notSet: "Not specified",
       backToLogin: "Back to Sign In",
     },
+    exhibitions: {
+      title: "Souk Exhibitions",
+      subtitle: "Discover virtual trade shows, browse unique company pavilions, and negotiate directly with elite local producers.",
+      organizer: "Organizer",
+      startDate: "Start Date",
+      endDate: "End Date",
+      categories: "Industry Segments",
+      searchPlaceholder: "Search pavilion booths or exhibits...",
+      exhibitorsCount: "Exhibitors Count",
+      empty: "No exhibitions scheduled at this moment. Check back soon!",
+      boothsCount: "Active booths",
+      viewBooth: "Enter Pavilion Booth",
+      noExhibits: "No exclusive exhibition exhibits showcased yet.",
+      catalogPdfs: "Catalog & Spec sheets (PDFs)",
+      contact: "Get in Touch",
+      requestMeeting: "Request Private B2B Meeting",
+      requestMeetingTitle: "Schedule a Virtual Meeting",
+      requestMeetingDesc: "Submit your preferred slot to book a direct virtual discussion with their export sales team.",
+      meetingDate: "Preferred Date",
+      meetingTime: "Preferred Time Slot",
+      meetingNotes: "Meeting Agenda / Key Exhibits of Interest",
+      meetingNotesPlaceholder: "Describe your business needs, volume interest, or meeting goals...",
+      meetingSuccess: "Meeting request submitted successfully!",
+      meetingSubmitting: "Submitting request...",
+      meetingSubmit: "Confirm Meeting Slot",
+      cancel: "Cancel",
+      backToExhibition: "Back to Exhibition Home",
+      activeUntil: "Active until",
+      archived: "Archived Exhibition Booth",
+      exploreExhibitions: "Explore Virtual Exhibitions",
+      exhibitors: "Exhibitors",
+    },
   },
   fr: {
     nav: {
@@ -1247,6 +1311,38 @@ export const translations: Record<Lang, Dict> = {
       notSet: "Non spécifié",
       backToLogin: "Retour à la connexion",
     },
+    exhibitions: {
+      title: "Expositions Souk",
+      subtitle: "Découvrez des salons virtuels, visitez des stands d'entreprises exclusifs et négociez en direct avec les meilleurs producteurs.",
+      organizer: "Organisateur",
+      startDate: "Date de début",
+      endDate: "Date de fin",
+      categories: "Secteurs d'activité",
+      searchPlaceholder: "Rechercher des stands ou pièces exposées...",
+      exhibitorsCount: "Nombre d'exposants",
+      empty: "Aucune exposition programmée pour le moment. Revenez bientôt !",
+      boothsCount: "Stands actifs",
+      viewBooth: "Entrer dans le stand",
+      noExhibits: "Aucune pièce exposée exclusive n'est présentée pour l'instant.",
+      catalogPdfs: "Catalogues et fiches techniques (PDF)",
+      contact: "Contactez-nous",
+      requestMeeting: "Demander un rendez-vous B2B",
+      requestMeetingTitle: "Planifier un rendez-vous virtuel",
+      requestMeetingDesc: "Proposez un créneau horaire pour réserver un entretien en direct avec l'équipe commerciale export.",
+      meetingDate: "Date souhaitée",
+      meetingTime: "Tranche horaire souhaitée",
+      meetingNotes: "Ordre du jour / Pièces d'intérêt",
+      meetingNotesPlaceholder: "Décrivez vos besoins, volumes souhaités ou objectifs de la réunion...",
+      meetingSuccess: "Demande de rendez-vous soumise avec succès !",
+      meetingSubmitting: "Envoi en cours...",
+      meetingSubmit: "Confirmer le rendez-vous",
+      cancel: "Annuler",
+      backToExhibition: "Retour à l'accueil de l'exposition",
+      activeUntil: "Actif jusqu'au",
+      archived: "Stand d'exposition archivé",
+      exploreExhibitions: "Explorer les expositions virtuelles",
+      exhibitors: "Exposants",
+    },
   },
   ar: {
     nav: {
@@ -1685,6 +1781,38 @@ export const translations: Record<Lang, Dict> = {
       accountTypeLabel: "نوع الحساب",
       notSet: "غير محدد",
       backToLogin: "العودة لتسجيل الدخول",
+    },
+    exhibitions: {
+      title: "معارض السوق",
+      subtitle: "اكتشف المعارض التجارية الافتراضية، وتصفح أجنحة الشركات المميزة، وتفاوض مباشرة مع نخبة المنتجين المحليين.",
+      organizer: "الجهة المنظمة",
+      startDate: "تاريخ البدء",
+      endDate: "تاريخ الانتهاء",
+      categories: "قطاعات الصناعة",
+      searchPlaceholder: "ابحث في أجنحة العارضين أو المعروضات...",
+      exhibitorsCount: "عدد العارضين",
+      empty: "لا توجد معارض مجدولة في الوقت الحالي. يرجى المتابعة لاحقاً!",
+      boothsCount: "الأجنحة النشطة",
+      viewBooth: "دخول جناح العارض",
+      noExhibits: "لم يتم عرض أي معروضات حصرية في هذا الجناح بعد.",
+      catalogPdfs: "الكتالوجات والمواصفات الفنية (PDF)",
+      contact: "اتصل بنا",
+      requestMeeting: "طلب اجتماع B2B افتراضي",
+      requestMeetingTitle: "حجز موعد اجتماع افتراضي",
+      requestMeetingDesc: "قدّم تفاصيل وتفضيلات الوقت لحجز مناقشة افتراضية مباشرة مع فريق مبيعات التصدير.",
+      meetingDate: "التاريخ المفضل",
+      meetingTime: "الفترة الزمنية المفضلة",
+      meetingNotes: "جدول أعمال الاجتماع / المعروضات التي تهمك",
+      meetingNotesPlaceholder: "صف متطلبات عملك، حجم الطلب المتوقع، أو أهداف الاجتماع...",
+      meetingSuccess: "تم تقديم طلب الاجتماع بنجاح!",
+      meetingSubmitting: "جاري إرسال الطلب...",
+      meetingSubmit: "تأكيد موعد الاجتماع",
+      cancel: "إلغاء",
+      backToExhibition: "العودة لصفحة المعرض الرئيسية",
+      activeUntil: "نشط حتى تاريخ",
+      archived: "جناح معرض مؤرشف",
+      exploreExhibitions: "استكشف المعارض الافتراضية",
+      exhibitors: "العارضون",
     },
   },
 }
