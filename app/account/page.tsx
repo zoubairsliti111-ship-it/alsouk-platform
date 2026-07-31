@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { MarketplaceShell } from "@/components/marketplace/shell"
@@ -31,7 +31,17 @@ import {
   Edit2,
   Save,
   X,
-  FileText
+  FileText,
+  Trash2,
+  Plus,
+  Layers,
+  Image as ImageIcon,
+  Award,
+  ExternalLink,
+  Eye,
+  CheckCircle,
+  AlertCircle,
+  Store
 } from "lucide-react"
 
 // Predefined Tunisian/North African countries and cities matching directory-data
@@ -138,7 +148,19 @@ const localT = {
     exportMarkets: "Target Export Markets",
     socialLinks: "Social Presence & Networks",
     profileProgress: "Profile Progress",
-    verificationStatus: "Verification Tier"
+    verificationStatus: "Verification Tier",
+    previewPublic: "Preview Public Page",
+    previewStore: "Preview Store",
+    checklistTitle: "Missing Information Checklist",
+    onboardingTitle: "Register Your B2B Company",
+    onboardingDesc: "Set up your official company profile to access regional buyers, showcase custom catalogs, and receive instant RFQs.",
+    launchOnboarding: "Launch Company Profile",
+    addGalleryPhoto: "Add Gallery Image Link",
+    addCertificate: "Add Quality Certificate",
+    photoUrlLabel: "Photo/Document URL",
+    captionLabel: "Caption / Title",
+    addBtn: "Add Asset",
+    noMedia: "No media assets uploaded yet."
   },
   fr: {
     personalInfo: "Informations Personnelles",
@@ -195,7 +217,19 @@ const localT = {
     exportMarkets: "Marchés d'exportation cibles",
     socialLinks: "Présence sociale & Réseaux",
     profileProgress: "Progrès du profil",
-    verificationStatus: "Niveau de vérification"
+    verificationStatus: "Niveau de vérification",
+    previewPublic: "Prévisualiser le profil public",
+    previewStore: "Prévisualiser la boutique",
+    checklistTitle: "Informations recommandées manquantes",
+    onboardingTitle: "Créez le profil de votre entreprise",
+    onboardingDesc: "Configurez le profil officiel de votre entreprise pour attirer les acheteurs régionaux, présenter vos catalogues et recevoir des RFQ instantanés.",
+    launchOnboarding: "Créer le profil de l'entreprise",
+    addGalleryPhoto: "Ajouter un lien d'image",
+    addCertificate: "Ajouter un certificat de qualité",
+    photoUrlLabel: "URL du document/photo",
+    captionLabel: "Légende / Titre",
+    addBtn: "Ajouter l'élément",
+    noMedia: "Aucun fichier multimédia téléchargé pour le moment."
   },
   ar: {
     personalInfo: "المعلومات الشخصية",
@@ -252,7 +286,19 @@ const localT = {
     exportMarkets: "الأسواق التصديرية المستهدفة",
     socialLinks: "الحسابات الاجتماعية والشبكات",
     profileProgress: "مدى اكتمال الملف",
-    verificationStatus: "مستوى التوثيق"
+    verificationStatus: "مستوى التوثيق",
+    previewPublic: "معاينة الملف العام",
+    previewStore: "معاينة المتجر الالكتروني",
+    checklistTitle: "قائمة البيانات الموصى بها المفقودة",
+    onboardingTitle: "إنشاء الملف التعريفي للشركة",
+    onboardingDesc: "قم بإنشاء وتفعيل الملف التعريفي لشركتك للوصول إلى المشترين وعرض الكتالوجات واستقبال طلبات عرض الأسعار.",
+    launchOnboarding: "تفعيل ملف الشركة",
+    addGalleryPhoto: "إضافة رابط صورة للمعرض",
+    addCertificate: "إضافة شهادة جودة أو رخصة",
+    photoUrlLabel: "رابط الصورة / المستند",
+    captionLabel: "الوصف / العنوان",
+    addBtn: "إضافة عنصر",
+    noMedia: "لم يتم تحميل أي ملفات وسائط بعد."
   }
 }
 
@@ -270,6 +316,9 @@ function AccountScreen() {
   // Role selector state
   const [showRoleModal, setShowRoleModal] = useState(false)
   const [selectedRole, setSelectedRole] = useState<"buyer" | "supplier" | null>(null)
+
+  // Supplier Dashboard Navigation Tabs
+  const [activeTab, setActiveTab] = useState<"profile" | "digital" | "media" | "preview">("profile")
 
   // Personal Information editing state
   const [isEditingProfile, setIsEditingProfile] = useState(false)
@@ -290,6 +339,7 @@ function AccountScreen() {
 
   // Company Information and Account Summary state
   const [company, setCompany] = useState<Company | null>(null)
+  const [companyMedia, setCompanyMedia] = useState<any[]>([])
   const [productsCount, setProductsCount] = useState(0)
   const [rfqsCount, setRfqsCount] = useState(0)
   const [fetchingCompanyInfo, setFetchingCompanyInfo] = useState(false)
@@ -327,6 +377,24 @@ function AccountScreen() {
     youtubeUrl: ""
   })
 
+  // Onboarding Wizard states
+  const [onboardingStep, setOnboardingStep] = useState(1)
+  const [onboardingForm, setOnboardingForm] = useState({
+    name: "",
+    slug: "",
+    tagline: "",
+    country: "tn",
+    city: "",
+    businessType: "",
+    primaryIndustry: ""
+  })
+
+  // Custom Media Management Input states
+  const [photoUrl, setPhotoUrl] = useState("")
+  const [photoCaption, setPhotoCaption] = useState("")
+  const [certUrl, setCertUrl] = useState("")
+  const [certCaption, setCertCaption] = useState("")
+
   const initializeProfileForm = (currentUser: any) => {
     if (!currentUser) return
     const metadata = currentUser.user_metadata || {}
@@ -352,6 +420,16 @@ function AccountScreen() {
       if (companyData) {
         setCompany(companyData)
         currentCompanyId = companyData.id
+
+        // Fetch company media assets
+        const { data: mediaRows } = await supabase
+          .from("company_media")
+          .select("*")
+          .eq("company_id", companyData.id)
+          .order("position", { ascending: true })
+        if (mediaRows) {
+          setCompanyMedia(mediaRows)
+        }
 
         // Set up the company edit form
         setCompanyForm({
@@ -403,24 +481,30 @@ function AccountScreen() {
       }
 
       // 3. Query RFQs count
-      const phoneVal = metadata.phone_number || ""
-      let filterStr = `email.eq.${currentUser.email}`
-      if (phoneVal) {
-        filterStr += `,phone.eq.${phoneVal}`
-      }
-      if (companyData?.supplierId) {
-        filterStr += `,supplier_id.eq.${companyData.supplierId}`
-      }
+      if (currentCompanyId) {
+        const { count: rfqsCountVal, error: rfqsError } = await supabase
+          .from("rfqs")
+          .select("*", { count: "exact", head: true })
+          .eq("company_id", currentCompanyId)
 
-      const { count: rfqsCountVal, error: rfqsError } = await supabase
-        .from("rfqs")
-        .select("*", { count: "exact", head: true })
-        .or(filterStr)
-
-      if (!rfqsError && rfqsCountVal !== null) {
-        setRfqsCount(rfqsCountVal)
-      } else {
-        setRfqsCount(0)
+        if (!rfqsError && rfqsCountVal !== null) {
+          setRfqsCount(rfqsCountVal)
+        } else {
+          // Fallback check
+          const phoneVal = metadata.phone_number || ""
+          let filterStr = `email.eq.${currentUser.email}`
+          if (phoneVal) {
+            filterStr += `,phone.eq.${phoneVal}`
+          }
+          if (companyData?.supplierId) {
+            filterStr += `,supplier_id.eq.${companyData.supplierId}`
+          }
+          const { count: legacyCount } = await supabase
+            .from("rfqs")
+            .select("*", { count: "exact", head: true })
+            .or(filterStr)
+          setRfqsCount(legacyCount || 0)
+        }
       }
 
     } catch (err) {
@@ -600,11 +684,11 @@ function AccountScreen() {
 
     try {
       const parsedYear = companyForm.yearEstablished ? Number(companyForm.yearEstablished) : null
-      const formattedSlug = companyForm.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-")
+      const formattedSlug = company?.slug || companyForm.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-")
 
       const payload = {
         ...companyForm,
-        slug: company?.slug || formattedSlug,
+        slug: formattedSlug,
         yearEstablished: parsedYear
       }
 
@@ -625,6 +709,98 @@ function AccountScreen() {
       }
     } catch (err: any) {
       setCompanyError(err.message || "An unexpected error occurred while modifying the company")
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  // Onboarding direct launch
+  const handleOnboardingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!onboardingForm.name.trim()) return
+
+    setUpdating(true)
+    const calculatedSlug = onboardingForm.slug.trim() || onboardingForm.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-")
+
+    try {
+      const payload: Partial<Company> = {
+        name: onboardingForm.name.trim(),
+        slug: calculatedSlug,
+        tagline: onboardingForm.tagline.trim() || null,
+        country: onboardingForm.country,
+        city: onboardingForm.city || null,
+        businessType: onboardingForm.businessType || null,
+        primaryIndustry: onboardingForm.primaryIndustry || null,
+        supportedLanguages: ["fr", "en"],
+        exportMarkets: ["tn"]
+      }
+
+      const newComp = await createCompany(user.id, payload)
+      if (newComp) {
+        setCompany(newComp)
+        setOnboardingStep(1)
+        fetchExtraData(user)
+      }
+    } catch (err) {
+      console.error("Onboarding creation error:", err)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  // Media Manager Add Asset
+  const handleAddMediaAsset = async (mediaType: "factory_photo" | "certificate", url: string, caption: string) => {
+    if (!url.trim()) return
+    const supabase = createClient()
+    if (!company) return
+
+    setUpdating(true)
+    try {
+      const { data, error } = await supabase
+        .from("company_media")
+        .insert({
+          company_id: company.id,
+          media_type: mediaType,
+          storage_bucket: "company-media",
+          storage_path: `asset-${Math.random().toString(36).substring(7)}`,
+          url: url.trim(),
+          caption: caption.trim() || null,
+          position: companyMedia.length
+        })
+        .select()
+
+      if (!error && data) {
+        setCompanyMedia(prev => [...prev, data[0]])
+        if (mediaType === "factory_photo") {
+          setPhotoUrl("")
+          setPhotoCaption("")
+        } else {
+          setCertUrl("")
+          setCertCaption("")
+        }
+      }
+    } catch (err) {
+      console.error("Error inserting media:", err)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  // Media Manager Delete Asset
+  const handleDeleteMediaAsset = async (id: string) => {
+    const supabase = createClient()
+    setUpdating(true)
+    try {
+      const { error } = await supabase
+        .from("company_media")
+        .delete()
+        .eq("id", id)
+
+      if (!error) {
+        setCompanyMedia(prev => prev.filter(x => x.id !== id))
+      }
+    } catch (err) {
+      console.error("Error deleting media:", err)
     } finally {
       setUpdating(false)
     }
@@ -651,6 +827,20 @@ function AccountScreen() {
       }
     })
   }
+
+  // Live missing information checklist calculator
+  const missingChecklist = useMemo(() => {
+    if (!company) return []
+    const items = []
+    if (!company.description) items.push({ key: "description", label: "Add a complete company description", tab: "profile" as const })
+    if (!company.logoUrl) items.push({ key: "logoUrl", label: "Upload a company logo image", tab: "profile" as const })
+    if (!company.bannerUrl) items.push({ key: "bannerUrl", label: "Upload a cover banner", tab: "profile" as const })
+    if (!company.taxIdentifier) items.push({ key: "taxIdentifier", label: "Provide Tax ID (Matricule Fiscal / RNE)", tab: "profile" as const })
+    if (!company.websiteUrl) items.push({ key: "websiteUrl", label: "Define website strategy & domain", tab: "digital" as const })
+    if (!company.facebookUrl && !company.linkedinUrl && !company.instagramUrl) items.push({ key: "social", label: "Add social media handles (Facebook, LinkedIn, etc.)", tab: "digital" as const })
+    if (companyMedia.length === 0) items.push({ key: "media", label: "Upload factory photos or quality certificates", tab: "media" as const })
+    return items
+  }, [company, companyMedia])
 
   if (loading) {
     return (
@@ -710,16 +900,42 @@ function AccountScreen() {
   )
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-8" dir={dir}>
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-8" dir={dir}>
 
       {/* Page title */}
-      <div className="text-center sm:text-start">
-        <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-          {t.auth.profileTitle}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t.auth.profileSubtitle}
-        </p>
+      <div className="text-center sm:text-start flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+            {t.auth.profileTitle}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {t.auth.profileSubtitle}
+          </p>
+        </div>
+
+        {/* Preview Links directly in Header if Company is active */}
+        {company && (
+          <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
+            <a
+              href={`/companies/${company.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border bg-card text-xs font-bold text-foreground hover:bg-secondary/40 transition-all shadow-xs"
+            >
+              <Eye className="size-4 text-muted-foreground" />
+              <span>{dict.previewPublic}</span>
+            </a>
+            <a
+              href={`/stores/${company.slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary/10 border border-primary/20 text-xs font-black text-primary hover:bg-primary/15 transition-all shadow-xs"
+            >
+              <Store className="size-4 shrink-0" />
+              <span>{dict.previewStore}</span>
+            </a>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 items-start">
@@ -1028,545 +1244,616 @@ function AccountScreen() {
             )}
           </div>
 
-          {/* Section 3: Company Information Card (Visible only to Suppliers) */}
+          {/* Section 3: Company Dashboard/Wizard (Visible only to Suppliers) */}
           {accountType === "supplier" && (
-            <div className="rounded-[20px] border border-border bg-card p-6 sm:p-8 shadow-lg shadow-primary/5">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-base font-black text-foreground flex items-center gap-2">
-                  <Building2 className="size-5 text-primary" />
-                  <span>{dict.companyInfo}</span>
-                </h3>
-                {company && !isEditingCompany && (
-                  <button
-                    onClick={() => setIsEditingCompany(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-extrabold text-primary hover:bg-primary/5 rounded-lg border border-primary/20 transition-all cursor-pointer"
-                  >
-                    <Edit2 className="size-3" />
-                    <span>{dict.editCompany}</span>
-                  </button>
-                )}
-              </div>
-
-              {companySuccess && (
-                <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl flex items-center gap-2">
-                  <Sparkles className="size-4" />
-                  <span>{companySuccess}</span>
-                </div>
-              )}
-
-              {companyError && (
-                <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs font-bold rounded-xl">
-                  {companyError}
-                </div>
-              )}
-
-              {fetchingCompanyInfo ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="size-6 animate-spin text-primary" />
-                </div>
-              ) : isEditingCompany ? (
-                <form onSubmit={handleUpdateCompanyProfile} className="space-y-6">
-
-                  {/* Company Name */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground">{t.auth.fullName}</label>
-                    <input
-                      type="text"
-                      value={companyForm.name}
-                      onChange={(e) => setCompanyForm({...companyForm, name: e.target.value})}
-                      placeholder="e.g. Sfax Olive Oil Export"
-                      className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      required
-                    />
-                  </div>
-
-                  {/* Tagline */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground">{dict.tagline}</label>
-                    <input
-                      type="text"
-                      value={companyForm.tagline}
-                      onChange={(e) => setCompanyForm({...companyForm, tagline: e.target.value})}
-                      placeholder="e.g. Premium organic olive oil from Sfax"
-                      className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground">{dict.description}</label>
-                    <textarea
-                      value={companyForm.description}
-                      onChange={(e) => setCompanyForm({...companyForm, description: e.target.value})}
-                      placeholder="Describe your factory, products, production capacity..."
-                      className="w-full min-h-24 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                    />
-                  </div>
-
-                  {/* Logo & Banner URLs */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.logoUrl}</label>
-                      <input
-                        type="text"
-                        value={companyForm.logoUrl}
-                        onChange={(e) => setCompanyForm({...companyForm, logoUrl: e.target.value})}
-                        placeholder="e.g. /logos/company.png"
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.bannerUrl}</label>
-                      <input
-                        type="text"
-                        value={companyForm.bannerUrl}
-                        onChange={(e) => setCompanyForm({...companyForm, bannerUrl: e.target.value})}
-                        placeholder="e.g. /banners/company.jpg"
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Website Strategy */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.websiteUrl}</label>
-                      <input
-                        type="text"
-                        value={companyForm.websiteUrl}
-                        onChange={(e) => setCompanyForm({...companyForm, websiteUrl: e.target.value})}
-                        placeholder="e.g. www.sfaxoliveoil.com"
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.websiteMode}</label>
-                      <select
-                        value={companyForm.websiteMode}
-                        onChange={(e) => setCompanyForm({...companyForm, websiteMode: e.target.value as any})}
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+            <div className="space-y-6">
+              {company ? (
+                <div className="rounded-[20px] border border-border bg-card overflow-hidden shadow-lg shadow-primary/5">
+                  {/* Tab Navigation header */}
+                  <div className="flex border-b border-border bg-secondary/20">
+                    {[
+                      { id: "profile", label: "Profile", icon: Building2 },
+                      { id: "digital", label: "Digital", icon: Globe },
+                        { id: "media", label: "Media", icon: ImageIcon },
+                      { id: "preview", label: "Insights", icon: Sparkles }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`flex-1 py-3 px-2 text-[10px] sm:text-xs font-black flex items-center justify-center gap-1 border-b-2 transition-all cursor-pointer ${
+                          activeTab === tab.id
+                            ? "border-primary text-primary bg-card"
+                            : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/10"
+                        }`}
                       >
-                        <option value="external">External Website only</option>
-                        <option value="alsouk">ALSOUK Generated Store only</option>
-                        <option value="both">Both strategies</option>
-                      </select>
-                    </div>
+                        <tab.icon className="size-3.5 shrink-0" />
+                        <span className="hidden sm:inline">{tab.label}</span>
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Business Classification */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.businessType}</label>
-                      <select
-                        value={companyForm.businessType}
-                        onChange={(e) => setCompanyForm({...companyForm, businessType: e.target.value})}
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all capitalize"
-                      >
-                        <option value="">Choose business type</option>
-                        {BUSINESS_TYPES.map(type => (
-                          <option key={type} value={type}>{type.replace("_", " ")}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.primaryIndustry}</label>
-                      <select
-                        value={companyForm.primaryIndustry}
-                        onChange={(e) => setCompanyForm({...companyForm, primaryIndustry: e.target.value})}
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all capitalize"
-                      >
-                        <option value="">Choose primary industry</option>
-                        {INDUSTRIES.map(industry => (
-                          <option key={industry} value={industry}>{industry}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Demographics & Tax Info */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.yearEstablished}</label>
-                      <input
-                        type="number"
-                        value={companyForm.yearEstablished}
-                        onChange={(e) => setCompanyForm({...companyForm, yearEstablished: e.target.value})}
-                        placeholder="e.g. 2012"
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.companySize}</label>
-                      <select
-                        value={companyForm.companySize}
-                        onChange={(e) => setCompanyForm({...companyForm, companySize: e.target.value})}
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      >
-                        <option value="">Choose size</option>
-                        <option value="1-10">1 - 10 employees</option>
-                        <option value="11-50">11 - 50 employees</option>
-                        <option value="51-200">51 - 200 employees</option>
-                        <option value="201-500">201 - 500 employees</option>
-                        <option value="500+">More than 500</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1.5 sm:col-span-1">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.taxIdentifier}</label>
-                      <input
-                        type="text"
-                        value={companyForm.taxIdentifier}
-                        onChange={(e) => setCompanyForm({...companyForm, taxIdentifier: e.target.value})}
-                        placeholder="e.g. 1234567/A/M/000"
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Physical Address details */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.country}</label>
-                      <select
-                        value={companyForm.country}
-                        onChange={(e) => setCompanyForm({...companyForm, country: e.target.value, city: ""})}
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all capitalize"
-                      >
-                        {Object.keys(COUNTRY_TO_CITIES).map(k => (
-                          <option key={k} value={k}>{dirT.countries[k as keyof typeof dirT.countries] || k}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.city}</label>
-                      {COUNTRY_TO_CITIES[companyForm.country] ? (
-                        <select
-                          value={companyForm.city}
-                          onChange={(e) => setCompanyForm({...companyForm, city: e.target.value})}
-                          className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all capitalize"
-                        >
-                          <option value="">{dict.selectCity}</option>
-                          {COUNTRY_TO_CITIES[companyForm.country].map(city => (
-                            <option key={city} value={city}>{dirT.cities[city] || city}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          value={companyForm.city}
-                          onChange={(e) => setCompanyForm({...companyForm, city: e.target.value})}
-                          placeholder={dict.enterCity}
-                          className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                        />
-                      )}
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-muted-foreground">{dict.postalCode}</label>
-                      <input
-                        type="text"
-                        value={companyForm.postalCode}
-                        onChange={(e) => setCompanyForm({...companyForm, postalCode: e.target.value})}
-                        placeholder="e.g. 3000"
-                        className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-muted-foreground">{dict.streetAddress}</label>
-                    <input
-                      type="text"
-                      value={companyForm.streetAddress}
-                      onChange={(e) => setCompanyForm({...companyForm, streetAddress: e.target.value})}
-                      placeholder="e.g. Route de Gabes Km 2"
-                      className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                    />
-                  </div>
-
-                  {/* Multi-language and Export Destination selections (Extensible arrays) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 rounded-2xl bg-secondary/15 border border-border/50">
-                    <div className="space-y-2">
-                      <label className="text-xs font-black text-foreground block">{dict.supportedLanguages}</label>
-                      <div className="space-y-2">
-                        {LANGUAGES_OPTIONS.map(opt => (
-                          <label key={opt.key} className="flex items-center gap-2.5 text-xs font-medium text-foreground cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={companyForm.supportedLanguages.includes(opt.key)}
-                              onChange={() => handleLanguageCheckboxChange(opt.key)}
-                              className="rounded border-border text-primary focus:ring-primary size-4"
-                            />
-                            <span>{opt.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-xs font-black text-foreground block">{dict.exportMarkets}</label>
-                      <div className="space-y-2">
-                        {EXPORT_MARKETS_OPTIONS.map(opt => (
-                          <label key={opt.key} className="flex items-center gap-2.5 text-xs font-medium text-foreground cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={companyForm.exportMarkets.includes(opt.key)}
-                              onChange={() => handleExportMarketCheckboxChange(opt.key)}
-                              className="rounded border-border text-primary focus:ring-primary size-4"
-                            />
-                            <span>{opt.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Social Network URLs */}
-                  <div className="space-y-3.5">
-                    <h4 className="text-xs font-black text-foreground tracking-tight border-b border-border/50 pb-1.5 flex items-center gap-1.5">
-                      <span>{dict.socialLinks}</span>
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">Facebook URL</label>
-                        <input
-                          type="text"
-                          value={companyForm.facebookUrl}
-                          onChange={(e) => setCompanyForm({...companyForm, facebookUrl: e.target.value})}
-                          placeholder="https://facebook.com/company"
-                          className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">Instagram URL</label>
-                        <input
-                          type="text"
-                          value={companyForm.instagramUrl}
-                          onChange={(e) => setCompanyForm({...companyForm, instagramUrl: e.target.value})}
-                          placeholder="https://instagram.com/company"
-                          className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">TikTok URL</label>
-                        <input
-                          type="text"
-                          value={companyForm.tiktokUrl}
-                          onChange={(e) => setCompanyForm({...companyForm, tiktokUrl: e.target.value})}
-                          placeholder="https://tiktok.com/@company"
-                          className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">LinkedIn URL</label>
-                        <input
-                          type="text"
-                          value={companyForm.linkedinUrl}
-                          onChange={(e) => setCompanyForm({...companyForm, linkedinUrl: e.target.value})}
-                          placeholder="https://linkedin.com/company/name"
-                          className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                        />
-                      </div>
-                      <div className="space-y-1.5 sm:col-span-2">
-                        <label className="text-xs font-bold text-muted-foreground">YouTube URL</label>
-                        <input
-                          type="text"
-                          value={companyForm.youtubeUrl}
-                          onChange={(e) => setCompanyForm({...companyForm, youtubeUrl: e.target.value})}
-                          placeholder="https://youtube.com/c/company"
-                          className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Submission and Cancel CTA Buttons */}
-                  <div className="flex gap-3 pt-2">
-                    <button
-                      type="submit"
-                      disabled={updating}
-                      className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-xs font-extrabold text-white py-3 px-6 transition-all shadow-md shadow-primary/10 disabled:opacity-50 cursor-pointer"
-                    >
-                      {updating ? (
-                        <>
-                          <Loader2 className="size-4 animate-spin" />
-                          <span>{dict.savingChanges}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save className="size-4" />
-                          <span>{dict.saveChanges}</span>
-                        </>
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditingCompany(false)
-                        fetchExtraData(user)
-                      }}
-                      className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl border border-border hover:bg-secondary/50 text-xs font-bold text-foreground py-3 px-6 transition-all cursor-pointer"
-                    >
-                      <X className="size-4" />
-                      <span>{dict.cancel}</span>
-                    </button>
-                  </div>
-
-                </form>
-              ) : company ? (
-                <div className="space-y-5">
-                  <div className="flex items-start gap-4">
-                    {/* Logo */}
-                    {company.logoUrl ? (
-                      <div className="size-16 rounded-2xl border border-border bg-white overflow-hidden shrink-0 shadow-sm">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={company.logoUrl} alt={company.name} className="size-full object-contain p-1" />
-                      </div>
-                    ) : (
-                      <div className="size-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-md">
-                        {company.name.charAt(0).toUpperCase()}
+                  <div className="p-6 sm:p-8 space-y-6">
+                    {companySuccess && (
+                      <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl flex items-center gap-2">
+                        <CheckCircle className="size-4 shrink-0" />
+                        <span>{companySuccess}</span>
                       </div>
                     )}
 
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-base font-black text-foreground">{company.name}</h4>
-                        {company.verified && (
-                          <span className="text-[10px] font-extrabold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                            {t.marketplace.companies.verified}
+                    {companyError && (
+                      <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs font-bold rounded-xl">
+                        {companyError}
+                      </div>
+                    )}
+
+                    {/* TAB 1: Profile basic editing */}
+                    {activeTab === "profile" && (
+                      <form onSubmit={handleUpdateCompanyProfile} className="space-y-6">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-muted-foreground">Company Name *</label>
+                          <input
+                            type="text"
+                            value={companyForm.name}
+                            onChange={(e) => setCompanyForm({...companyForm, name: e.target.value})}
+                            className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-muted-foreground">{dict.tagline}</label>
+                          <input
+                            type="text"
+                            value={companyForm.tagline}
+                            onChange={(e) => setCompanyForm({...companyForm, tagline: e.target.value})}
+                            className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-muted-foreground">{dict.description}</label>
+                          <textarea
+                            value={companyForm.description}
+                            onChange={(e) => setCompanyForm({...companyForm, description: e.target.value})}
+                            rows={4}
+                            className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all resize-none"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.logoUrl}</label>
+                            <input
+                              type="text"
+                              value={companyForm.logoUrl}
+                              onChange={(e) => setCompanyForm({...companyForm, logoUrl: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.bannerUrl}</label>
+                            <input
+                              type="text"
+                              value={companyForm.bannerUrl}
+                              onChange={(e) => setCompanyForm({...companyForm, bannerUrl: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.businessType}</label>
+                            <select
+                              value={companyForm.businessType}
+                              onChange={(e) => setCompanyForm({...companyForm, businessType: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all capitalize"
+                            >
+                              <option value="">Select type</option>
+                              {BUSINESS_TYPES.map(x => (
+                                <option key={x} value={x}>{x.replace("_", " ")}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.primaryIndustry}</label>
+                            <select
+                              value={companyForm.primaryIndustry}
+                              onChange={(e) => setCompanyForm({...companyForm, primaryIndustry: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all capitalize"
+                            >
+                              <option value="">Select industry</option>
+                              {INDUSTRIES.map(x => (
+                                <option key={x} value={x}>{x}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.yearEstablished}</label>
+                            <input
+                              type="number"
+                              value={companyForm.yearEstablished}
+                              onChange={(e) => setCompanyForm({...companyForm, yearEstablished: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.companySize}</label>
+                            <select
+                              value={companyForm.companySize}
+                              onChange={(e) => setCompanyForm({...companyForm, companySize: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            >
+                              <option value="">Select size</option>
+                              <option value="1-10">1-10</option>
+                              <option value="11-50">11-50</option>
+                              <option value="51-200">51-200</option>
+                              <option value="201-500">201-500</option>
+                              <option value="500+">500+</option>
+                            </select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.taxIdentifier}</label>
+                            <input
+                              type="text"
+                              value={companyForm.taxIdentifier}
+                              onChange={(e) => setCompanyForm({...companyForm, taxIdentifier: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <button
+                            type="submit"
+                            disabled={updating}
+                            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 py-3.5 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer shadow-md disabled:opacity-50"
+                          >
+                            {updating && <Loader2 className="size-4 animate-spin" />}
+                            <span>Save Profile</span>
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {/* TAB 2: Digital Strategy & Social presence */}
+                    {activeTab === "digital" && (
+                      <form onSubmit={handleUpdateCompanyProfile} className="space-y-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.websiteUrl}</label>
+                            <input
+                              type="text"
+                              value={companyForm.websiteUrl}
+                              onChange={(e) => setCompanyForm({...companyForm, websiteUrl: e.target.value})}
+                              placeholder="e.g. www.mycompany.com"
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.websiteMode}</label>
+                            <select
+                              value={companyForm.websiteMode}
+                              onChange={(e) => setCompanyForm({...companyForm, websiteMode: e.target.value as any})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            >
+                              <option value="alsouk">ALSOUK Generated Store only</option>
+                              <option value="external">External Custom Website only</option>
+                              <option value="both">Both strategies</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4 pt-4 border-t border-border">
+                          <h4 className="text-xs font-black text-foreground uppercase tracking-wider">{dict.socialLinks}</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-muted-foreground">Facebook Page URL</label>
+                              <input
+                                type="text"
+                                value={companyForm.facebookUrl}
+                                onChange={(e) => setCompanyForm({...companyForm, facebookUrl: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-muted-foreground">Instagram Account URL</label>
+                              <input
+                                type="text"
+                                value={companyForm.instagramUrl}
+                                onChange={(e) => setCompanyForm({...companyForm, instagramUrl: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-muted-foreground">TikTok Handle URL</label>
+                              <input
+                                type="text"
+                                value={companyForm.tiktokUrl}
+                                onChange={(e) => setCompanyForm({...companyForm, tiktokUrl: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-bold text-muted-foreground">LinkedIn Company URL</label>
+                              <input
+                                type="text"
+                                value={companyForm.linkedinUrl}
+                                onChange={(e) => setCompanyForm({...companyForm, linkedinUrl: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <button
+                            type="submit"
+                            disabled={updating}
+                            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 py-3.5 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer shadow-md disabled:opacity-50"
+                          >
+                            {updating && <Loader2 className="size-4 animate-spin" />}
+                            <span>Save Digital Presence</span>
+                          </button>
+                        </div>
+                      </form>
+                    )}
+
+                    {/* TAB 3: Factory Gallery & Certificates management */}
+                    {activeTab === "media" && (
+                      <div className="space-y-8">
+
+                        {/* Section A: Factory Photos Gallery */}
+                        <div className="space-y-4">
+                          <h4 className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                            <ImageIcon className="size-4 text-primary" />
+                            <span>{dict.addGalleryPhoto}</span>
+                          </h4>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <input
+                              type="text"
+                              placeholder="Photo Image URL (e.g. /photos/factory1.jpg)"
+                              value={photoUrl}
+                              onChange={(e) => setPhotoUrl(e.target.value)}
+                              className="flex-1 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Photo Caption (e.g. Sfax Assembly Factory)"
+                              value={photoCaption}
+                              onChange={(e) => setPhotoCaption(e.target.value)}
+                              className="sm:w-64 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleAddMediaAsset("factory_photo", photoUrl, photoCaption)}
+                              disabled={updating || !photoUrl.trim()}
+                              className="rounded-xl bg-primary px-5 py-3 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              {dict.addBtn}
+                            </button>
+                          </div>
+
+                          {/* Render current photos */}
+                          {companyMedia.filter(x => x.media_type === "factory_photo").length > 0 ? (
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                              {companyMedia.filter(x => x.media_type === "factory_photo").map((med) => (
+                                <div key={med.id} className="relative group rounded-xl overflow-hidden border border-border bg-secondary aspect-video">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={med.url} alt={med.caption || "Factory image"} className="size-full object-cover" />
+                                  <button
+                                    onClick={() => handleDeleteMediaAsset(med.id)}
+                                    className="absolute top-2 right-2 size-7 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
+                                    title="Delete Photo"
+                                  >
+                                    <Trash2 className="size-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground italic">{dict.noMedia}</p>
+                          )}
+                        </div>
+
+                        {/* Section B: Quality Standard Certificates */}
+                        <div className="space-y-4 pt-6 border-t border-border">
+                          <h4 className="text-xs font-black text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                            <Award className="size-4 text-primary" />
+                            <span>{dict.addCertificate}</span>
+                          </h4>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <input
+                              type="text"
+                              placeholder="Certificate Document URL (e.g. /certs/iso9001.pdf)"
+                              value={certUrl}
+                              onChange={(e) => setCertUrl(e.target.value)}
+                              className="flex-1 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Certificate Title (e.g. ISO 9001:2015 Quality cert)"
+                              value={certCaption}
+                              onChange={(e) => setCertCaption(e.target.value)}
+                              className="sm:w-64 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleAddMediaAsset("certificate", certUrl, certCaption)}
+                              disabled={updating || !certUrl.trim()}
+                              className="rounded-xl bg-primary px-5 py-3 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              {dict.addBtn}
+                            </button>
+                          </div>
+
+                          {/* Render current certificates */}
+                          {companyMedia.filter(x => x.media_type === "certificate").length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                              {companyMedia.filter(x => x.media_type === "certificate").map((med) => (
+                                <div key={med.id} className="flex items-center justify-between p-3.5 bg-secondary/35 rounded-xl border border-border">
+                                  <div className="flex items-center gap-3">
+                                    <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                      <Award className="size-5" />
+                                    </div>
+                                    <div>
+                                      <p className="text-xs font-bold text-foreground">{med.caption || "Quality standard license"}</p>
+                                      <a href={med.url} target="_blank" rel="noreferrer" className="text-[10px] text-primary font-semibold hover:underline">View Document</a>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => handleDeleteMediaAsset(med.id)}
+                                    className="size-8 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex items-center justify-center transition-all cursor-pointer"
+                                    title="Delete Cert"
+                                  >
+                                    <Trash2 className="size-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-muted-foreground italic">{dict.noMedia}</p>
+                          )}
+                        </div>
+
+                      </div>
+                    )}
+
+                    {/* TAB 4: Profile Insights, checklist & Preview links */}
+                    {activeTab === "preview" && (
+                      <div className="space-y-6">
+
+                        {/* Completion score Gauge */}
+                        <div className="p-5 rounded-2xl bg-secondary/25 border border-border flex flex-col sm:flex-row items-center gap-5">
+                          <div className="relative size-24 flex items-center justify-center shrink-0">
+                            <svg className="size-full -rotate-90" viewBox="0 0 36 36">
+                              <path className="text-border" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                              <path className="text-primary transition-all duration-500" strokeDasharray={`${company.profileCompletion}, 100`} strokeWidth="3" strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            </svg>
+                            <span className="absolute text-xl font-black text-foreground">{company.profileCompletion}%</span>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-black text-foreground">B2B Profile Health Score</h4>
+                            <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                              Suppliers with completion ratings above 80% generate up to 4x more buyer leads and RFQ matching opportunities regionally.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Verification details card */}
+                        <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/15 flex items-start gap-4">
+                          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <Shield className="size-6" />
                           </span>
-                        )}
-                      </div>
-
-                      {company.websiteUrl && (
-                        <a
-                          href={company.websiteUrl.startsWith("http") ? company.websiteUrl : `https://${company.websiteUrl}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-                        >
-                          <Globe className="size-3.5" />
-                          <span>{company.websiteUrl}</span>
-                        </a>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Profile Progress Indicator Bar */}
-                  <div className="bg-secondary/15 p-4 rounded-xl border border-border/50 space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-foreground">
-                      <span>{dict.profileProgress}</span>
-                      <span className="text-primary">{company.profileCompletion}%</span>
-                    </div>
-                    <div className="w-full bg-secondary rounded-full h-2">
-                      <div className="bg-primary h-2 rounded-full transition-all duration-500" style={{ width: `${company.profileCompletion}%` }}></div>
-                    </div>
-                  </div>
-
-                  {company.description && (
-                    <div className="text-xs text-muted-foreground leading-relaxed bg-secondary/20 p-4 rounded-xl border border-border/55">
-                      {company.description}
-                    </div>
-                  )}
-
-                  {/* Structured Details Layout */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium border-t border-border/50 pt-4">
-
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="size-4 text-muted-foreground" />
-                      <span>
-                        {company.city ? (dirT.cities[company.city] || company.city) : ""}, {company.country ? (dirT.countries[company.country as keyof typeof dirT.countries] || company.country) : ""}
-                      </span>
-                    </div>
-
-                    {company.taxIdentifier && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <FileText className="size-4 text-muted-foreground" />
-                        <span>MF / RNE: <strong className="text-foreground">{company.taxIdentifier}</strong></span>
-                      </div>
-                    )}
-
-                    {company.businessType && (
-                      <div className="flex items-center gap-2 text-muted-foreground capitalize">
-                        <Building2 className="size-4 text-muted-foreground" />
-                        <span>Type: <strong className="text-foreground">{company.businessType.replace("_", " ")}</strong></span>
-                      </div>
-                    )}
-
-                    {company.primaryIndustry && (
-                      <div className="flex items-center gap-2 text-muted-foreground capitalize">
-                        <Box className="size-4 text-muted-foreground" />
-                        <span>Industry: <strong className="text-foreground">{company.primaryIndustry}</strong></span>
-                      </div>
-                    )}
-
-                    {company.companySize && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <User className="size-4 text-muted-foreground" />
-                        <span>Size: <strong className="text-foreground">{company.companySize} employees</strong></span>
-                      </div>
-                    )}
-
-                    {company.yearEstablished && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="size-4 text-muted-foreground" />
-                        <span>Est: <strong className="text-foreground">{company.yearEstablished}</strong></span>
-                      </div>
-                    )}
-
-                  </div>
-
-                  {/* Target Export Destinations and Languages Tagging display */}
-                  {(company.supportedLanguages.length > 0 || company.exportMarkets.length > 0) && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs bg-secondary/15 p-4 rounded-xl border border-border/50">
-                      {company.supportedLanguages.length > 0 && (
-                        <div className="space-y-1">
-                          <span className="font-bold text-muted-foreground">{dict.supportedLanguages}</span>
-                          <div className="flex flex-wrap gap-1.5 pt-1">
-                            {company.supportedLanguages.map(l => (
-                              <span key={l} className="bg-card px-2.5 py-1 rounded-md border border-border text-[10px] font-bold text-foreground capitalize">
-                                {LANGUAGES_OPTIONS.find(o => o.key === l)?.label || l}
-                              </span>
-                            ))}
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <h4 className="text-sm font-black text-foreground">Verification Rating: <span className="uppercase text-emerald-600 dark:text-emerald-400">{company.verificationTier}</span></h4>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                              {company.verificationTier === "basic" ? (
+                                "Your profile is on basic verification. To upgrade to premium verified visibility, please upload your official tax documentation or register matching catalog products."
+                              ) : (
+                                "Congratulations! Your profile has been verified as premium on ALSOUK. You have premium listing preference in searches."
+                              )}
+                            </p>
                           </div>
                         </div>
-                      )}
-                      {company.exportMarkets.length > 0 && (
-                        <div className="space-y-1">
-                          <span className="font-bold text-muted-foreground">{dict.exportMarkets}</span>
-                          <div className="flex flex-wrap gap-1.5 pt-1">
-                            {company.exportMarkets.map(m => (
-                              <span key={m} className="bg-card px-2.5 py-1 rounded-md border border-border text-[10px] font-bold text-foreground uppercase">
-                                {EXPORT_MARKETS_OPTIONS.find(o => o.key === m)?.label || m}
-                              </span>
-                            ))}
-                          </div>
+
+                        {/* Checklist */}
+                        <div className="space-y-3">
+                          <h4 className="text-xs font-black text-foreground uppercase tracking-wider">{dict.checklistTitle}</h4>
+                          {missingChecklist.length > 0 ? (
+                            <div className="space-y-2">
+                              {missingChecklist.map((item) => (
+                                <button
+                                  key={item.key}
+                                  onClick={() => {
+                                    setActiveTab(item.tab)
+                                    setIsEditingCompany(true)
+                                  }}
+                                  className="w-full text-start p-3 bg-secondary/15 border border-border/60 hover:bg-secondary/40 rounded-xl text-xs font-bold text-foreground flex items-center justify-between transition-all cursor-pointer"
+                                >
+                                  <span className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                                    <AlertCircle className="size-4 text-amber-500" />
+                                    <span>{item.label}</span>
+                                  </span>
+                                  <ChevronRight className="size-4 text-muted-foreground/50 rtl:rotate-180" />
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-emerald-600 font-bold flex items-center gap-1.5 bg-emerald-500/10 p-4 border border-emerald-500/20 rounded-xl">
+                              <CheckCircle className="size-4" />
+                              <span>Your company profile is 100% complete! Great job!</span>
+                            </p>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  )}
 
-                  {/* Verification Status */}
-                  <div className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <Shield className="size-4 shrink-0" />
-                      <span className="text-xs font-bold capitalize">{dict.verificationStatus}: <strong>{company.verificationTier}</strong></span>
-                    </div>
+                      </div>
+                    )}
+
                   </div>
-
                 </div>
               ) : (
-                <div className="text-center py-8 px-4 bg-secondary/15 rounded-2xl border border-dashed border-border/80">
-                  <Building2 className="size-10 text-muted-foreground/60 mx-auto mb-3" />
-                  <h4 className="text-sm font-black text-foreground mb-1">{dict.completeCompanyCta}</h4>
-                  <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-normal mb-4">
-                    {dict.completeCompanyDesc}
-                  </p>
-                  <button
-                    onClick={() => setIsEditingCompany(true)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-xs font-extrabold text-white py-3 px-6 transition-all shadow-md shadow-primary/10 cursor-pointer"
-                  >
-                    <PlusIcon className="size-4 shrink-0" />
-                    <span>Create Company Profile</span>
-                  </button>
+                /* BEAUTIFUL ONBOARDING FLOW FOR NO COMPANY */
+                <div className="rounded-[20px] border border-border bg-card p-6 sm:p-8 shadow-xl shadow-primary/5 space-y-6">
+
+                  <div className="text-center max-w-md mx-auto space-y-3">
+                    <span className="inline-flex size-14 items-center justify-center rounded-3xl bg-gradient-to-tr from-primary to-blue-600 text-white shadow-md shadow-primary/25">
+                      <Building2 className="size-6 text-white" />
+                    </span>
+                    <h3 className="text-xl sm:text-2xl font-black text-foreground">
+                      {dict.onboardingTitle}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {dict.onboardingDesc}
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleOnboardingSubmit} className="space-y-5 pt-4 border-t border-border/60 max-w-lg mx-auto">
+                    {onboardingStep === 1 ? (
+                      <div className="space-y-4 animate-scale-up">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase text-muted-foreground">Company legal Name *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Sfax Olive Processing S.A."
+                            value={onboardingForm.name}
+                            onChange={(e) => setOnboardingForm({
+                              ...onboardingForm,
+                              name: e.target.value,
+                              slug: e.target.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-")
+                            })}
+                            className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase text-muted-foreground">Slug (Public profile link) *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="sfax-olive-oil"
+                            value={onboardingForm.slug}
+                            onChange={(e) => setOnboardingForm({
+                              ...onboardingForm,
+                              slug: e.target.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-")
+                            })}
+                            className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black uppercase text-muted-foreground">Tagline / Core Pitch</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Leader in premium organic olive oils export in Tunisia"
+                            value={onboardingForm.tagline}
+                            onChange={(e) => setOnboardingForm({ ...onboardingForm, tagline: e.target.value })}
+                            className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={!onboardingForm.name.trim()}
+                          onClick={() => setOnboardingStep(2)}
+                          className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-xs font-black text-white hover:opacity-95 transition-all disabled:opacity-50 cursor-pointer"
+                        >
+                          <span>Next: Classification Details</span>
+                          <ChevronRight className="size-4 rtl:rotate-180" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4 animate-scale-up">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase text-muted-foreground">Business Type *</label>
+                            <select
+                              required
+                              value={onboardingForm.businessType}
+                              onChange={(e) => setOnboardingForm({ ...onboardingForm, businessType: e.target.value })}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            >
+                              <option value="">Select classification</option>
+                              {BUSINESS_TYPES.map(x => (
+                                <option key={x} value={x}>{x.replace("_", " ")}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase text-muted-foreground">Primary Industry *</label>
+                            <select
+                              required
+                              value={onboardingForm.primaryIndustry}
+                              onChange={(e) => setOnboardingForm({ ...onboardingForm, primaryIndustry: e.target.value })}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            >
+                              <option value="">Select industry</option>
+                              {INDUSTRIES.map(x => (
+                                <option key={x} value={x}>{x}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase text-muted-foreground">Country *</label>
+                            <select
+                              value={onboardingForm.country}
+                              onChange={(e) => setOnboardingForm({ ...onboardingForm, country: e.target.value, city: "" })}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            >
+                              {Object.keys(COUNTRY_TO_CITIES).map(x => (
+                                <option key={x} value={x}>{dirT.countries[x as keyof typeof dirT.countries] || x}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-black uppercase text-muted-foreground">City *</label>
+                            <select
+                              value={onboardingForm.city}
+                              onChange={(e) => setOnboardingForm({ ...onboardingForm, city: e.target.value })}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            >
+                              <option value="">Select city</option>
+                              {COUNTRY_TO_CITIES[onboardingForm.country].map(city => (
+                                <option key={city} value={city}>{dirT.cities[city] || city}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <button
+                            type="submit"
+                            disabled={updating || !onboardingForm.businessType || !onboardingForm.primaryIndustry}
+                            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 py-3.5 text-xs font-black text-white hover:opacity-95 transition-all disabled:opacity-50 cursor-pointer shadow-md shadow-primary/25"
+                          >
+                            {updating ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="size-4 text-white" />
+                            )}
+                            <span>{dict.launchOnboarding}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setOnboardingStep(1)}
+                            className="rounded-xl border border-border px-5 py-3.5 text-xs font-bold text-foreground hover:bg-secondary/40 transition-all cursor-pointer"
+                          >
+                            Back
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </form>
+
                 </div>
               )}
             </div>
@@ -1760,21 +2047,6 @@ function AccountScreen() {
       )}
 
     </div>
-  )
-}
-
-function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2.5}
-      stroke="currentColor"
-      {...props}
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-    </svg>
   )
 }
 

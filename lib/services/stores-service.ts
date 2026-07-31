@@ -59,7 +59,7 @@ type StoreDetailRow = StoreRow & {
 export async function getStoreBySlug(slug: string): Promise<StoreDetails | null> {
   const select =
     `${STORE_COLUMNS},` +
-    `companies(id,name,slug,logo_url,company_categories(categories(${CATEGORY_COLUMNS}))),` +
+    `companies(id,name,slug,logo_url,website_mode,website_url,company_categories(categories(${CATEGORY_COLUMNS}))),` +
     `products(${PRODUCT_LIST_SELECT})`
   const rows = await restGet<StoreDetailRow>(
     `stores?select=${select}&slug=eq.${encodeURIComponent(slug)}&is_active=eq.true&limit=1`,
@@ -86,6 +86,8 @@ export async function getStoreBySlug(slug: string): Promise<StoreDetails | null>
           name: row.companies.name,
           slug: row.companies.slug,
           logoUrl: row.companies.logo_url?.trim() || null,
+          websiteMode: row.companies.website_mode || "alsouk",
+          websiteUrl: row.companies.website_url?.trim() || null,
         }
       : null,
     products,
