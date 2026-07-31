@@ -8,6 +8,7 @@ import { CategoriesSection } from "@/components/categories-section"
 import { FeaturedSuppliers } from "@/components/featured-suppliers"
 import { FeaturedProducts } from "@/components/featured-products"
 import { LiveMarketplace } from "@/components/home/live-marketplace"
+import { UpcomingExhibitionsSection } from "@/components/home/exhibitions-section"
 import { RfqSection } from "@/components/rfq-section"
 import { AssistantWidget } from "@/components/ai/assistant-widget"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
@@ -38,6 +39,9 @@ export default function HomePage() {
 
           {/* Section 7: Live Marketplace */}
           <LiveMarketplace />
+
+          {/* Section 7.5: Upcoming B2B Exhibitions */}
+          <UpcomingExhibitionsSection />
 
           {/* Section 8: RFQ Banner */}
           <RfqSection />
