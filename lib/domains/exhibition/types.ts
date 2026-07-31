@@ -1,0 +1,69 @@
+import type { Company } from "@/lib/domains/company/types"
+
+export interface Exhibition {
+  id: string
+  name: string
+  slug: string
+  organizer: string
+  description: string | null
+  coverUrl: string | null
+  country: string
+  city: string
+  startDate: string
+  endDate: string
+  categories: string[]
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface ExhibitionBooth {
+  id: string
+  exhibitionId: string
+  companyId: string
+  bannerUrl: string | null
+  description: string
+  isArchived: boolean
+  createdAt?: string
+  updatedAt?: string
+
+  // Joined relations
+  company?: Company | null
+  exhibits?: ExhibitionExhibit[]
+  media?: ExhibitionMedia[]
+  documents?: ExhibitionDocument[]
+}
+
+export interface ExhibitionExhibit {
+  id: string
+  boothId: string
+  name: string
+  description: string | null
+  images: string[]
+  videos: string[]
+  pdfUrl: string | null
+  brochureUrl: string | null
+  isFeatured: boolean
+  sortOrder: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface ExhibitionMedia {
+  id: string
+  boothId: string
+  mediaType: "image" | "video"
+  url: string
+  caption: string | null
+  sortOrder: number
+  createdAt?: string
+}
+
+export interface ExhibitionDocument {
+  id: string
+  boothId: string
+  name: string
+  url: string
+  fileSize: string | null
+  sortOrder: number
+  createdAt?: string
+}
