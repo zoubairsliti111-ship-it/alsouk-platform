@@ -227,6 +227,53 @@ export async function fetchCompanyPosts(
 }
 
 /**
+ * Fetches published posts from all companies using cursor-based pagination (newest first).
+ */
+export async function fetchFeedPostsCursor(
+  limit = 5,
+  cursor?: string,
+  filterCompanyId?: string
+): Promise<{ success: boolean; data: CommercialPost[]; nextCursor: string | null; error: string | null }> {
+  const supabase = createClient()
+
+  let query = supabase
+    .from("commercial_posts")
+    .select(`
+      *,
+      companies (
+        name,
+        slug,
+        logo_url,
+        verification_tier,
+        verified
+      )
+    `)
+    .eq("status", "published")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+
+  if (filterCompanyId) {
+    query = query.eq("company_id", filterCompanyId)
+  }
+
+  if (cursor) {
+    query = query.lt("created_at", cursor)
+  }
+
+  const { data, error } = await query.limit(limit)
+
+  if (error) {
+    console.error("Error fetching feed posts cursor:", error)
+    return { success: false, data: [], nextCursor: null, error: error.message }
+  }
+
+  const posts = (data as any[]).map(mapPostRow)
+  const nextCursor = posts.length > 0 ? posts[posts.length - 1].createdAt : null
+
+  return { success: true, data: posts, nextCursor, error: null }
+}
+
+/**
  * Fetches published posts from all companies (for feed viewing).
  */
 export async function fetchFeedPosts(

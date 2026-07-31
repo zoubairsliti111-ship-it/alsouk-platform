@@ -7,7 +7,7 @@ import { Opportunities } from "@/components/home/opportunities"
 import { CategoriesSection } from "@/components/categories-section"
 import { FeaturedSuppliers } from "@/components/featured-suppliers"
 import { FeaturedProducts } from "@/components/featured-products"
-import { LiveMarketplace } from "@/components/home/live-marketplace"
+import { HomeFeed } from "@/components/home/home-feed"
 import { RfqSection } from "@/components/rfq-section"
 import { AssistantWidget } from "@/components/ai/assistant-widget"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
@@ -36,8 +36,8 @@ export default function HomePage() {
           {/* Section 6: Featured Products */}
           <FeaturedProducts />
 
-          {/* Section 7: Live Marketplace */}
-          <LiveMarketplace />
+          {/* Section 7: Live Marketplace / Home Discovery Feed */}
+          <HomeFeed />
 
           {/* Section 8: RFQ Banner */}
           <RfqSection />
