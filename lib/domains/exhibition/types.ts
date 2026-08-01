@@ -21,6 +21,7 @@ export interface ExhibitionBooth {
   exhibitionId: string
   companyId: string
   bannerUrl: string | null
+  logoUrl?: string | null
   description: string
   isArchived: boolean
   createdAt?: string
@@ -30,6 +31,14 @@ export interface ExhibitionBooth {
   boothNumber?: string
   category?: string
   isFeatured?: boolean
+  status?: "Draft" | "Submitted" | "Published" | "Archived"
+  title?: string | null
+  shortDescription?: string | null
+  contactPerson?: string | null
+  contactPhone?: string | null
+  contactWhatsapp?: string | null
+  contactEmail?: string | null
+  contactWebsite?: string | null
 
   // Joined relations
   company?: Company | null
@@ -51,6 +60,7 @@ export interface ExhibitionExhibit {
   sortOrder: number
   createdAt?: string
   updatedAt?: string
+  category?: string | null
 }
 
 export interface ExhibitionMedia {
@@ -61,6 +71,7 @@ export interface ExhibitionMedia {
   caption: string | null
   sortOrder: number
   createdAt?: string
+  thumbnailUrl?: string | null
 }
 
 export interface ExhibitionDocument {
@@ -71,6 +82,8 @@ export interface ExhibitionDocument {
   fileSize: string | null
   sortOrder: number
   createdAt?: string
+  language?: string | null
+  description?: string | null
 }
 
 export type ExhibitionApplicationStatus = "Pending" | "Approved" | "Rejected"

@@ -32,11 +32,20 @@ export type ExhibitionBoothRow = {
   exhibition_id: string
   company_id: string
   banner_url: string | null
+  logo_url?: string | null
   description: string
   booth_number?: string | null
   category?: string | null
   is_featured?: boolean
   is_archived: boolean
+  status?: string | null
+  title?: string | null
+  short_description?: string | null
+  contact_person?: string | null
+  contact_phone?: string | null
+  contact_whatsapp?: string | null
+  contact_email?: string | null
+  contact_website?: string | null
   created_at?: string
   updated_at?: string
   companies?: CompanyRow | null
@@ -53,6 +62,7 @@ export type ExhibitionItemRow = {
   brochure_url: string | null
   is_featured: boolean
   sort_order: number
+  category?: string | null
   created_at?: string
   updated_at?: string
 }
@@ -64,6 +74,7 @@ export type ExhibitionMediaRow = {
   url: string
   caption: string | null
   sort_order: number
+  thumbnail_url?: string | null
   created_at?: string
 }
 
@@ -74,6 +85,8 @@ export type ExhibitionDocumentRow = {
   url: string
   file_size: string | null
   sort_order: number
+  language?: string | null
+  description?: string | null
   created_at?: string
 }
 
@@ -139,11 +152,20 @@ export function mapExhibitionBooth(row: ExhibitionBoothRow): ExhibitionBooth {
     exhibitionId: row.exhibition_id,
     companyId: row.company_id,
     bannerUrl: row.banner_url,
+    logoUrl: row.logo_url || null,
     description: row.description,
     isArchived: Boolean(row.is_archived),
     boothNumber: derivedBoothNumber,
     category: derivedCategory,
     isFeatured: row.is_featured !== undefined ? Boolean(row.is_featured) : (company?.verificationTier === "premium"),
+    status: (row.status || "Draft") as "Draft" | "Submitted" | "Published" | "Archived",
+    title: row.title || null,
+    shortDescription: row.short_description || null,
+    contactPerson: row.contact_person || null,
+    contactPhone: row.contact_phone || null,
+    contactWhatsapp: row.contact_whatsapp || null,
+    contactEmail: row.contact_email || null,
+    contactWebsite: row.contact_website || null,
     company,
   }
 }
@@ -160,6 +182,7 @@ export function mapExhibitionExhibit(row: ExhibitionItemRow): ExhibitionExhibit 
     brochureUrl: row.brochure_url,
     isFeatured: Boolean(row.is_featured),
     sortOrder: Number(row.sort_order) || 0,
+    category: row.category || null,
   }
 }
 
@@ -171,6 +194,7 @@ export function mapExhibitionMedia(row: ExhibitionMediaRow): ExhibitionMedia {
     url: row.url,
     caption: row.caption,
     sortOrder: Number(row.sort_order) || 0,
+    thumbnailUrl: row.thumbnail_url || null,
   }
 }
 
@@ -182,6 +206,8 @@ export function mapExhibitionDocument(row: ExhibitionDocumentRow): ExhibitionDoc
     url: row.url,
     fileSize: row.file_size,
     sortOrder: Number(row.sort_order) || 0,
+    language: row.language || null,
+    description: row.description || null,
   }
 }
 
@@ -506,6 +532,17 @@ function getMockApplications(): ExhibitionApplication[] {
   return MOCK_APPLICATIONS
 }
 
+export function getMockBooths(): Record<string, ExhibitionBooth[]> {
+  if (typeof globalThis !== "undefined") {
+    const g = globalThis as any
+    if (!g.__mockBooths) {
+      g.__mockBooths = JSON.parse(JSON.stringify(MOCK_BOOTHS))
+    }
+    return g.__mockBooths
+  }
+  return MOCK_BOOTHS
+}
+
 // ===========================================================================
 // Service Layer APIs
 // ===========================================================================
@@ -555,12 +592,12 @@ export async function getBoothsByExhibitionSlug(slug: string): Promise<Exhibitio
       `exhibition_booths?select=${select}&exhibition_id=eq.${encodeURIComponent(exh.id)}&is_archived=eq.false`
     )
     if (!rows || rows.length === 0) {
-      return MOCK_BOOTHS[slug] || []
+      return getMockBooths()[slug] || []
     }
     return rows.map(mapExhibitionBooth)
   } catch (err) {
     console.warn(`[exhibitions-service] Failed to fetch booths for ${slug}. Using fallback mock:`, err)
-    return MOCK_BOOTHS[slug] || []
+    return getMockBooths()[slug] || []
   }
 }
 
@@ -569,10 +606,11 @@ export async function getBoothsByExhibitionSlug(slug: string): Promise<Exhibitio
  */
 export async function getBoothDetails(id: string): Promise<ExhibitionBooth | null> {
   try {
+    const mockData = getMockBooths()
     // Find in mock data first if it's a mock ID
     if (id.startsWith("booth-")) {
-      for (const slug in MOCK_BOOTHS) {
-        const found = MOCK_BOOTHS[slug].find((b) => b.id === id)
+      for (const slug in mockData) {
+        const found = mockData[slug].find((b) => b.id === id)
         if (found) {
           return {
             ...found,
@@ -584,7 +622,7 @@ export async function getBoothDetails(id: string): Promise<ExhibitionBooth | nul
       }
     }
 
-    const select = `id,exhibition_id,company_id,banner_url,description,is_archived,companies(*)`
+    const select = `id,exhibition_id,company_id,banner_url,logo_url,description,status,title,short_description,contact_person,contact_phone,contact_whatsapp,contact_email,contact_website,companies(*)`
     const rows = await restGet<ExhibitionBoothRow>(
       `exhibition_booths?select=${select}&id=eq.${encodeURIComponent(id)}&limit=1`
     )
@@ -615,8 +653,9 @@ export async function getBoothDetails(id: string): Promise<ExhibitionBooth | nul
   } catch (err) {
     console.warn(`[exhibitions-service] Failed to fetch booth details ${id}. Using mock search:`, err)
     // Double check mock
-    for (const slug in MOCK_BOOTHS) {
-      const found = MOCK_BOOTHS[slug].find((b) => b.id === id)
+    const mockData = getMockBooths()
+    for (const slug in mockData) {
+      const found = mockData[slug].find((b) => b.id === id)
       if (found) {
         return {
           ...found,
@@ -784,4 +823,88 @@ export async function checkDuplicateApplication(
     )
     return match
   }
+}
+
+/**
+ * Updates an exhibition booth details as a draft.
+ */
+export async function saveBoothDraft(
+  id: string,
+  data: {
+    title?: string | null
+    shortDescription?: string | null
+    description?: string | null
+    bannerUrl?: string | null
+    logoUrl?: string | null
+    category?: string | null
+  }
+): Promise<ExhibitionBooth> {
+  const cfg = getRestConfig()
+
+  if (!cfg || id.startsWith("booth-")) {
+    // Modify mock data
+    const mockData = getMockBooths()
+    let foundBooth: ExhibitionBooth | null = null
+    for (const slug in mockData) {
+      const idx = mockData[slug].findIndex((b) => b.id === id)
+      if (idx !== -1) {
+        const existing = mockData[slug][idx]
+        const updated: ExhibitionBooth = {
+          ...existing,
+          title: data.title !== undefined ? data.title : existing.title,
+          shortDescription: data.shortDescription !== undefined ? data.shortDescription : existing.shortDescription,
+          description: data.description !== undefined && data.description !== null ? data.description : existing.description,
+          bannerUrl: data.bannerUrl !== undefined ? data.bannerUrl : existing.bannerUrl,
+          logoUrl: data.logoUrl !== undefined ? data.logoUrl : existing.logoUrl,
+          category: data.category !== undefined && data.category !== null ? data.category : existing.category,
+          status: "Draft", // Always save as Draft for TASK 006.1
+          updatedAt: new Date().toISOString(),
+        }
+        mockData[slug][idx] = updated
+        foundBooth = updated
+        break
+      }
+    }
+
+    if (!foundBooth) {
+      throw new Error(`Mock booth not found with ID ${id}`)
+    }
+    return foundBooth
+  }
+
+  // Real database PostgREST update
+  const record: Record<string, any> = {
+    updated_at: new Date().toISOString(),
+    status: "Draft", // Always save as Draft for TASK 006.1
+  }
+  if (data.title !== undefined) record.title = data.title
+  if (data.shortDescription !== undefined) record.short_description = data.shortDescription
+  if (data.description !== undefined) record.description = data.description
+  if (data.bannerUrl !== undefined) record.banner_url = data.bannerUrl
+  if (data.logoUrl !== undefined) record.logo_url = data.logoUrl
+  if (data.category !== undefined) record.category = data.category
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibition_booths?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(record),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to update booth draft: ${res.status} ${text}`)
+  }
+
+  const rows = (await res.json()) as ExhibitionBoothRow[]
+  if (!rows || rows.length === 0) {
+    throw new Error(`No booth row returned after database update for ID ${id}`)
+  }
+
+  return mapExhibitionBooth(rows[0])
 }
