@@ -5,153 +5,29 @@
 ▲ Next.js 16.2.6 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 543ms
+✓ Ready in 620ms
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
 
-○ Compiling /exhibitions ...
- GET /exhibitions 200 in 6.5s (next.js: 5.4s, proxy.ts: 176ms, application-code: 910ms)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitions (lib/services/exhibitions-service.ts:438:31)
-    at GET (app/api/exhibitions/route.ts:8:45)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/exhibitions 200 in 2.3s (next.js: 1754ms, proxy.ts: 7ms, application-code: 505ms)
-Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 2.6s (next.js: 2.5s, proxy.ts: 36ms, application-code: 30ms)
- GET /exhibitions/tunisia-food-expo-2026 200 in 3.0s (next.js: 2.8s, proxy.ts: 8ms, application-code: 165ms)
-Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 30ms (next.js: 15ms, proxy.ts: 9ms, application-code: 7ms)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-[exhibitions-service] Failed to fetch slug tunisia-food-expo-2026. Using fallback mock data: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitionBySlug (lib/services/exhibitions-service.ts:452:31)
-    at getBoothsByExhibitionSlug (lib/services/exhibitions-service.ts:469:23)
-    at GET (app/api/exhibitions/[slug]/booths/route.ts:12:51)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
-[exhibitions-service] Failed to fetch booths for tunisia-food-expo-2026. Using fallback mock: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getBoothsByExhibitionSlug (lib/services/exhibitions-service.ts:474:31)
-    at async GET (app/api/exhibitions/[slug]/booths/route.ts:12:20)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/exhibitions/tunisia-food-expo-2026/booths 200 in 1763ms (next.js: 1442ms, proxy.ts: 7ms, application-code: 314ms)
-[exhibitions-service] Failed to fetch slug tunisia-food-expo-2026. Using fallback mock data: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitionBySlug (lib/services/exhibitions-service.ts:452:31)
-    at GET (app/api/exhibitions/[slug]/route.ts:12:49)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/exhibitions/tunisia-food-expo-2026 200 in 1998ms (next.js: 1766ms, proxy.ts: 11ms, application-code: 221ms)
- GET /exhibitions/tunisia-food-expo-2026/booths/booth-medina 200 in 2.1s (next.js: 1929ms, proxy.ts: 12ms, application-code: 186ms)
+○ Compiling /exhibitions/booth/dashboard ...
+ GET /exhibitions/booth/dashboard 200 in 6.6s (next.js: 5.5s, proxy.ts: 170ms, application-code: 894ms)
 [browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
 Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 30ms (next.js: 14ms, proxy.ts: 9ms, application-code: 7ms)
- GET /api/exhibitions/tunisia-food-expo-2026/booths/booth-medina 200 in 1071ms (next.js: 1045ms, proxy.ts: 13ms, application-code: 13ms)
- GET /exhibitions 200 in 146ms (next.js: 6ms, proxy.ts: 6ms, application-code: 134ms)
+ GET /api/notifications/unread-count 200 in 1799ms (next.js: 1731ms, proxy.ts: 30ms, application-code: 38ms)
+ GET /exhibitions/booth/dashboard?id=booth-medina 200 in 56ms (next.js: 6ms, proxy.ts: 12ms, application-code: 39ms)
+ GET /api/exhibitions/booth?id=booth-medina 200 in 281ms (next.js: 259ms, proxy.ts: 8ms, application-code: 14ms)
+ GET /api/exhibitions/booth?id=booth-medina 200 in 16ms (next.js: 4ms, proxy.ts: 6ms, application-code: 6ms)
+ GET /exhibitions/booth/dashboard/edit?id=booth-medina 200 in 1218ms (next.js: 1139ms, proxy.ts: 12ms, application-code: 68ms)
+ GET /api/exhibitions/booth?id=booth-medina 200 in 21ms (next.js: 7ms, proxy.ts: 7ms, application-code: 7ms)
 Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 28ms (next.js: 7ms, proxy.ts: 8ms, application-code: 13ms)
-[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitions (lib/services/exhibitions-service.ts:438:31)
-    at GET (app/api/exhibitions/route.ts:8:45)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/exhibitions 200 in 234ms (next.js: 21ms, proxy.ts: 8ms, application-code: 204ms)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
- GET /exhibitions/tunisia-food-expo-2026 200 in 165ms (next.js: 34ms, proxy.ts: 5ms, application-code: 126ms)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+ GET /api/notifications/unread-count 200 in 33ms (next.js: 13ms, proxy.ts: 12ms, application-code: 8ms)
+ GET /api/exhibitions/booth?id=booth-medina 200 in 24ms (next.js: 10ms, proxy.ts: 9ms, application-code: 5ms)
 Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 45ms (next.js: 24ms, proxy.ts: 11ms, application-code: 10ms)
-[exhibitions-service] Failed to fetch slug tunisia-food-expo-2026. Using fallback mock data: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitionBySlug (lib/services/exhibitions-service.ts:452:31)
-    at GET (app/api/exhibitions/[slug]/route.ts:12:49)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/exhibitions/tunisia-food-expo-2026 200 in 291ms (next.js: 63ms, proxy.ts: 9ms, application-code: 219ms)
-[exhibitions-service] Failed to fetch slug tunisia-food-expo-2026. Using fallback mock data: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitionBySlug (lib/services/exhibitions-service.ts:452:31)
-    at getBoothsByExhibitionSlug (lib/services/exhibitions-service.ts:469:23)
-    at GET (app/api/exhibitions/[slug]/booths/route.ts:12:51)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
-[exhibitions-service] Failed to fetch booths for tunisia-food-expo-2026. Using fallback mock: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getBoothsByExhibitionSlug (lib/services/exhibitions-service.ts:474:31)
-    at async GET (app/api/exhibitions/[slug]/booths/route.ts:12:20)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/exhibitions/tunisia-food-expo-2026/booths 200 in 617ms (next.js: 318ms, proxy.ts: 14ms, application-code: 284ms)
- GET /exhibitions/tunisia-food-expo-2026/booths/booth-medina 200 in 181ms (next.js: 32ms, proxy.ts: 4ms, application-code: 145ms)
+ GET /api/notifications/unread-count 200 in 47ms (next.js: 15ms, proxy.ts: 10ms, application-code: 22ms)
+ POST /api/exhibitions/booth 200 in 20ms (next.js: 6ms, proxy.ts: 6ms, application-code: 8ms)
+ GET /exhibitions/booth/dashboard?id=booth-medina 200 in 37ms (next.js: 4ms, proxy.ts: 4ms, application-code: 29ms)
+ GET /api/exhibitions/booth?id=booth-medina 200 in 24ms (next.js: 10ms, proxy.ts: 8ms, application-code: 6ms)
 Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 39ms (next.js: 16ms, proxy.ts: 9ms, application-code: 13ms)
-[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
- GET /api/exhibitions/tunisia-food-expo-2026/booths/booth-medina 200 in 78ms (next.js: 66ms, proxy.ts: 6ms, application-code: 6ms)
+ GET /api/notifications/unread-count 200 in 28ms (next.js: 6ms, proxy.ts: 8ms, application-code: 14ms)
+ GET /api/exhibitions/booth?id=booth-medina 200 in 18ms (next.js: 6ms, proxy.ts: 9ms, application-code: 4ms)
+Supabase is not configured on server. Returning dummy client.
+ GET /api/notifications/unread-count 200 in 24ms (next.js: 10ms, proxy.ts: 8ms, application-code: 6ms)
