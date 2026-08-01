@@ -59,3 +59,116 @@ export async function submitExhibitionApplication(
 export function fetchExhibitionApplication(id: string): Promise<ItemResult<ExhibitionApplication>> {
   return fetchItem<ExhibitionApplication>(`/api/exhibitions/applications/${encodeURIComponent(id)}`)
 }
+
+// ===========================================================================
+// Exhibit Client Endpoints
+// ===========================================================================
+
+import type { ExhibitionExhibit } from "@/lib/domains/exhibition/types"
+
+/**
+ * Loads all exhibits for a specific booth.
+ */
+export function fetchExhibitsForBooth(boothId: string): Promise<ExhibitionExhibit[]> {
+  return fetchList<ExhibitionExhibit>(`/api/exhibitions/booth/exhibits?boothId=${encodeURIComponent(boothId)}`)
+}
+
+/**
+ * Loads details for a specific exhibit.
+ */
+export function fetchExhibitDetails(id: string): Promise<ItemResult<ExhibitionExhibit>> {
+  return fetchItem<ExhibitionExhibit>(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`)
+}
+
+/**
+ * Creates a new exhibit.
+ */
+export async function createExhibit(data: Omit<ExhibitionExhibit, "id">): Promise<ItemResult<ExhibitionExhibit>> {
+  try {
+    const res = await fetch("/api/exhibitions/booth/exhibits", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] createExhibit error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/**
+ * Updates an exhibit.
+ */
+export async function updateExhibit(id: string, data: Partial<ExhibitionExhibit>): Promise<ItemResult<ExhibitionExhibit>> {
+  try {
+    const res = await fetch(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "update", data }),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] updateExhibit error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/**
+ * Deletes an exhibit.
+ */
+export async function deleteExhibit(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] deleteExhibit error:", err)
+    return false
+  }
+}
+
+/**
+ * Duplicates an exhibit.
+ */
+export async function duplicateExhibit(id: string): Promise<ItemResult<ExhibitionExhibit>> {
+  try {
+    const res = await fetch(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "duplicate" }),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] duplicateExhibit error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/**
+ * Updates the sort order of exhibits in a booth.
+ */
+export async function updateExhibitsSortOrder(boothId: string, orderedIds: string[]): Promise<boolean> {
+  try {
+    const res = await fetch("/api/exhibitions/booth/exhibits", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ boothId, orderedIds }),
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] updateExhibitsSortOrder error:", err)
+    return false
+  }
+}

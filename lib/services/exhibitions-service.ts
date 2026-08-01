@@ -55,6 +55,7 @@ export type ExhibitionItemRow = {
   id: string
   booth_id: string
   name: string
+  short_description?: string | null
   description: string | null
   images: string[] | null
   videos: string[] | null
@@ -63,6 +64,7 @@ export type ExhibitionItemRow = {
   is_featured: boolean
   sort_order: number
   category?: string | null
+  status?: string | null
   created_at?: string
   updated_at?: string
 }
@@ -175,6 +177,7 @@ export function mapExhibitionExhibit(row: ExhibitionItemRow): ExhibitionExhibit 
     id: row.id,
     boothId: row.booth_id,
     name: row.name,
+    shortDescription: row.short_description || null,
     description: row.description,
     images: row.images || [],
     videos: row.videos || [],
@@ -183,6 +186,7 @@ export function mapExhibitionExhibit(row: ExhibitionItemRow): ExhibitionExhibit 
     isFeatured: Boolean(row.is_featured),
     sortOrder: Number(row.sort_order) || 0,
     category: row.category || null,
+    status: (row.status || "Draft") as "Draft" | "Submitted" | "Published" | "Archived",
   }
 }
 
@@ -420,6 +424,7 @@ const MOCK_EXHIBITS: Record<string, ExhibitionExhibit[]> = {
       id: "exhibit-med-1",
       boothId: "booth-medina",
       name: "Organic Extra Virgin Sfax Reserve (New Launch)",
+      shortDescription: "An exclusive, high-density extra virgin olive oil made entirely in Sfax.",
       description: "An exclusive, high-density extra virgin olive oil made entirely from hand-harvested Chemlali olives in Sfax. Rich with green-apple and herbaceous tasting notes.",
       images: ["https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=400"],
       videos: [],
@@ -432,6 +437,7 @@ const MOCK_EXHIBITS: Record<string, ExhibitionExhibit[]> = {
       id: "exhibit-med-2",
       boothId: "booth-medina",
       name: "Ancestral Mill Cold-Pressed Blend (Prototype Sample)",
+      shortDescription: "Cold-pressed at temperatures strictly below 25°C using traditional stone mills.",
       description: "Cold-pressed at temperatures strictly below 25°C using regional stone mills. Offers very low acidity (<0.3%) for ultra-premium B2B export contracts.",
       images: ["https://images.unsplash.com/photo-1471193945509-9ad0617afabf?auto=format&fit=crop&q=80&w=400"],
       videos: [],
@@ -446,6 +452,7 @@ const MOCK_EXHIBITS: Record<string, ExhibitionExhibit[]> = {
       id: "exhibit-sah-1",
       boothId: "booth-sahara",
       name: "Selected Deglet Nour Extra Plump Pallets (Demonstration Exhibit)",
+      shortDescription: "Specially selected semi-soft dates on branches, pure Tozeur quality.",
       description: "Specially selected semi-soft dates on branches. Rich translucent golden-amber hue, sweet honey-flavored syrup pulp, packed in eco-friendly 5kg carton crates.",
       images: ["https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?auto=format&fit=crop&q=80&w=400"],
       videos: [],
@@ -460,6 +467,7 @@ const MOCK_EXHIBITS: Record<string, ExhibitionExhibit[]> = {
       id: "exhibit-car-1",
       boothId: "booth-carthage",
       name: "100% Bio-Organic Cotton Spun Thread (Eco Innovation)",
+      shortDescription: "Unbleached, high durability spun threads, OEKO-TEX Standard 100 verified.",
       description: "Unbleached, extremely high durability spun threads for circular knitting machines. OEKO-TEX Standard 100 verified.",
       images: ["https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=400"],
       videos: [],
@@ -907,4 +915,328 @@ export async function saveBoothDraft(
   }
 
   return mapExhibitionBooth(rows[0])
+}
+
+// ===========================================================================
+// Exhibits (Exhibition items) B2B CRUD operations
+// ===========================================================================
+
+export function getMockExhibits(): Record<string, ExhibitionExhibit[]> {
+  if (typeof globalThis !== "undefined") {
+    const g = globalThis as any
+    if (!g.__mockExhibits) {
+      g.__mockExhibits = JSON.parse(JSON.stringify(MOCK_EXHIBITS))
+    }
+    return g.__mockExhibits
+  }
+  return MOCK_EXHIBITS
+}
+
+/**
+ * Returns all exhibits belonging only to this booth, sorted by sort_order.
+ */
+export async function getExhibitsForBooth(boothId: string): Promise<ExhibitionExhibit[]> {
+  try {
+    const cfg = getRestConfig()
+    if (!cfg || boothId.startsWith("booth-")) {
+      const mockData = getMockExhibits()
+      const list = mockData[boothId] || []
+      return list.sort((a, b) => a.sortOrder - b.sortOrder)
+    }
+
+    const rows = await restGet<ExhibitionItemRow>(
+      `exhibition_items?select=*&booth_id=eq.${encodeURIComponent(boothId)}&order=sort_order.asc`
+    )
+    return rows.map(mapExhibitionExhibit)
+  } catch (err) {
+    console.warn(`[exhibitions-service] getExhibitsForBooth error:`, err)
+    const mockData = getMockExhibits()
+    const list = mockData[boothId] || []
+    return list.sort((a, b) => a.sortOrder - b.sortOrder)
+  }
+}
+
+/**
+ * Creates a new exhibit.
+ */
+export async function createExhibit(
+  data: Omit<ExhibitionExhibit, "id">
+): Promise<ExhibitionExhibit> {
+  const cfg = getRestConfig()
+  const boothId = data.boothId
+
+  if (!cfg || boothId.startsWith("booth-")) {
+    const mockData = getMockExhibits()
+    if (!mockData[boothId]) {
+      mockData[boothId] = []
+    }
+    const newExhibit: ExhibitionExhibit = {
+      ...data,
+      id: `exhibit-${Math.random().toString(36).slice(2, 11)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+    mockData[boothId].push(newExhibit)
+    return newExhibit
+  }
+
+  // Database insert via PostgREST
+  const record = {
+    booth_id: data.boothId,
+    name: data.name,
+    short_description: data.shortDescription || null,
+    description: data.description,
+    images: data.images || [],
+    videos: data.videos || [],
+    pdf_url: data.pdfUrl || null,
+    brochure_url: data.brochureUrl || null,
+    is_featured: Boolean(data.isFeatured),
+    sort_order: Number(data.sortOrder) || 0,
+    category: data.category || null,
+    status: data.status || "Draft",
+  }
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibition_items`, {
+    method: "POST",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(record),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to create exhibit: ${res.status} ${text}`)
+  }
+
+  const rows = (await res.json()) as ExhibitionItemRow[]
+  if (!rows || rows.length === 0) {
+    throw new Error("No exhibit row returned from database insert.")
+  }
+
+  return mapExhibitionExhibit(rows[0])
+}
+
+/**
+ * Updates an exhibit.
+ */
+export async function updateExhibit(
+  id: string,
+  data: Partial<ExhibitionExhibit>
+): Promise<ExhibitionExhibit> {
+  const cfg = getRestConfig()
+
+  if (!cfg || id.startsWith("exhibit-")) {
+    const mockData = getMockExhibits()
+    let found: ExhibitionExhibit | null = null
+    for (const bId in mockData) {
+      const idx = mockData[bId].findIndex((e) => e.id === id)
+      if (idx !== -1) {
+        const existing = mockData[bId][idx]
+        const updated: ExhibitionExhibit = {
+          ...existing,
+          ...data,
+          updatedAt: new Date().toISOString(),
+        }
+        mockData[bId][idx] = updated
+        found = updated
+        break
+      }
+    }
+    if (!found) {
+      throw new Error(`Mock exhibit not found with ID ${id}`)
+    }
+    return found
+  }
+
+  // Database update
+  const record: Record<string, any> = {
+    updated_at: new Date().toISOString(),
+  }
+  if (data.name !== undefined) record.name = data.name
+  if (data.shortDescription !== undefined) record.short_description = data.shortDescription
+  if (data.description !== undefined) record.description = data.description
+  if (data.images !== undefined) record.images = data.images
+  if (data.videos !== undefined) record.videos = data.videos
+  if (data.pdfUrl !== undefined) record.pdf_url = data.pdfUrl
+  if (data.brochureUrl !== undefined) record.brochure_url = data.brochureUrl
+  if (data.isFeatured !== undefined) record.is_featured = Boolean(data.isFeatured)
+  if (data.sortOrder !== undefined) record.sort_order = Number(data.sortOrder)
+  if (data.category !== undefined) record.category = data.category
+  if (data.status !== undefined) record.status = data.status
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibition_items?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(record),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to update exhibit: ${res.status} ${text}`)
+  }
+
+  const rows = (await res.json()) as ExhibitionItemRow[]
+  if (!rows || rows.length === 0) {
+    throw new Error(`No exhibit row returned after update for ID ${id}`)
+  }
+
+  return mapExhibitionExhibit(rows[0])
+}
+
+/**
+ * Deletes an exhibit.
+ */
+export async function deleteExhibit(id: string): Promise<boolean> {
+  const cfg = getRestConfig()
+
+  if (!cfg || id.startsWith("exhibit-")) {
+    const mockData = getMockExhibits()
+    for (const bId in mockData) {
+      const idx = mockData[bId].findIndex((e) => e.id === id)
+      if (idx !== -1) {
+        mockData[bId].splice(idx, 1)
+        return true
+      }
+    }
+    return false
+  }
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibition_items?id=eq.${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+    },
+  })
+
+  return res.ok
+}
+
+/**
+ * Duplicates an exhibit.
+ */
+export async function duplicateExhibit(id: string): Promise<ExhibitionExhibit> {
+  const cfg = getRestConfig()
+
+  if (!cfg || id.startsWith("exhibit-")) {
+    const mockData = getMockExhibits()
+    let src: ExhibitionExhibit | null = null
+    let bIdKey: string = ""
+    for (const bId in mockData) {
+      const found = mockData[bId].find((e) => e.id === id)
+      if (found) {
+        src = found
+        bIdKey = bId
+        break
+      }
+    }
+
+    if (!src) throw new Error(`Exhibit to duplicate not found: ${id}`)
+
+    const copy: ExhibitionExhibit = {
+      ...src,
+      id: `exhibit-${Math.random().toString(36).slice(2, 11)}`,
+      name: `${src.name} (Copy)`,
+      sortOrder: src.sortOrder + 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: "Draft",
+    }
+    mockData[bIdKey].push(copy)
+    return copy
+  }
+
+  // Real Database Duplication
+  const rows = await restGet<ExhibitionItemRow>(`exhibition_items?select=*&id=eq.${encodeURIComponent(id)}&limit=1`)
+  const srcRow = rows[0]
+  if (!srcRow) throw new Error(`Exhibit to duplicate not found in database: ${id}`)
+
+  const record = {
+    booth_id: srcRow.booth_id,
+    name: `${srcRow.name} (Copy)`,
+    short_description: srcRow.short_description || null,
+    description: srcRow.description,
+    images: srcRow.images || [],
+    videos: srcRow.videos || [],
+    pdf_url: srcRow.pdf_url || null,
+    brochure_url: srcRow.brochure_url || null,
+    is_featured: Boolean(srcRow.is_featured),
+    sort_order: (Number(srcRow.sort_order) || 0) + 1,
+    category: srcRow.category || null,
+    status: "Draft",
+  }
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibition_items`, {
+    method: "POST",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(record),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to duplicate database exhibit: ${res.status} ${text}`)
+  }
+
+  const resultRows = (await res.json()) as ExhibitionItemRow[]
+  if (!resultRows || resultRows.length === 0) {
+    throw new Error("No duplicated row returned from database insert.")
+  }
+
+  return mapExhibitionExhibit(resultRows[0])
+}
+
+/**
+ * Updates sort orders for all exhibits of a booth.
+ */
+export async function updateExhibitsSortOrder(
+  boothId: string,
+  orderedIds: string[]
+): Promise<boolean> {
+  const cfg = getRestConfig()
+
+  if (!cfg || boothId.startsWith("booth-")) {
+    const mockData = getMockExhibits()
+    const list = mockData[boothId] || []
+    orderedIds.forEach((id, index) => {
+      const idx = list.findIndex((e) => e.id === id)
+      if (idx !== -1) {
+        list[idx].sortOrder = index + 1
+      }
+    })
+    return true
+  }
+
+  // Update in DB (sequentially)
+  for (let i = 0; i < orderedIds.length; i++) {
+    const id = orderedIds[i]
+    await fetch(`${cfg.url}/rest/v1/exhibition_items?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: {
+        apikey: cfg.key,
+        Authorization: `Bearer ${cfg.key}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ sort_order: i + 1 }),
+      cache: "no-store",
+    })
+  }
+
+  return true
 }

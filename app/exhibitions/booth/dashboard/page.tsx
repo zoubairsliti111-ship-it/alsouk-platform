@@ -53,6 +53,9 @@ const dict = {
     bannerPreview: "Banner Image",
     logoPreview: "Logo Image",
     editBoothBtn: "Edit Booth Profile",
+    manageExhibitsBtn: "Manage Exhibits",
+    exhibitsHeading: "Virtual Exhibits & Showroom",
+    exhibitsDesc: "Configure and showcase your specific products, B2B samples, machinery, and prototypes.",
   },
   fr: {
     dashboardTitle: "Espace Exposant",
@@ -82,6 +85,9 @@ const dict = {
     bannerPreview: "Image de la bannière",
     logoPreview: "Image du logo",
     editBoothBtn: "Modifier le profil du stand",
+    manageExhibitsBtn: "Gérer les pièces",
+    exhibitsHeading: "Expositions Virtuelles & Showroom",
+    exhibitsDesc: "Configurez et présentez vos produits spécifiques, échantillons B2B, machines et prototypes.",
   },
   ar: {
     dashboardTitle: "مساحة عمل العارض",
@@ -111,6 +117,9 @@ const dict = {
     bannerPreview: "صورة البانر",
     logoPreview: "شعار الشركة",
     editBoothBtn: "تعديل الملف التعريفي للجناح",
+    manageExhibitsBtn: "إدارة المعروضات",
+    exhibitsHeading: "المعروضات الافتراضية وصالة العرض",
+    exhibitsDesc: "قم بتهيئة وعرض منتجاتك المخصصة، وعينات B2B، والآلات، والنماذج الأولية المبتكرة.",
   }
 }
 
@@ -349,20 +358,28 @@ function DashboardContent() {
                 </p>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => router.push("/exhibitions/booth/dashboard")}
                   className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-xs font-black text-foreground transition-all hover:bg-secondary min-h-11"
                 >
-                  <Sliders className="size-4" />
+                  <Sliders className="size-4 shrink-0" />
                   <span>{d.backToDashboard}</span>
+                </button>
+
+                <button
+                  onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits?boothId=${booth.id}`)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-secondary hover:bg-secondary/80 px-4 py-2.5 text-xs font-black text-foreground transition-all min-h-11"
+                >
+                  <FileText className="size-4 shrink-0" />
+                  <span>{d.manageExhibitsBtn}</span>
                 </button>
 
                 <button
                   onClick={() => router.push(`/exhibitions/booth/dashboard/edit?id=${booth.id}`)}
                   className="inline-flex items-center gap-2 rounded-xl bg-primary hover:bg-primary/95 px-4 py-2.5 text-xs font-black text-primary-foreground transition-all min-h-11"
                 >
-                  <Edit2 className="size-4" />
+                  <Edit2 className="size-4 shrink-0" />
                   <span>{d.editBoothBtn}</span>
                 </button>
               </div>
@@ -431,6 +448,45 @@ function DashboardContent() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Showroom & Exhibits Section */}
+            <div className="rounded-[20px] border border-border bg-card p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                <h3 className="text-base font-black text-foreground">{d.exhibitsHeading}</h3>
+                <button
+                  onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits?boothId=${booth.id}`)}
+                  className="inline-flex items-center gap-1.5 text-xs font-black text-primary hover:underline"
+                >
+                  <span>{d.manageExhibitsBtn}</span>
+                  <ExternalLink className="size-3.5" />
+                </button>
+              </div>
+              <p className="text-xs font-medium text-muted-foreground leading-relaxed">
+                {d.exhibitsDesc}
+              </p>
+              <div className="flex flex-col gap-3 pt-2">
+                {booth.exhibits && booth.exhibits.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {booth.exhibits.slice(0, 2).map((ex) => (
+                      <div key={ex.id} className="flex items-center gap-3 rounded-xl border border-border p-3 bg-secondary/30">
+                        {ex.images?.[0] && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={ex.images[0]} alt={ex.name} className="size-12 rounded-lg object-cover shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-xs font-black text-foreground truncate">{ex.name}</p>
+                          <p className="text-[10px] font-medium text-muted-foreground line-clamp-2">{ex.shortDescription || ex.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 rounded-xl border border-dashed border-border bg-secondary/10">
+                    <p className="text-xs font-bold text-muted-foreground">No exhibits added yet.</p>
+                  </div>
+                )}
               </div>
             </div>
 
