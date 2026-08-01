@@ -1,10 +1,12 @@
-import { restGet } from "@/lib/supabase/rest"
+import { restGet, getRestConfig } from "@/lib/supabase/rest"
 import type {
   Exhibition,
   ExhibitionBooth,
   ExhibitionExhibit,
   ExhibitionMedia,
   ExhibitionDocument,
+  ExhibitionApplication,
+  ExhibitionApplicationStatus,
 } from "@/lib/domains/exhibition/types"
 import { mapCompany, type CompanyRow } from "@/lib/services/companies-service"
 
@@ -73,6 +75,28 @@ export type ExhibitionDocumentRow = {
   file_size: string | null
   sort_order: number
   created_at?: string
+}
+
+export type ExhibitionApplicationRow = {
+  id: string
+  exhibition_id: string
+  company_id: string | null
+  company_name: string
+  contact_person: string
+  email: string
+  phone: string
+  country: string
+  business_category: string
+  short_description: string
+  message: string | null
+  status: ExhibitionApplicationStatus
+  review_notes: string | null
+  submitted_at: string
+  reviewed_at: string | null
+  reviewed_by: string | null
+  created_at?: string
+  updated_at?: string
+  exhibitions?: ExhibitionRow | null
 }
 
 // Map helpers
@@ -158,6 +182,28 @@ export function mapExhibitionDocument(row: ExhibitionDocumentRow): ExhibitionDoc
     url: row.url,
     fileSize: row.file_size,
     sortOrder: Number(row.sort_order) || 0,
+  }
+}
+
+export function mapExhibitionApplication(row: ExhibitionApplicationRow): ExhibitionApplication {
+  return {
+    id: row.id,
+    exhibitionId: row.exhibition_id,
+    companyId: row.company_id,
+    companyName: row.company_name,
+    contactPerson: row.contact_person,
+    email: row.email,
+    phone: row.phone,
+    country: row.country,
+    businessCategory: row.business_category,
+    shortDescription: row.short_description,
+    message: row.message,
+    status: row.status,
+    reviewNotes: row.review_notes,
+    submittedAt: row.submitted_at,
+    reviewedAt: row.reviewed_at,
+    reviewedBy: row.reviewed_by,
+    exhibition: row.exhibitions ? mapExhibition(row.exhibitions) : null,
   }
 }
 
@@ -426,6 +472,40 @@ const MOCK_DOCS: Record<string, ExhibitionDocument[]> = {
   ],
 }
 
+// Global persistence of mock applications for offline/sandbox environments
+const MOCK_APPLICATIONS: ExhibitionApplication[] = [
+  {
+    id: "app-mock-1",
+    exhibitionId: "exh-101",
+    companyId: null,
+    companyName: "Atlas Pottery",
+    contactPerson: "Amir Potter",
+    email: "amir@atlaspottery.tn",
+    phone: "55555555",
+    country: "TN",
+    businessCategory: "Handicrafts & Ceramics",
+    shortDescription: "Traditional handmade ceramics from Nabeul.",
+    message: "We'd like to show our new handcrafted dinner sets.",
+    status: "Pending",
+    reviewNotes: null,
+    submittedAt: "2026-03-01T12:00:00Z",
+    reviewedAt: null,
+    reviewedBy: null,
+    exhibition: MOCK_EXHIBITIONS[0],
+  },
+]
+
+function getMockApplications(): ExhibitionApplication[] {
+  if (typeof globalThis !== "undefined") {
+    const g = globalThis as any
+    if (!g.__mockApplications) {
+      g.__mockApplications = [...MOCK_APPLICATIONS]
+    }
+    return g.__mockApplications
+  }
+  return MOCK_APPLICATIONS
+}
+
 // ===========================================================================
 // Service Layer APIs
 // ===========================================================================
@@ -547,5 +627,161 @@ export async function getBoothDetails(id: string): Promise<ExhibitionBooth | nul
       }
     }
     return null
+  }
+}
+
+/**
+ * Creates a new exhibition application.
+ */
+export async function createExhibitionApplication(
+  input: Omit<ExhibitionApplication, "id" | "status" | "submittedAt" | "reviewNotes" | "reviewedAt" | "reviewedBy">
+): Promise<ExhibitionApplication> {
+  const cfg = getRestConfig()
+
+  if (!cfg) {
+    // Unconfigured environment: create a simulated application
+    const mockApp: ExhibitionApplication = {
+      ...input,
+      id: `app-mock-${Math.random().toString(36).slice(2, 11)}`,
+      status: "Pending",
+      reviewNotes: null,
+      submittedAt: new Date().toISOString(),
+      reviewedAt: null,
+      reviewedBy: null,
+    }
+
+    // Attempt to load associated exhibition info for mocks
+    const mockExhibitions = MOCK_EXHIBITIONS
+    const exh = mockExhibitions.find((e) => e.id === input.exhibitionId)
+    if (exh) {
+      mockApp.exhibition = exh
+    }
+
+    getMockApplications().push(mockApp)
+    return mockApp
+  }
+
+  // Configured environment: Insert via PostgREST
+  const record = {
+    exhibition_id: input.exhibitionId,
+    company_id: input.companyId || null,
+    company_name: input.companyName,
+    contact_person: input.contactPerson,
+    email: input.email,
+    phone: input.phone,
+    country: input.country,
+    business_category: input.businessCategory,
+    short_description: input.shortDescription,
+    message: input.message || null,
+    status: "Pending",
+  }
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibition_applications`, {
+    method: "POST",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(record),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to create application: ${res.status} ${text}`)
+  }
+
+  const rows = (await res.json()) as ExhibitionApplicationRow[]
+  if (!rows || rows.length === 0) {
+    throw new Error("No application row returned from database insert.")
+  }
+
+  return mapExhibitionApplication(rows[0])
+}
+
+/**
+ * Returns an exhibition application by ID.
+ */
+export async function getExhibitionApplicationById(id: string): Promise<ExhibitionApplication | null> {
+  try {
+    const cfg = getRestConfig()
+    if (!cfg) {
+      const mockApp = getMockApplications().find((a) => a.id === id)
+      return mockApp || null
+    }
+
+    const selectQuery = "*,exhibitions(*)"
+    const rows = await restGet<ExhibitionApplicationRow>(
+      `exhibition_applications?select=${selectQuery}&id=eq.${encodeURIComponent(id)}&limit=1`
+    )
+    if (!rows || rows.length === 0) return null
+    return mapExhibitionApplication(rows[0])
+  } catch (err) {
+    console.warn(`[exhibitions-service] Failed to fetch application ID ${id}. Checking mock:`, err)
+    const mockApp = getMockApplications().find((a) => a.id === id)
+    return mockApp || null
+  }
+}
+
+/**
+ * Lists all exhibition applications for a specific exhibition.
+ */
+export async function getExhibitionApplicationsByExhibitionId(exhibitionId: string): Promise<ExhibitionApplication[]> {
+  try {
+    const cfg = getRestConfig()
+    if (!cfg) {
+      return getMockApplications().filter((a) => a.exhibitionId === exhibitionId)
+    }
+
+    const rows = await restGet<ExhibitionApplicationRow>(
+      `exhibition_applications?select=*,exhibitions(*)&exhibition_id=eq.${encodeURIComponent(exhibitionId)}&order=created_at.desc`
+    )
+    return rows.map(mapExhibitionApplication)
+  } catch (err) {
+    console.warn(`[exhibitions-service] Failed to fetch applications for exhibition ${exhibitionId}. Falling back to mocks:`, err)
+    return getMockApplications().filter((a) => a.exhibitionId === exhibitionId)
+  }
+}
+
+/**
+ * Checks for a duplicate application under the same email or company ID for a specific exhibition.
+ */
+export async function checkDuplicateApplication(
+  exhibitionId: string,
+  email: string,
+  companyId?: string | null
+): Promise<boolean> {
+  try {
+    const cfg = getRestConfig()
+    if (!cfg) {
+      const match = getMockApplications().some(
+        (a) =>
+          a.exhibitionId === exhibitionId &&
+          (a.email.toLowerCase() === email.toLowerCase() || (companyId && a.companyId === companyId))
+      )
+      return match
+    }
+
+    const emailQuery = `email=eq.${encodeURIComponent(email.toLowerCase())}`
+    const companyQuery = companyId ? `company_id=eq.${encodeURIComponent(companyId)}` : null
+
+    let orClause = `and=(exhibition_id=eq.${encodeURIComponent(exhibitionId)},or=(${emailQuery}`
+    if (companyQuery) {
+      orClause += `,${companyQuery}`
+    }
+    orClause += "))"
+
+    const rows = await restGet<ExhibitionApplicationRow>(`exhibition_applications?select=id&${orClause}&limit=1`)
+    return rows && rows.length > 0
+  } catch (err) {
+    console.warn("[exhibitions-service] Failed to check for duplicate applications. Checking mock:", err)
+    const match = getMockApplications().some(
+      (a) =>
+        a.exhibitionId === exhibitionId &&
+        (a.email.toLowerCase() === email.toLowerCase() || (companyId && a.companyId === companyId))
+    )
+    return match
   }
 }
