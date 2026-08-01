@@ -303,3 +303,174 @@ export async function deleteDocumentItem(id: string): Promise<boolean> {
     return false
   }
 }
+
+// ===========================================================================
+// Visitor Experience & B2B Networking Client Endpoints (TASK 009)
+// ===========================================================================
+
+import type {
+  ExhibitionFavorite,
+  ExhibitionRecentlyViewed,
+  ExhibitionMeeting,
+  ExhibitionVisitorNote,
+} from "@/lib/domains/exhibition/types"
+
+/** Loads visitor favorites. */
+export async function fetchFavorites(visitorId: string): Promise<ExhibitionFavorite[]> {
+  return fetchList<ExhibitionFavorite>(`/api/exhibitions/visitor/favorites?visitorId=${encodeURIComponent(visitorId)}`)
+}
+
+/** Save booth/exhibit as a favorite. */
+export async function saveFavorite(visitorId: string, targetType: "booth" | "exhibit", targetId: string): Promise<ItemResult<ExhibitionFavorite>> {
+  try {
+    const res = await fetch("/api/exhibitions/visitor/favorites", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ visitorId, targetType, targetId }),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] saveFavorite error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/** Remove booth/exhibit from favorites. */
+export async function removeFavoriteItem(visitorId: string, targetType: "booth" | "exhibit", targetId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/exhibitions/visitor/favorites?visitorId=${encodeURIComponent(visitorId)}&targetType=${encodeURIComponent(targetType)}&targetId=${encodeURIComponent(targetId)}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] removeFavoriteItem error:", err)
+    return false
+  }
+}
+
+/** Loads visitor's recently viewed list. */
+export async function fetchRecentlyViewed(visitorId: string): Promise<ExhibitionRecentlyViewed[]> {
+  return fetchList<ExhibitionRecentlyViewed>(`/api/exhibitions/visitor/recently-viewed?visitorId=${encodeURIComponent(visitorId)}`)
+}
+
+/** Track a visitor viewing a booth or exhibit. */
+export async function trackRecentlyViewedItem(visitorId: string, targetType: "booth" | "exhibit", targetId: string): Promise<boolean> {
+  try {
+    const res = await fetch("/api/exhibitions/visitor/recently-viewed", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ visitorId, targetType, targetId }),
+    })
+    return res.ok
+  } catch (err) {
+    console.error("[exhibitions-client] trackRecentlyViewedItem error:", err)
+    return false
+  }
+}
+
+/** Loads visitor's scheduled B2B meetings. */
+export async function fetchMeetings(visitorId: string): Promise<ExhibitionMeeting[]> {
+  return fetchList<ExhibitionMeeting>(`/api/exhibitions/visitor/meetings?visitorId=${encodeURIComponent(visitorId)}`)
+}
+
+/** Submit a new B2B meeting request. */
+export async function submitMeeting(
+  visitorId: string,
+  input: Omit<ExhibitionMeeting, "id" | "visitorId" | "status" | "createdAt" | "updatedAt">
+): Promise<ItemResult<ExhibitionMeeting>> {
+  try {
+    const res = await fetch("/api/exhibitions/visitor/meetings", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ visitorId, ...input }),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] submitMeeting error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/** Reschedule a B2B meeting. */
+export async function patchRescheduleMeeting(
+  meetingId: string,
+  date: string,
+  time: string,
+  notes?: string
+): Promise<ItemResult<ExhibitionMeeting>> {
+  try {
+    const res = await fetch("/api/exhibitions/visitor/meetings", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "reschedule", meetingId, preferredDate: date, preferredTime: time, notes }),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] patchRescheduleMeeting error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/** Cancel a B2B meeting request. */
+export async function patchCancelMeeting(meetingId: string): Promise<boolean> {
+  try {
+    const res = await fetch("/api/exhibitions/visitor/meetings", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "cancel", meetingId }),
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] patchCancelMeeting error:", err)
+    return false
+  }
+}
+
+/** Fetch visitor private notes. */
+export async function fetchVisitorNotes(visitorId: string, boothId?: string): Promise<ExhibitionVisitorNote[]> {
+  let url = `/api/exhibitions/visitor/notes?visitorId=${encodeURIComponent(visitorId)}`
+  if (boothId) url += `&boothId=${encodeURIComponent(boothId)}`
+  return fetchList<ExhibitionVisitorNote>(url)
+}
+
+/** Create or update a visitor private note. */
+export async function savePrivateNote(visitorId: string, boothId: string, noteText: string, tags: string[]): Promise<ItemResult<ExhibitionVisitorNote>> {
+  try {
+    const res = await fetch("/api/exhibitions/visitor/notes", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ visitorId, boothId, noteText, tags }),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] savePrivateNote error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/** Delete a visitor private note. */
+export async function deletePrivateNote(visitorId: string, boothId: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/exhibitions/visitor/notes?visitorId=${encodeURIComponent(visitorId)}&boothId=${encodeURIComponent(boothId)}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] deletePrivateNote error:", err)
+    return false
+  }
+}

@@ -118,3 +118,59 @@ export interface ExhibitionApplication {
   // Optional joined models
   exhibition?: Exhibition | null
 }
+
+// ===========================================================================
+// Visitor Experience & B2B Networking Types (TASK 009)
+// ===========================================================================
+
+export interface ExhibitionFavorite {
+  id: string
+  visitorId: string
+  targetType: "booth" | "exhibit"
+  targetId: string // booth_id or exhibit_id
+  createdAt: string
+  // Virtual Joined Objects
+  booth?: ExhibitionBooth | null
+  exhibit?: ExhibitionExhibit | null
+}
+
+export interface ExhibitionRecentlyViewed {
+  id: string
+  visitorId: string
+  targetType: "booth" | "exhibit"
+  targetId: string // booth_id or exhibit_id
+  viewedAt: string
+  // Virtual Joined Objects
+  booth?: ExhibitionBooth | null
+  exhibit?: ExhibitionExhibit | null
+}
+
+export type ExhibitionMeetingStatus = "Pending" | "Accepted" | "Rejected" | "Completed" | "Cancelled"
+
+export interface ExhibitionMeeting {
+  id: string
+  visitorId: string
+  boothId: string
+  companyId: string
+  preferredDate: string
+  preferredTime: string
+  purpose: string
+  expectedVolume: string
+  preferredLanguage: string
+  notes: string | null
+  status: ExhibitionMeetingStatus
+  createdAt: string
+  updatedAt: string
+  // Virtual Relations
+  booth?: ExhibitionBooth | null
+}
+
+export interface ExhibitionVisitorNote {
+  id: string
+  visitorId: string
+  boothId: string
+  noteText: string
+  tags: string[]
+  createdAt: string
+  updatedAt: string
+}
