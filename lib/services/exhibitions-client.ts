@@ -59,3 +59,247 @@ export async function submitExhibitionApplication(
 export function fetchExhibitionApplication(id: string): Promise<ItemResult<ExhibitionApplication>> {
   return fetchItem<ExhibitionApplication>(`/api/exhibitions/applications/${encodeURIComponent(id)}`)
 }
+
+// ===========================================================================
+// Exhibit Client Endpoints
+// ===========================================================================
+
+import type { ExhibitionExhibit } from "@/lib/domains/exhibition/types"
+
+/**
+ * Loads all exhibits for a specific booth.
+ */
+export function fetchExhibitsForBooth(boothId: string): Promise<ExhibitionExhibit[]> {
+  return fetchList<ExhibitionExhibit>(`/api/exhibitions/booth/exhibits?boothId=${encodeURIComponent(boothId)}`)
+}
+
+/**
+ * Loads details for a specific exhibit.
+ */
+export function fetchExhibitDetails(id: string): Promise<ItemResult<ExhibitionExhibit>> {
+  return fetchItem<ExhibitionExhibit>(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`)
+}
+
+/**
+ * Creates a new exhibit.
+ */
+export async function createExhibit(data: Omit<ExhibitionExhibit, "id">): Promise<ItemResult<ExhibitionExhibit>> {
+  try {
+    const res = await fetch("/api/exhibitions/booth/exhibits", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] createExhibit error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/**
+ * Updates an exhibit.
+ */
+export async function updateExhibit(id: string, data: Partial<ExhibitionExhibit>): Promise<ItemResult<ExhibitionExhibit>> {
+  try {
+    const res = await fetch(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "update", data }),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] updateExhibit error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/**
+ * Deletes an exhibit.
+ */
+export async function deleteExhibit(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] deleteExhibit error:", err)
+    return false
+  }
+}
+
+/**
+ * Duplicates an exhibit.
+ */
+export async function duplicateExhibit(id: string): Promise<ItemResult<ExhibitionExhibit>> {
+  try {
+    const res = await fetch(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "duplicate" }),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] duplicateExhibit error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/**
+ * Updates the sort order of exhibits in a booth.
+ */
+export async function updateExhibitsSortOrder(boothId: string, orderedIds: string[]): Promise<boolean> {
+  try {
+    const res = await fetch("/api/exhibitions/booth/exhibits", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ boothId, orderedIds }),
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] updateExhibitsSortOrder error:", err)
+    return false
+  }
+}
+
+// ===========================================================================
+// Media and Documents Client Endpoints
+// ===========================================================================
+
+import type { ExhibitionMedia, ExhibitionDocument } from "@/lib/domains/exhibition/types"
+
+/** Loads all media attached to a booth. */
+export function fetchMediaForBooth(boothId: string): Promise<ExhibitionMedia[]> {
+  return fetchList<ExhibitionMedia>(`/api/exhibitions/booth/media?boothId=${encodeURIComponent(boothId)}`)
+}
+
+/** Creates/uploads a new media item (image/video). */
+export async function createMediaItem(data: Omit<ExhibitionMedia, "id">): Promise<ItemResult<ExhibitionMedia>> {
+  try {
+    const res = await fetch("/api/exhibitions/booth/media", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] createMediaItem error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/** Updates a media item. */
+export async function updateMediaItem(id: string, data: Partial<ExhibitionMedia>): Promise<ItemResult<ExhibitionMedia>> {
+  try {
+    const res = await fetch("/api/exhibitions/booth/media", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "update", id, data }),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] updateMediaItem error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/** Deletes a media item. */
+export async function deleteMediaItem(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/exhibitions/booth/media?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] deleteMediaItem error:", err)
+    return false
+  }
+}
+
+/** Updates sort order of media items. */
+export async function updateMediaSortOrder(boothId: string, orderedIds: string[]): Promise<boolean> {
+  try {
+    const res = await fetch("/api/exhibitions/booth/media", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "reorder", boothId, orderedIds }),
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] updateMediaSortOrder error:", err)
+    return false
+  }
+}
+
+/** Designates an image as the booth's cover image. */
+export async function setBoothCoverImage(boothId: string, mediaId: string): Promise<boolean> {
+  try {
+    const res = await fetch("/api/exhibitions/booth/media", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "setCover", boothId, id: mediaId }),
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] setBoothCoverImage error:", err)
+    return false
+  }
+}
+
+/** Loads all documents attached to a booth. */
+export function fetchDocumentsForBooth(boothId: string): Promise<ExhibitionDocument[]> {
+  return fetchList<ExhibitionDocument>(`/api/exhibitions/booth/documents?boothId=${encodeURIComponent(boothId)}`)
+}
+
+/** Uploads/Creates a new document. */
+export async function createDocumentItem(data: Omit<ExhibitionDocument, "id">): Promise<ItemResult<ExhibitionDocument>> {
+  try {
+    const res = await fetch("/api/exhibitions/booth/documents", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) return { data: null, notFound: false, error: true }
+    const json = await res.json()
+    return { data: json.data, notFound: !json.data, error: false }
+  } catch (err) {
+    console.error("[exhibitions-client] createDocumentItem error:", err)
+    return { data: null, notFound: false, error: true }
+  }
+}
+
+/** Deletes a document. */
+export async function deleteDocumentItem(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/exhibitions/booth/documents?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    })
+    if (!res.ok) return false
+    const json = await res.json()
+    return Boolean(json.success)
+  } catch (err) {
+    console.error("[exhibitions-client] deleteDocumentItem error:", err)
+    return false
+  }
+}

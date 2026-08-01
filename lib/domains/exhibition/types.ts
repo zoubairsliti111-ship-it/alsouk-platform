@@ -51,6 +51,7 @@ export interface ExhibitionExhibit {
   id: string
   boothId: string
   name: string
+  shortDescription?: string | null
   description: string | null
   images: string[]
   videos: string[]
@@ -61,6 +62,7 @@ export interface ExhibitionExhibit {
   createdAt?: string
   updatedAt?: string
   category?: string | null
+  status?: "Draft" | "Submitted" | "Published" | "Archived"
 }
 
 export interface ExhibitionMedia {
@@ -72,6 +74,7 @@ export interface ExhibitionMedia {
   sortOrder: number
   createdAt?: string
   thumbnailUrl?: string | null
+  isCover?: boolean
 }
 
 export interface ExhibitionDocument {

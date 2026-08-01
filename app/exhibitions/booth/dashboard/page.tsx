@@ -18,7 +18,10 @@ import {
   CheckCircle,
   Clock,
   Archive,
-  FileText
+  FileText,
+  Eye,
+  Check,
+  Shield
 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 import { MarketplaceShell, Breadcrumbs, ListingHeader } from "@/components/marketplace/shell"
@@ -53,6 +56,9 @@ const dict = {
     bannerPreview: "Banner Image",
     logoPreview: "Logo Image",
     editBoothBtn: "Edit Booth Profile",
+    manageExhibitsBtn: "Manage Exhibits",
+    exhibitsHeading: "Virtual Exhibits & Showroom",
+    exhibitsDesc: "Configure and showcase your specific products, B2B samples, machinery, and prototypes.",
   },
   fr: {
     dashboardTitle: "Espace Exposant",
@@ -82,6 +88,9 @@ const dict = {
     bannerPreview: "Image de la bannière",
     logoPreview: "Image du logo",
     editBoothBtn: "Modifier le profil du stand",
+    manageExhibitsBtn: "Gérer les pièces",
+    exhibitsHeading: "Expositions Virtuelles & Showroom",
+    exhibitsDesc: "Configurez et présentez vos produits spécifiques, échantillons B2B, machines et prototypes.",
   },
   ar: {
     dashboardTitle: "مساحة عمل العارض",
@@ -111,6 +120,9 @@ const dict = {
     bannerPreview: "صورة البانر",
     logoPreview: "شعار الشركة",
     editBoothBtn: "تعديل الملف التعريفي للجناح",
+    manageExhibitsBtn: "إدارة المعروضات",
+    exhibitsHeading: "المعروضات الافتراضية وصالة العرض",
+    exhibitsDesc: "قم بتهيئة وعرض منتجاتك المخصصة، وعينات B2B، والآلات، والنماذج الأولية المبتكرة.",
   }
 }
 
@@ -146,6 +158,30 @@ function DashboardContent() {
   const [booth, setBooth] = useState<ExhibitionBooth | null>(null)
   const [loading, setLoading] = useState(!!boothId)
   const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  const handleSubmitForReview = async () => {
+    if (!boothId || submitting) return
+    setSubmitting(true)
+    try {
+      const res = await fetch("/api/exhibitions/booth", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: boothId, status: "Submitted" }),
+      })
+      const json = await res.json()
+      if (json.success && json.data) {
+        setBooth(json.data)
+        setSubmitSuccess(true)
+        setTimeout(() => setSubmitSuccess(false), 3000)
+      }
+    } catch (err) {
+      console.error("Failed to submit booth:", err)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   // Hardcoded list of approved mocks for selection (realistic Tunisian B2B data)
   const availableBooths = [
@@ -349,24 +385,83 @@ function DashboardContent() {
                 </p>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                {/* Switch Booths */}
                 <button
                   onClick={() => router.push("/exhibitions/booth/dashboard")}
                   className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-xs font-black text-foreground transition-all hover:bg-secondary min-h-11"
                 >
-                  <Sliders className="size-4" />
+                  <Sliders className="size-4 shrink-0" />
                   <span>{d.backToDashboard}</span>
                 </button>
 
+                {/* Live Preview Button */}
+                <button
+                  onClick={() => router.push(`/exhibitions/booth/dashboard/preview?id=${booth.id}`)}
+                  className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-xs font-black text-foreground transition-all hover:bg-secondary min-h-11"
+                >
+                  <Eye className="size-4 shrink-0 text-primary" />
+                  <span>Live Preview</span>
+                </button>
+
+                {/* Submit for Review Button */}
+                {booth.status !== "Submitted" && booth.status !== "Published" && (
+                  <button
+                    onClick={handleSubmitForReview}
+                    disabled={submitting}
+                    className="inline-flex items-center gap-2 rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground px-4 py-2.5 text-xs font-black transition-all min-h-11"
+                  >
+                    {submitting ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Check className="size-4 shrink-0" />
+                    )}
+                    <span>Submit for Review</span>
+                  </button>
+                )}
+
+                {/* Manage Media Trigger */}
+                <button
+                  onClick={() => router.push(`/exhibitions/booth/dashboard/media?boothId=${booth.id}`)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-secondary hover:bg-secondary/80 px-4 py-2.5 text-xs font-black text-foreground transition-all min-h-11"
+                >
+                  <Sliders className="size-4 shrink-0" />
+                  <span>Manage Media</span>
+                </button>
+
+                {/* Manage Exhibits Trigger */}
+                <button
+                  onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits?boothId=${booth.id}`)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-secondary hover:bg-secondary/80 px-4 py-2.5 text-xs font-black text-foreground transition-all min-h-11"
+                >
+                  <FileText className="size-4 shrink-0" />
+                  <span>{d.manageExhibitsBtn}</span>
+                </button>
+
+                {/* Edit Profile */}
                 <button
                   onClick={() => router.push(`/exhibitions/booth/dashboard/edit?id=${booth.id}`)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary hover:bg-primary/95 px-4 py-2.5 text-xs font-black text-primary-foreground transition-all min-h-11"
+                  disabled={booth.status === "Submitted"}
+                  className="inline-flex items-center gap-2 rounded-xl bg-secondary hover:bg-secondary/80 disabled:opacity-50 px-4 py-2.5 text-xs font-black text-foreground transition-all min-h-11"
                 >
-                  <Edit2 className="size-4" />
+                  <Edit2 className="size-4 shrink-0" />
                   <span>{d.editBoothBtn}</span>
                 </button>
               </div>
             </div>
+
+            {/* Lock/Read-only banner if Submitted */}
+            {booth.status === "Submitted" && (
+              <div className="rounded-[20px] border border-blue-200 bg-blue-500/10 dark:bg-blue-950/30 dark:border-blue-900/50 p-5 flex gap-4 items-center">
+                <div className="size-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-400">
+                  <Shield className="size-5" />
+                </div>
+                <div className="text-left">
+                  <h4 className="text-sm font-black text-foreground">Your booth has been submitted for review.</h4>
+                  <p className="text-xs font-medium text-muted-foreground mt-0.5">Content editing, media uploads, and profile changes are locked. The administration is currently reviewing your booth.</p>
+                </div>
+              </div>
+            )}
 
             {/* Profile Display / Banner */}
             <div className="overflow-hidden rounded-[20px] border border-border bg-card shadow-sm">
@@ -431,6 +526,45 @@ function DashboardContent() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Showroom & Exhibits Section */}
+            <div className="rounded-[20px] border border-border bg-card p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                <h3 className="text-base font-black text-foreground">{d.exhibitsHeading}</h3>
+                <button
+                  onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits?boothId=${booth.id}`)}
+                  className="inline-flex items-center gap-1.5 text-xs font-black text-primary hover:underline"
+                >
+                  <span>{d.manageExhibitsBtn}</span>
+                  <ExternalLink className="size-3.5" />
+                </button>
+              </div>
+              <p className="text-xs font-medium text-muted-foreground leading-relaxed">
+                {d.exhibitsDesc}
+              </p>
+              <div className="flex flex-col gap-3 pt-2">
+                {booth.exhibits && booth.exhibits.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {booth.exhibits.slice(0, 2).map((ex) => (
+                      <div key={ex.id} className="flex items-center gap-3 rounded-xl border border-border p-3 bg-secondary/30">
+                        {ex.images?.[0] && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={ex.images[0]} alt={ex.name} className="size-12 rounded-lg object-cover shrink-0" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-xs font-black text-foreground truncate">{ex.name}</p>
+                          <p className="text-[10px] font-medium text-muted-foreground line-clamp-2">{ex.shortDescription || ex.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 rounded-xl border border-dashed border-border bg-secondary/10">
+                    <p className="text-xs font-bold text-muted-foreground">No exhibits added yet.</p>
+                  </div>
+                )}
               </div>
             </div>
 

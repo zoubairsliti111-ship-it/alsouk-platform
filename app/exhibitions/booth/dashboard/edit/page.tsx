@@ -139,6 +139,7 @@ function EditContent() {
   const [bannerUrl, setBannerUrl] = useState("")
   const [logoUrl, setLogoUrl] = useState("")
   const [category, setCategory] = useState("")
+  const [status, setStatus] = useState<string>("Draft")
 
   const derivedError = !boothId ? d.errorLoad : null
   const displayError = error || derivedError
@@ -164,6 +165,7 @@ function EditContent() {
           setBannerUrl(b.bannerUrl || "")
           setLogoUrl(b.logoUrl || b.company?.logoUrl || "")
           setCategory(b.category || "")
+          setStatus(b.status || "Draft")
         } else {
           setError(json.error || d.errorLoad)
         }
@@ -262,6 +264,17 @@ function EditContent() {
           <p className="text-xs font-medium text-muted-foreground">{d.subtitle}</p>
         </div>
 
+        {/* Lock/Read-only banner if Submitted */}
+        {status === "Submitted" && (
+          <div className="mb-6 rounded-[20px] border border-blue-200 bg-blue-500/10 dark:bg-blue-950/30 dark:border-blue-900/50 p-5 flex gap-4 items-center">
+            <ShieldAlert className="size-10 text-blue-600 dark:text-blue-400 shrink-0" />
+            <div className="text-left">
+              <h4 className="text-sm font-black text-foreground">Editing Profile Locked</h4>
+              <p className="text-xs font-medium text-muted-foreground mt-0.5">Your booth has been submitted for review. Editing is disabled until administrator review.</p>
+            </div>
+          </div>
+        )}
+
         {/* Status Messages */}
         {displayError && (
           <div className="mb-6 rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex gap-3 items-center text-xs font-semibold text-destructive">
@@ -294,10 +307,11 @@ function EditContent() {
                 <input
                   type="text"
                   required
+                  disabled={status === "Submitted" || saving}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={d.boothNamePlaceholder}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px]"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px] disabled:opacity-50"
                 />
               </div>
 
@@ -308,10 +322,11 @@ function EditContent() {
                 </label>
                 <input
                   type="text"
+                  disabled={status === "Submitted" || saving}
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   placeholder={d.categoryPlaceholder}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px]"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px] disabled:opacity-50"
                 />
               </div>
 
@@ -328,10 +343,11 @@ function EditContent() {
                 <input
                   type="text"
                   maxLength={150}
+                  disabled={status === "Submitted" || saving}
                   value={shortDescription}
                   onChange={(e) => setShortDescription(e.target.value)}
                   placeholder={d.shortDescPlaceholder}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px]"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px] disabled:opacity-50"
                 />
               </div>
 
@@ -342,10 +358,11 @@ function EditContent() {
                 </label>
                 <textarea
                   rows={6}
+                  disabled={status === "Submitted" || saving}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder={d.fullDescPlaceholder}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3.5 text-xs font-medium text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[100px] resize-y leading-relaxed"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3.5 text-xs font-medium text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[100px] resize-y leading-relaxed disabled:opacity-50"
                 />
               </div>
             </div>
@@ -366,10 +383,11 @@ function EditContent() {
                 </label>
                 <input
                   type="url"
+                  disabled={status === "Submitted" || saving}
                   value={bannerUrl}
                   onChange={(e) => setBannerUrl(e.target.value)}
                   placeholder={d.bannerUrlPlaceholder}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px]"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px] disabled:opacity-50"
                 />
               </div>
 
@@ -380,10 +398,11 @@ function EditContent() {
                 </label>
                 <input
                   type="url"
+                  disabled={status === "Submitted" || saving}
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
                   placeholder={d.logoUrlPlaceholder}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px]"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-xs font-bold text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none min-h-[44px] disabled:opacity-50"
                 />
               </div>
             </div>
@@ -393,7 +412,7 @@ function EditContent() {
           <div className="flex flex-wrap gap-3 pt-2">
             <button
               type="submit"
-              disabled={saving}
+              disabled={status === "Submitted" || saving}
               className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary/95 disabled:bg-primary/50 text-primary-foreground px-5 py-3.5 text-xs font-black transition-all min-h-11"
             >
               {saving ? (
