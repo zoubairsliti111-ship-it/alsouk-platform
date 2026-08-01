@@ -25,6 +25,10 @@ export type ExhibitionRow = {
   categories: string[] | null
   created_at?: string
   updated_at?: string
+  logo_url?: string | null
+  contact_email?: string | null
+  contact_phone?: string | null
+  website?: string | null
 }
 
 export type ExhibitionBoothRow = {
@@ -129,6 +133,10 @@ export function mapExhibition(row: ExhibitionRow): Exhibition {
     startDate: row.start_date,
     endDate: row.end_date,
     categories: row.categories || [],
+    logoUrl: row.logo_url || null,
+    contactEmail: row.contact_email || null,
+    contactPhone: row.contact_phone || null,
+    website: row.website || null,
   }
 }
 
@@ -560,14 +568,28 @@ export function getMockBooths(): Record<string, ExhibitionBooth[]> {
 /**
  * Returns all active exhibitions, sorting by date.
  */
+export function getMockExhibitions(): Exhibition[] {
+  if (typeof globalThis !== "undefined") {
+    const g = globalThis as any
+    if (!g.__mockExhibitions) {
+      g.__mockExhibitions = JSON.parse(JSON.stringify(MOCK_EXHIBITIONS))
+    }
+    return g.__mockExhibitions
+  }
+  return MOCK_EXHIBITIONS
+}
+
+/**
+ * Returns all active exhibitions, sorting by date.
+ */
 export async function getExhibitions(): Promise<Exhibition[]> {
   try {
     const rows = await restGet<ExhibitionRow>("exhibitions?select=*&order=start_date.asc")
-    if (!rows || rows.length === 0) return MOCK_EXHIBITIONS
+    if (!rows || rows.length === 0) return getMockExhibitions()
     return rows.map(mapExhibition)
   } catch (err) {
     console.warn("[exhibitions-service] Failed to fetch. Using fallback mock data:", err)
-    return MOCK_EXHIBITIONS
+    return getMockExhibitions()
   }
 }
 
@@ -578,12 +600,12 @@ export async function getExhibitionBySlug(slug: string): Promise<Exhibition | nu
   try {
     const rows = await restGet<ExhibitionRow>(`exhibitions?select=*&slug=eq.${encodeURIComponent(slug)}&limit=1`)
     if (!rows || rows.length === 0) {
-      return MOCK_EXHIBITIONS.find((e) => e.slug === slug) || null
+      return getMockExhibitions().find((e) => e.slug === slug) || null
     }
     return mapExhibition(rows[0])
   } catch (err) {
     console.warn(`[exhibitions-service] Failed to fetch slug ${slug}. Using fallback mock data:`, err)
-    return MOCK_EXHIBITIONS.find((e) => e.slug === slug) || null
+    return getMockExhibitions().find((e) => e.slug === slug) || null
   }
 }
 
@@ -1525,6 +1547,348 @@ export async function rejectApplication(
   }
 
   return mapExhibitionApplication(appRows[0])
+}
+
+// ===========================================================================
+// Organizer Dashboard Specific Helpers
+// ===========================================================================
+
+/**
+ * Updates an exhibition details.
+ */
+export async function updateExhibition(
+  id: string,
+  data: Partial<Omit<Exhibition, "id" | "slug">>
+): Promise<Exhibition> {
+  const cfg = getRestConfig()
+
+  if (!cfg || id.startsWith("exh-")) {
+    const list = getMockExhibitions()
+    const idx = list.findIndex((e) => e.id === id)
+    if (idx === -1) {
+      throw new Error(`Exhibition not found: ${id}`)
+    }
+
+    const updated: Exhibition = {
+      ...list[idx],
+      ...data,
+      categories: data.categories || list[idx].categories,
+      updatedAt: new Date().toISOString(),
+    }
+    list[idx] = updated
+    return updated
+  }
+
+  // Database update via PostgREST
+  const record: Record<string, any> = {
+    updated_at: new Date().toISOString(),
+  }
+  if (data.name !== undefined) record.name = data.name
+  if (data.organizer !== undefined) record.organizer = data.organizer
+  if (data.description !== undefined) record.description = data.description
+  if (data.coverUrl !== undefined) record.cover_url = data.coverUrl
+  if (data.country !== undefined) record.country = data.country
+  if (data.city !== undefined) record.city = data.city
+  if (data.startDate !== undefined) record.start_date = data.startDate
+  if (data.endDate !== undefined) record.end_date = data.endDate
+  if (data.categories !== undefined) record.categories = data.categories
+  if (data.logoUrl !== undefined) record.logo_url = data.logoUrl
+  if (data.contactEmail !== undefined) record.contact_email = data.contactEmail
+  if (data.contactPhone !== undefined) record.contact_phone = data.contactPhone
+  if (data.website !== undefined) record.website = data.website
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibitions?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(record),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to update exhibition: ${res.status} ${text}`)
+  }
+
+  const rows = (await res.json()) as ExhibitionRow[]
+  if (!rows || rows.length === 0) {
+    throw new Error(`No exhibition row returned after update for ID ${id}`)
+  }
+
+  return mapExhibition(rows[0])
+}
+
+/**
+ * Retrieves stats for the organizer dashboard.
+ */
+export async function getOrganizerDashboardStats(exhibitionId: string) {
+  const apps = await getExhibitionApplicationsByExhibitionId(exhibitionId)
+
+  // To load booths, we need the exhibition slug to search in mocks
+  const exhibitions = await getExhibitions()
+  const exh = exhibitions.find((e) => e.id === exhibitionId)
+  const slug = exh?.slug || "tunisia-food-expo-2026"
+
+  let booths: ExhibitionBooth[] = []
+  try {
+    const cfg = getRestConfig()
+    if (!cfg) {
+      booths = getMockBooths()[slug] || []
+    } else {
+      const select = `id,exhibition_id,company_id,banner_url,description,is_archived,booth_number,category,status,title,short_description,companies(*)`
+      const rows = await restGet<ExhibitionBoothRow>(
+        `exhibition_booths?select=${select}&exhibition_id=eq.${encodeURIComponent(exhibitionId)}`
+      )
+      booths = rows.map(mapExhibitionBooth)
+    }
+  } catch (err) {
+    console.warn("Failed to fetch booths for stats:", err)
+    booths = getMockBooths()[slug] || []
+  }
+
+  const totalApplications = apps.length
+  const pendingApplications = apps.filter((a) => a.status === "Pending").length
+  const approvedBoothCount = booths.length // All booths in table are approved
+  const publishedBoothCount = booths.filter((b) => b.status === "Published" && !b.isArchived).length
+
+  return {
+    totalApplications,
+    pendingApplications,
+    approvedBoothCount,
+    publishedBoothCount,
+    visitorsPlaceholder: 4250,
+    meetingsPlaceholder: 184,
+  }
+}
+
+/**
+ * Assigns a booth number (and optionally a category) to a booth.
+ */
+export async function assignBoothDetails(
+  boothId: string,
+  data: {
+    boothNumber?: string | null
+    category?: string | null
+  }
+): Promise<ExhibitionBooth> {
+  const cfg = getRestConfig()
+
+  if (!cfg || boothId.startsWith("booth-")) {
+    const mockData = getMockBooths()
+    let foundBooth: ExhibitionBooth | null = null
+    for (const slug in mockData) {
+      const idx = mockData[slug].findIndex((b) => b.id === boothId)
+      if (idx !== -1) {
+        const existing = mockData[slug][idx]
+        const updated: ExhibitionBooth = {
+          ...existing,
+          boothNumber: data.boothNumber !== undefined ? (data.boothNumber || "") : existing.boothNumber,
+          category: data.category !== undefined ? (data.category || "") : existing.category,
+          updatedAt: new Date().toISOString(),
+        }
+        mockData[slug][idx] = updated
+        foundBooth = updated
+        break
+      }
+    }
+    if (!foundBooth) {
+      throw new Error(`Booth not found with ID ${boothId}`)
+    }
+    return foundBooth
+  }
+
+  // Database update
+  const record: Record<string, any> = {
+    updated_at: new Date().toISOString(),
+  }
+  if (data.boothNumber !== undefined) record.booth_number = data.boothNumber
+  if (data.category !== undefined) record.category = data.category
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibition_booths?id=eq.${encodeURIComponent(boothId)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(record),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to assign booth details: ${res.status} ${text}`)
+  }
+
+  const rows = (await res.json()) as ExhibitionBoothRow[]
+  if (!rows || rows.length === 0) {
+    throw new Error(`No booth row returned after update for ID ${boothId}`)
+  }
+
+  return mapExhibitionBooth(rows[0])
+}
+
+/**
+ * Updates a booth status (Draft, Published, Archived, etc.).
+ */
+export async function updateBoothStatus(
+  boothId: string,
+  status: "Draft" | "Submitted" | "Published" | "Archived"
+): Promise<ExhibitionBooth> {
+  const cfg = getRestConfig()
+
+  if (!cfg || boothId.startsWith("booth-")) {
+    const mockData = getMockBooths()
+    let foundBooth: ExhibitionBooth | null = null
+    for (const slug in mockData) {
+      const idx = mockData[slug].findIndex((b) => b.id === boothId)
+      if (idx !== -1) {
+        const existing = mockData[slug][idx]
+        const updated: ExhibitionBooth = {
+          ...existing,
+          status,
+          isArchived: status === "Archived" ? true : existing.isArchived,
+          updatedAt: new Date().toISOString(),
+        }
+        mockData[slug][idx] = updated
+        foundBooth = updated
+        break
+      }
+    }
+    if (!foundBooth) {
+      throw new Error(`Booth not found with ID ${boothId}`)
+    }
+    return foundBooth
+  }
+
+  // Database update
+  const record: Record<string, any> = {
+    status,
+    updated_at: new Date().toISOString(),
+  }
+  if (status === "Archived") {
+    record.is_archived = true
+  } else if (status === "Published") {
+    record.is_archived = false
+  }
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibition_booths?id=eq.${encodeURIComponent(boothId)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(record),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to update booth status: ${res.status} ${text}`)
+  }
+
+  const rows = (await res.json()) as ExhibitionBoothRow[]
+  if (!rows || rows.length === 0) {
+    throw new Error(`No booth row returned after update for ID ${boothId}`)
+  }
+
+  return mapExhibitionBooth(rows[0])
+}
+
+/**
+ * Loads analytics statistics for the exhibition.
+ */
+export async function loadStatistics(exhibitionId: string) {
+  const apps = await getExhibitionApplicationsByExhibitionId(exhibitionId)
+
+  const exhibitions = await getExhibitions()
+  const exh = exhibitions.find((e) => e.id === exhibitionId)
+  const slug = exh?.slug || "tunisia-food-expo-2026"
+
+  let booths: ExhibitionBooth[] = []
+  try {
+    const cfg = getRestConfig()
+    if (!cfg) {
+      booths = getMockBooths()[slug] || []
+    } else {
+      const select = `id,exhibition_id,company_id,banner_url,description,is_archived,booth_number,category,status,title,short_description,companies(*)`
+      const rows = await restGet<ExhibitionBoothRow>(
+        `exhibition_booths?select=${select}&exhibition_id=eq.${encodeURIComponent(exhibitionId)}`
+      )
+      booths = rows.map(mapExhibitionBooth)
+    }
+  } catch (err) {
+    console.warn("Failed to fetch booths for statistics:", err)
+    booths = getMockBooths()[slug] || []
+  }
+
+  // 1. Applications Metrics
+  const totalApps = apps.length
+  const approvedApps = apps.filter((a) => a.status === "Approved").length
+  const rejectedApps = apps.filter((a) => a.status === "Rejected").length
+  const pendingApps = apps.filter((a) => a.status === "Pending").length
+
+  // 2. Booths Metrics
+  const publishedBooths = booths.filter((b) => b.status === "Published" && !b.isArchived).length
+  const draftBooths = booths.filter((b) => (b.status === "Draft" || b.status === "Submitted") && !b.isArchived).length
+  const archivedBooths = booths.filter((b) => b.isArchived || b.status === "Archived").length
+
+  // 3. Country Breakdown
+  const countryCounts: Record<string, number> = {}
+  apps.forEach((a) => {
+    const country = a.country || "TN"
+    countryCounts[country] = (countryCounts[country] || 0) + 1
+  })
+  const countries = Object.entries(countryCounts).map(([code, count]) => ({
+    code,
+    name: code === "TN" ? "Tunisia" : code,
+    count,
+  }))
+
+  // 4. Category Breakdown
+  const categoryCounts: Record<string, number> = {}
+  booths.forEach((b) => {
+    const cat = b.category || "General Pavilion"
+    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1
+  })
+  const categories = Object.entries(categoryCounts).map(([name, count]) => ({
+    name,
+    count,
+  }))
+
+  // 5. Top/Most Viewed Booths (Using some beautiful placeholder distributions with real company names)
+  const topBooths = booths.map((b, i) => ({
+    id: b.id,
+    companyName: b.title || b.company?.name || "Premium Exhibitor",
+    boothNumber: b.boothNumber || "A-01",
+    views: 1240 - i * 350 > 100 ? 1240 - i * 350 : 120,
+    contacts: 85 - i * 25 > 10 ? 85 - i * 25 : 8,
+  })).sort((a, b) => b.views - a.views)
+
+  return {
+    applications: {
+      total: totalApps,
+      approved: approvedApps,
+      rejected: rejectedApps,
+      pending: pendingApps,
+    },
+    booths: {
+      total: booths.length,
+      published: publishedBooths,
+      draft: draftBooths,
+      archived: archivedBooths,
+    },
+    countries,
+    categories,
+    topBooths,
+  }
 }
 
 /**
