@@ -399,6 +399,39 @@ type Dict = {
     archived: string
     exploreExhibitions: string
     exhibitors: string
+    b2bEvent: string
+    exhibitorsCountLabel: string
+    filterCategory: string
+    allCategories: string
+    sortLabel: string
+    sortByFeatured: string
+    sortByAlpha: string
+    sortByBooth: string
+    boothLabel: string
+    verifiedExhibitor: string
+    downloadPdf: string
+    brochure: string
+    galleryPhotos: string
+    demosVideos: string
+    noPdf: string
+    chatWhatsapp: string
+    sendEmail: string
+    callLabel: string
+    boothNotFound: string
+    boothNotFoundDesc: string
+    backToExhibitionsList: string
+    meetingSuccessDesc: string
+    showcaseSummary: string
+    exhibitsInnovations: string
+    featuredExhibit: string
+    virtualExhibitor: string
+    showingLabel: string
+    matchingPavilions: string
+    noExhibitorsMatched: string
+    noExhibitorsMatchedDesc: string
+    vettedTag: string
+    activeTag: string
+    loadMore: string
   }
 }
 
@@ -821,7 +854,7 @@ export const translations: Record<Lang, Dict> = {
       welcomeBack: "Welcome back!",
       requiredField: "This field is required",
       invalidEmail: "Please enter a valid email address",
-    invalidPhone: "Please enter a valid Tunisian phone number (8 digits)",
+      invalidPhone: "Please enter a valid Tunisian phone number (8 digits)",
       passwordLength: "Password must be at least 8 characters long",
       passwordRequirements: "Password must contain at least one uppercase letter, one lowercase letter, and one number",
       passwordsDoNotMatch: "Passwords do not match",
@@ -873,6 +906,39 @@ export const translations: Record<Lang, Dict> = {
       archived: "Archived Exhibition Booth",
       exploreExhibitions: "Explore Virtual Exhibitions",
       exhibitors: "Exhibitors",
+      b2bEvent: "B2B Event",
+      exhibitorsCountLabel: "Booth",
+      filterCategory: "Filter by Pavilion Category",
+      allCategories: "All",
+      sortLabel: "Sort:",
+      sortByFeatured: "Featured First",
+      sortByAlpha: "Alphabetical (A-Z)",
+      sortByBooth: "Booth Number",
+      boothLabel: "Booth",
+      verifiedExhibitor: "Verified Exhibitor",
+      downloadPdf: "Download Specifications PDF",
+      brochure: "Brochure",
+      galleryPhotos: "Gallery Photos",
+      demosVideos: "Exhibition Demos & Videos",
+      noPdf: "No catalogue PDFs attached to this booth.",
+      chatWhatsapp: "Chat on WhatsApp",
+      sendEmail: "Send Email",
+      callLabel: "Call",
+      boothNotFound: "Booth Not Found",
+      boothNotFoundDesc: "This exhibition booth doesn't exist, is no longer active, or is archived.",
+      backToExhibitionsList: "Back to Exhibitions",
+      meetingSuccessDesc: "The exhibitor has been notified and will verify the slot.",
+      showcaseSummary: "Exhibition Showcase Summary",
+      exhibitsInnovations: "Exhibition Exhibits & Innovations",
+      featuredExhibit: "Featured",
+      virtualExhibitor: "VIRTUAL EXHIBITOR",
+      showingLabel: "Showing",
+      matchingPavilions: "matching pavilions",
+      noExhibitorsMatched: "No exhibitors matched your search query",
+      noExhibitorsMatchedDesc: "Try checking your spelling or selecting another category.",
+      vettedTag: "VETTED",
+      activeTag: "ACTIVE",
+      loadMore: "Load More Exhibitors",
     },
   },
   fr: {
@@ -1293,7 +1359,7 @@ export const translations: Record<Lang, Dict> = {
       welcomeBack: "Bon retour !",
       requiredField: "Ce champ est requis",
       invalidEmail: "Veuillez entrer une adresse e-mail valide",
-    invalidPhone: "Veuillez entrer un numéro de téléphone tunisien valide (8 chiffres)",
+      invalidPhone: "Veuillez entrer un numéro de téléphone tunisien valide (8 chiffres)",
       passwordLength: "Le mot de passe doit contenir au moins 8 caractères",
       passwordRequirements: "Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule et un chiffre",
       passwordsDoNotMatch: "Les mots de passe ne correspondent pas",
@@ -1345,6 +1411,39 @@ export const translations: Record<Lang, Dict> = {
       archived: "Stand d'exposition archivé",
       exploreExhibitions: "Explorer les expositions virtuelles",
       exhibitors: "Exposants",
+      b2bEvent: "Événement B2B",
+      exhibitorsCountLabel: "Stand",
+      filterCategory: "Filtrer par catégorie",
+      allCategories: "Tout",
+      sortLabel: "Tri :",
+      sortByFeatured: "En vedette d'abord",
+      sortByAlpha: "Alphabétique (A-Z)",
+      sortByBooth: "Numéro de stand",
+      boothLabel: "Stand",
+      verifiedExhibitor: "Exposant vérifié",
+      downloadPdf: "Télécharger le PDF",
+      brochure: "Brochure",
+      galleryPhotos: "Photos de la galerie",
+      demosVideos: "Démos & vidéos d'exposition",
+      noPdf: "Aucun catalogue PDF joint à ce stand.",
+      chatWhatsapp: "Discuter sur WhatsApp",
+      sendEmail: "Envoyer un e-mail",
+      callLabel: "Appeler",
+      boothNotFound: "Stand introuvable",
+      boothNotFoundDesc: "Ce stand d'exposition n'existe pas, n'est plus actif ou est archivé.",
+      backToExhibitionsList: "Retour aux expositions",
+      meetingSuccessDesc: "L'exposant a été notifié et va vérifier le créneau.",
+      showcaseSummary: "Résumé de la présentation",
+      exhibitsInnovations: "Expositions & Innovations",
+      featuredExhibit: "En vedette",
+      virtualExhibitor: "EXPOSANT VIRTUEL",
+      showingLabel: "Affichage de",
+      matchingPavilions: "stands correspondants",
+      noExhibitorsMatched: "Aucun exposant ne correspond à votre recherche",
+      noExhibitorsMatchedDesc: "Essayez un autre mot-clé ou modifiez la catégorie.",
+      vettedTag: "SÉLECTIONNÉ",
+      activeTag: "ACTIF",
+      loadMore: "Charger plus d'exposants",
     },
   },
   ar: {
@@ -1533,7 +1632,7 @@ export const translations: Record<Lang, Dict> = {
     },
     marketplace: {
       breadcrumbHome: "الرئيسية",
-      loading: "جارٍ التحميل…",
+      loading: "الرجاء الانتظار…",
       error: "حدث خطأ ما",
       errorDesc: "تعذّر تحميل هذا المحتوى. يرجى المحاولة مرة أخرى.",
       retry: "إعادة المحاولة",
@@ -1817,6 +1916,39 @@ export const translations: Record<Lang, Dict> = {
       archived: "جناح معرض مؤرشف",
       exploreExhibitions: "استكشف المعارض الافتراضية",
       exhibitors: "العارضون",
+      b2bEvent: "حدث B2B متميز",
+      exhibitorsCountLabel: "جناح عارض",
+      filterCategory: "تصفية حسب الفئة",
+      allCategories: "الكل",
+      sortLabel: "ترتيب:",
+      sortByFeatured: "المميز أولاً",
+      sortByAlpha: "أبجدياً (أ-ي)",
+      sortByBooth: "رقم الجناح",
+      boothLabel: "جناح",
+      verifiedExhibitor: "عارض موثق",
+      downloadPdf: "تحميل المواصفات الفنية PDF",
+      brochure: "كتيب المنتج",
+      galleryPhotos: "معرض الصور الفنية",
+      demosVideos: "استعراضات وعروض فيديو حية",
+      noPdf: "لا توجد ملفات كتالوج PDF مرفقة بهذا الجناح.",
+      chatWhatsapp: "التحدث عبر واتساب",
+      sendEmail: "إرسال بريد إلكتروني",
+      callLabel: "اتصال هاتفي",
+      boothNotFound: "الجناح غير موجود",
+      boothNotFoundDesc: "جناح المعرض هذا غير موجود، أو لم يعد نشطًا، أو تم أرشفته.",
+      backToExhibitionsList: "العودة للمعارض",
+      meetingSuccessDesc: "تم إرسال إشعار للعارض وسيتم التحقق من الموعد.",
+      showcaseSummary: "ملخص العرض الصناعي الخاص",
+      exhibitsInnovations: "المعروضات والابتكارات",
+      featuredExhibit: "مميز",
+      virtualExhibitor: "عارض افتراضي",
+      showingLabel: "عرض",
+      matchingPavilions: "أجنحة عارضين مطابقة",
+      noExhibitorsMatched: "لم يتطابق أي عارض مع استعلام البحث الخاص بك",
+      noExhibitorsMatchedDesc: "يرجى التحقق من الكلمة المفتاحية أو اختيار فئة أخرى.",
+      vettedTag: "معتمد ونخبة",
+      activeTag: "نشط حالياً",
+      loadMore: "تحميل المزيد من العارضين",
     },
   },
 }
