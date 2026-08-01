@@ -14,6 +14,10 @@ export interface Exhibition {
   categories: string[]
   createdAt?: string
   updatedAt?: string
+  logoUrl?: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  website?: string | null
 }
 
 export interface ExhibitionBooth {
