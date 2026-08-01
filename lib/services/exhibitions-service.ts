@@ -1243,3 +1243,338 @@ export async function updateExhibitsSortOrder(
 
   return true
 }
+
+// ===========================================================================
+// Organizer Review Workspace APIs (TASK 007)
+// ===========================================================================
+
+/**
+ * Gets the list of exhibition applications with search, status filtering, and sorting.
+ */
+export async function getApplicationsList(params: {
+  search?: string
+  status?: string
+  sort?: "newest" | "oldest"
+}): Promise<ExhibitionApplication[]> {
+  try {
+    const cfg = getRestConfig()
+    if (!cfg) {
+      // Offline/Mock Filter and Sort
+      let list = [...getMockApplications()]
+
+      if (params.status && params.status !== "all") {
+        list = list.filter((a) => a.status.toLowerCase() === params.status?.toLowerCase())
+      }
+
+      if (params.search) {
+        const query = params.search.toLowerCase()
+        list = list.filter(
+          (a) =>
+            a.companyName.toLowerCase().includes(query) ||
+            a.contactPerson.toLowerCase().includes(query) ||
+            a.email.toLowerCase().includes(query) ||
+            a.businessCategory.toLowerCase().includes(query)
+        )
+      }
+
+      if (params.sort === "oldest") {
+        list.sort((a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime())
+      } else {
+        list.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+      }
+
+      return list
+    }
+
+    // Build PostgREST query
+    let queryStr = "select=*,exhibitions(*)"
+    if (params.status && params.status !== "all") {
+      queryStr += `&status=eq.${encodeURIComponent(params.status)}`
+    }
+
+    // Perform fetch
+    let rows = await restGet<ExhibitionApplicationRow>(`exhibition_applications?${queryStr}`)
+
+    if (params.search) {
+      const q = params.search.toLowerCase()
+      rows = rows.filter(
+        (r) =>
+          r.company_name.toLowerCase().includes(q) ||
+          r.contact_person.toLowerCase().includes(q) ||
+          r.email.toLowerCase().includes(q) ||
+          r.business_category.toLowerCase().includes(q)
+      )
+    }
+
+    const list = rows.map(mapExhibitionApplication)
+
+    if (params.sort === "oldest") {
+      list.sort((a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime())
+    } else {
+      list.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+    }
+
+    return list
+  } catch (err) {
+    console.warn("[exhibitions-service] Failed to getApplicationsList. Falling back to mocks:", err)
+    return getMockApplications()
+  }
+}
+
+/**
+ * Approves an application, updating status and auto-creating an empty Draft booth.
+ */
+export async function approveApplication(
+  id: string,
+  reviewNotes?: string
+): Promise<ExhibitionApplication> {
+  const cfg = getRestConfig()
+  const now = new Date().toISOString()
+
+  if (!cfg || id.startsWith("app-mock-")) {
+    const list = getMockApplications()
+    const idx = list.findIndex((a) => a.id === id)
+    if (idx === -1) {
+      throw new Error(`Application not found: ${id}`)
+    }
+
+    const app = list[idx]
+    const updated: ExhibitionApplication = {
+      ...app,
+      status: "Approved",
+      reviewNotes: reviewNotes || null,
+      reviewedAt: now,
+    }
+    list[idx] = updated
+
+    // Generate and provision a corresponding empty booth inside MOCK_BOOTHS
+    const mockBooths = getMockBooths()
+    const companyId = app.companyId || `comp-${Math.random().toString(36).slice(2, 11)}`
+    const boothId = `booth-${Math.random().toString(36).slice(2, 11)}`
+
+    const newBooth: ExhibitionBooth = {
+      id: boothId,
+      exhibitionId: app.exhibitionId,
+      companyId: companyId,
+      description: `Welcome to our virtual booth pavilion for ${app.companyName}. We showcase premium ${app.businessCategory} solutions.`,
+      isArchived: false,
+      status: "Draft",
+      boothNumber: `C-${Math.floor(Math.random() * 80) + 10}`,
+      category: app.businessCategory,
+      isFeatured: false,
+      title: app.companyName,
+      shortDescription: app.shortDescription,
+      contactPerson: app.contactPerson,
+      contactPhone: app.phone,
+      contactEmail: app.email,
+      logoUrl: null,
+      bannerUrl: null,
+      company: {
+        id: companyId,
+        name: app.companyName,
+        slug: app.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+        description: app.shortDescription,
+        primaryIndustry: app.businessCategory.toLowerCase().includes("food") ? "food" : "textiles",
+        city: "tunis",
+        country: "TN",
+        verified: false,
+        verificationTier: "none",
+        profileCompletion: 20,
+        taxIdentifier: "",
+        businessType: "manufacturer",
+        yearEstablished: 2026,
+        companySize: "10-19",
+        supportedLanguages: ["en", "fr"],
+        exportMarkets: ["eu"],
+        metadata: {},
+      }
+    }
+
+    // Determine the correct exhibition bucket slug
+    const exhibitions = await getExhibitions()
+    const exh = exhibitions.find((e) => e.id === app.exhibitionId)
+    const exhSlug = exh?.slug || "tunisia-food-expo-2026"
+
+    if (!mockBooths[exhSlug]) {
+      mockBooths[exhSlug] = []
+    }
+    mockBooths[exhSlug].push(newBooth)
+
+    return updated
+  }
+
+  // 1. Update the application status in the database
+  const resApp = await fetch(`${cfg.url}/rest/v1/exhibition_applications?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      status: "Approved",
+      review_notes: reviewNotes || null,
+      reviewed_at: now,
+    }),
+    cache: "no-store",
+  })
+
+  if (!resApp.ok) {
+    const text = await resApp.text()
+    throw new Error(`Failed to approve application: ${resApp.status} ${text}`)
+  }
+
+  const appRows = (await resApp.json()) as ExhibitionApplicationRow[]
+  if (!appRows || appRows.length === 0) {
+    throw new Error("No application returned after approving.")
+  }
+
+  const application = mapExhibitionApplication(appRows[0])
+
+  // 2. Automatically create an empty booth in the database
+  // Resolve unique companyId (generate a fallback if none exists)
+  const resolvedCompanyId = application.companyId || "00000000-0000-0000-0000-000000000000"
+
+  const recordBooth = {
+    exhibition_id: application.exhibitionId,
+    company_id: resolvedCompanyId,
+    description: `Welcome to our virtual booth pavilion for ${application.companyName}. We showcase premium ${application.businessCategory} solutions.`,
+    status: "Draft",
+    title: application.companyName,
+    short_description: application.shortDescription,
+    category: application.businessCategory,
+    contact_person: application.contactPerson,
+    contact_phone: application.phone,
+    contact_email: application.email,
+    is_archived: false,
+    is_featured: false,
+  }
+
+  const resBooth = await fetch(`${cfg.url}/rest/v1/exhibition_booths`, {
+    method: "POST",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(recordBooth),
+    cache: "no-store",
+  })
+
+  if (!resBooth.ok) {
+    const text = await resBooth.text()
+    console.warn("[exhibitions-service] Auto draft booth creation warning:", text)
+  }
+
+  return application
+}
+
+/**
+ * Rejects an application, updating status and review notes.
+ */
+export async function rejectApplication(
+  id: string,
+  reviewNotes: string
+): Promise<ExhibitionApplication> {
+  const cfg = getRestConfig()
+  const now = new Date().toISOString()
+
+  if (!cfg || id.startsWith("app-mock-")) {
+    const list = getMockApplications()
+    const idx = list.findIndex((a) => a.id === id)
+    if (idx === -1) {
+      throw new Error(`Application not found: ${id}`)
+    }
+
+    const app = list[idx]
+    const updated: ExhibitionApplication = {
+      ...app,
+      status: "Rejected",
+      reviewNotes: reviewNotes || null,
+      reviewedAt: now,
+    }
+    list[idx] = updated
+    return updated
+  }
+
+  const resApp = await fetch(`${cfg.url}/rest/v1/exhibition_applications?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      status: "Rejected",
+      review_notes: reviewNotes || null,
+      reviewed_at: now,
+    }),
+    cache: "no-store",
+  })
+
+  if (!resApp.ok) {
+    const text = await resApp.text()
+    throw new Error(`Failed to reject application: ${resApp.status} ${text}`)
+  }
+
+  const appRows = (await resApp.json()) as ExhibitionApplicationRow[]
+  if (!appRows || appRows.length === 0) {
+    throw new Error("No application returned after rejecting.")
+  }
+
+  return mapExhibitionApplication(appRows[0])
+}
+
+/**
+ * Updates review notes on any application directly.
+ */
+export async function updateApplicationReviewNotes(
+  id: string,
+  reviewNotes: string
+): Promise<ExhibitionApplication> {
+  const cfg = getRestConfig()
+
+  if (!cfg || id.startsWith("app-mock-")) {
+    const list = getMockApplications()
+    const idx = list.findIndex((a) => a.id === id)
+    if (idx === -1) {
+      throw new Error(`Application not found: ${id}`)
+    }
+
+    const app = list[idx]
+    const updated: ExhibitionApplication = {
+      ...app,
+      reviewNotes,
+    }
+    list[idx] = updated
+    return updated
+  }
+
+  const resApp = await fetch(`${cfg.url}/rest/v1/exhibition_applications?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      review_notes: reviewNotes,
+    }),
+    cache: "no-store",
+  })
+
+  if (!resApp.ok) {
+    const text = await resApp.text()
+    throw new Error(`Failed to update review notes: ${resApp.status} ${text}`)
+  }
+
+  const appRows = (await resApp.json()) as ExhibitionApplicationRow[]
+  if (!appRows || appRows.length === 0) {
+    throw new Error("No application returned after updating review notes.")
+  }
+
+  return mapExhibitionApplication(appRows[0])
+}

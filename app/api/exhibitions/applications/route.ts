@@ -2,12 +2,36 @@ import { NextResponse } from "next/server"
 import {
   createExhibitionApplication,
   checkDuplicateApplication,
+  getApplicationsList,
 } from "@/lib/services/exhibitions-service"
 
 export const dynamic = "force-dynamic"
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE_RE = /^[+]?[\d\s().-]{6,20}$/
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get("status") || "all"
+    const search = searchParams.get("search") || ""
+    const sort = (searchParams.get("sort") || "newest") as "newest" | "oldest"
+
+    const applications = await getApplicationsList({
+      status,
+      search,
+      sort,
+    })
+
+    return NextResponse.json({ success: true, data: applications })
+  } catch (err: any) {
+    console.error("[api/exhibitions/applications] GET failed:", err)
+    return NextResponse.json(
+      { success: false, error: err.message || "internal_server_error" },
+      { status: 500 }
+    )
+  }
+}
 
 export async function POST(request: Request) {
   try {
