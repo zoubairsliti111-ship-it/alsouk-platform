@@ -74,6 +74,7 @@ export interface ExhibitionMedia {
   sortOrder: number
   createdAt?: string
   thumbnailUrl?: string | null
+  isCover?: boolean
 }
 
 export interface ExhibitionDocument {

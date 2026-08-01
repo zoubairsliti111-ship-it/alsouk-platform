@@ -162,6 +162,7 @@ function EditExhibitForm({ id, boothId }: EditExhibitFormProps) {
   const d = dict[lang] || dict.en
   const router = useRouter()
 
+  const [booth, setBooth] = useState<any | null>(null)
   const [loading, setLoading] = useState(!!id)
   const [error, setError] = useState<string | null>(id ? null : "No exhibit ID provided.")
   const [saving, setSaving] = useState(false)
@@ -182,15 +183,21 @@ function EditExhibitForm({ id, boothId }: EditExhibitFormProps) {
     if (!id) return
 
     let active = true
-    fetch(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Status " + res.status)
-        return res.json()
-      })
-      .then((json) => {
+
+    const loadDetails = async () => {
+      try {
+        const [exRes, bRes] = await Promise.all([
+          fetch(`/api/exhibitions/booth/exhibits/${encodeURIComponent(id)}`),
+          boothId ? fetch(`/api/exhibitions/booth?id=${encodeURIComponent(boothId)}`) : Promise.resolve(null)
+        ])
+
+        const exJson = await exRes.json()
+        const bJson = bRes ? await bRes.json() : null
+
         if (!active) return
-        if (json.success && json.data) {
-          const ex = json.data as ExhibitionExhibit
+
+        if (exJson.success && exJson.data) {
+          const ex = exJson.data as ExhibitionExhibit
           setName(ex.name || "")
           setShortDescription(ex.shortDescription || (ex.description ? ex.description.slice(0, 140) : ""))
           setDescription(ex.description || "")
@@ -202,19 +209,24 @@ function EditExhibitForm({ id, boothId }: EditExhibitFormProps) {
         } else {
           setError(d.errorLoading)
         }
-        setLoading(false)
-      })
-      .catch((err) => {
-        console.error("Error loading exhibit:", err)
-        if (!active) return
-        setError(d.errorLoading)
-        setLoading(false)
-      })
+
+        if (bJson && bJson.success && bJson.data) {
+          setBooth(bJson.data)
+        }
+      } catch (err) {
+        console.error("Error loading edit exhibit page details:", err)
+        if (active) setError(d.errorLoading)
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+
+    loadDetails()
 
     return () => {
       active = false
     }
-  }, [id, d.errorLoading])
+  }, [id, boothId, d.errorLoading])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -301,6 +313,21 @@ function EditExhibitForm({ id, boothId }: EditExhibitFormProps) {
         ) : error ? (
           <div className="rounded-[20px] border border-destructive/20 bg-destructive/5 p-6 text-center space-y-4">
             <p className="text-sm font-bold text-foreground">{error}</p>
+            <button
+              onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits?boothId=${boothId}`)}
+              className="inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2.5 text-xs font-bold"
+            >
+              <ArrowLeft className="size-4" />
+              <span>{d.backToExhibits}</span>
+            </button>
+          </div>
+        ) : booth?.status === "Submitted" ? (
+          <div className="rounded-[20px] border border-blue-200 bg-blue-500/10 dark:bg-blue-950/30 dark:border-blue-900/50 p-6 text-center space-y-4">
+            <AlertTriangle className="size-10 text-blue-500 mx-auto" />
+            <h4 className="text-sm font-black text-foreground">Exhibits Workspace Locked</h4>
+            <p className="text-xs font-medium text-muted-foreground leading-relaxed max-w-md mx-auto">
+              Your booth has been submitted for review. Editing exhibits is disabled until administrator review.
+            </p>
             <button
               onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits?boothId=${boothId}`)}
               className="inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2.5 text-xs font-bold"

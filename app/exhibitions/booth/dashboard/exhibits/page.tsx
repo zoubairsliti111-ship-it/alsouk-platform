@@ -344,6 +344,19 @@ function ExhibitsContent({ boothId }: ExhibitsContentProps) {
         ) : (
           /* Main Exhibits Workspace Content */
           <div className="space-y-6">
+            {/* Lock/Read-only banner if Submitted */}
+            {booth?.status === "Submitted" && (
+              <div className="mb-6 rounded-[20px] border border-blue-200 bg-blue-500/10 dark:bg-blue-950/30 dark:border-blue-900/50 p-5 flex gap-4 items-center">
+                <div className="size-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-400">
+                  <Plus className="size-5" />
+                </div>
+                <div className="text-left">
+                  <h4 className="text-sm font-black text-foreground">Exhibits Workspace Locked</h4>
+                  <p className="text-xs font-medium text-muted-foreground mt-0.5">Your booth has been submitted for review. Editing is disabled until administrator review.</p>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-6">
               <div className="space-y-1">
                 <h1 className="text-2xl font-black text-foreground">{d.title}</h1>
@@ -357,13 +370,15 @@ function ExhibitsContent({ boothId }: ExhibitsContentProps) {
                 )}
               </div>
 
-              <button
-                onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits/new?boothId=${boothId}`)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground px-5 py-3 text-xs font-black transition-all min-h-[44px] shrink-0"
-              >
-                <Plus className="size-4" />
-                <span>{d.addExhibit}</span>
-              </button>
+              {booth?.status !== "Submitted" && (
+                <button
+                  onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits/new?boothId=${boothId}`)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary/95 text-primary-foreground px-5 py-3 text-xs font-black transition-all min-h-[44px] shrink-0"
+                >
+                  <Plus className="size-4" />
+                  <span>{d.addExhibit}</span>
+                </button>
+              )}
             </div>
 
             {exhibits.length === 0 ? (
@@ -462,61 +477,63 @@ function ExhibitsContent({ boothId }: ExhibitsContentProps) {
                         </div>
 
                         {/* Actions (Reorder, Edit, Duplicate, Delete) */}
-                        <div className="flex flex-row sm:flex-col justify-center gap-1.5 border-t sm:border-t-0 border-border/60 pt-3 sm:pt-0 sm:ps-4 shrink-0">
-                          {/* Reordering Up/Down Controls */}
-                          <div className="flex sm:flex-row gap-1 border-r sm:border-r-0 sm:border-b border-border/60 pe-1.5 sm:pe-0 sm:pb-1.5 justify-center">
-                            <button
-                              disabled={isFirst || actionLoading !== null}
-                              onClick={() => handleMove(index, "up")}
-                              title={d.moveUp}
-                              className="size-8 rounded-lg flex items-center justify-center bg-secondary hover:bg-secondary/80 disabled:opacity-40 text-foreground transition-all shrink-0"
-                            >
-                              <ArrowUp className="size-3.5" />
-                            </button>
-                            <button
-                              disabled={isLast || actionLoading !== null}
-                              onClick={() => handleMove(index, "down")}
-                              title={d.moveDown}
-                              className="size-8 rounded-lg flex items-center justify-center bg-secondary hover:bg-secondary/80 disabled:opacity-40 text-foreground transition-all shrink-0"
-                            >
-                              <ArrowDown className="size-3.5" />
-                            </button>
+                        {booth?.status !== "Submitted" && (
+                          <div className="flex flex-row sm:flex-col justify-center gap-1.5 border-t sm:border-t-0 border-border/60 pt-3 sm:pt-0 sm:ps-4 shrink-0">
+                            {/* Reordering Up/Down Controls */}
+                            <div className="flex sm:flex-row gap-1 border-r sm:border-r-0 sm:border-b border-border/60 pe-1.5 sm:pe-0 sm:pb-1.5 justify-center">
+                              <button
+                                disabled={isFirst || actionLoading !== null}
+                                onClick={() => handleMove(index, "up")}
+                                title={d.moveUp}
+                                className="size-8 rounded-lg flex items-center justify-center bg-secondary hover:bg-secondary/80 disabled:opacity-40 text-foreground transition-all shrink-0"
+                              >
+                                <ArrowUp className="size-3.5" />
+                              </button>
+                              <button
+                                disabled={isLast || actionLoading !== null}
+                                onClick={() => handleMove(index, "down")}
+                                title={d.moveDown}
+                                className="size-8 rounded-lg flex items-center justify-center bg-secondary hover:bg-secondary/80 disabled:opacity-40 text-foreground transition-all shrink-0"
+                              >
+                                <ArrowDown className="size-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Item specific actions */}
+                            <div className="flex gap-1.5 justify-center">
+                              <button
+                                disabled={actionLoading !== null}
+                                onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits/${ex.id}/edit?boothId=${boothId}`)}
+                                title={d.editBtn}
+                                className="size-8 rounded-lg flex items-center justify-center border border-border bg-card text-foreground hover:bg-secondary transition-all shrink-0"
+                              >
+                                <Edit className="size-3.5" />
+                              </button>
+
+                              <button
+                                disabled={actionLoading !== null}
+                                onClick={() => handleDuplicate(ex.id)}
+                                title={d.duplicateBtn}
+                                className="size-8 rounded-lg flex items-center justify-center border border-border bg-card text-foreground hover:bg-secondary transition-all shrink-0"
+                              >
+                                {actionLoading === ex.id ? (
+                                  <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+                                ) : (
+                                  <Copy className="size-3.5" />
+                                )}
+                              </button>
+
+                              <button
+                                disabled={actionLoading !== null}
+                                onClick={() => handleDelete(ex.id)}
+                                title={d.deleteBtn}
+                                className="size-8 rounded-lg flex items-center justify-center bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/30 transition-all shrink-0"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            </div>
                           </div>
-
-                          {/* Item specific actions */}
-                          <div className="flex gap-1.5 justify-center">
-                            <button
-                              disabled={actionLoading !== null}
-                              onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits/${ex.id}/edit?boothId=${boothId}`)}
-                              title={d.editBtn}
-                              className="size-8 rounded-lg flex items-center justify-center border border-border bg-card text-foreground hover:bg-secondary transition-all shrink-0"
-                            >
-                              <Edit className="size-3.5" />
-                            </button>
-
-                            <button
-                              disabled={actionLoading !== null}
-                              onClick={() => handleDuplicate(ex.id)}
-                              title={d.duplicateBtn}
-                              className="size-8 rounded-lg flex items-center justify-center border border-border bg-card text-foreground hover:bg-secondary transition-all shrink-0"
-                            >
-                              {actionLoading === ex.id ? (
-                                <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
-                              ) : (
-                                <Copy className="size-3.5" />
-                              )}
-                            </button>
-
-                            <button
-                              disabled={actionLoading !== null}
-                              onClick={() => handleDelete(ex.id)}
-                              title={d.deleteBtn}
-                              className="size-8 rounded-lg flex items-center justify-center bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/40 dark:text-red-300 dark:hover:bg-red-900/30 transition-all shrink-0"
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
-                          </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   )

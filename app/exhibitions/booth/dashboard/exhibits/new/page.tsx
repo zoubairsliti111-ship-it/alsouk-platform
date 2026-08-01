@@ -302,6 +302,21 @@ function CreateExhibitForm({ boothId }: CreateExhibitFormProps) {
               <span>{d.backToExhibits}</span>
             </button>
           </div>
+        ) : booth?.status === "Submitted" ? (
+          <div className="rounded-[20px] border border-blue-200 bg-blue-500/10 dark:bg-blue-950/30 dark:border-blue-900/50 p-6 text-center space-y-4">
+            <AlertTriangle className="size-10 text-blue-500 mx-auto" />
+            <h4 className="text-sm font-black text-foreground">Exhibits Workspace Locked</h4>
+            <p className="text-xs font-medium text-muted-foreground leading-relaxed max-w-md mx-auto">
+              Your booth has been submitted for review. Creating new exhibits is disabled until administrator review.
+            </p>
+            <button
+              onClick={() => router.push(`/exhibitions/booth/dashboard/exhibits?boothId=${boothId}`)}
+              className="inline-flex items-center gap-2 rounded-xl bg-secondary px-4 py-2.5 text-xs font-bold"
+            >
+              <ArrowLeft className="size-4" />
+              <span>{d.backToExhibits}</span>
+            </button>
+          </div>
         ) : (
           <div className="space-y-6">
             <ListingHeader title={d.title} subtitle={d.subtitle} />

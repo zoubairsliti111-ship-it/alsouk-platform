@@ -78,6 +78,7 @@ export type ExhibitionMediaRow = {
   sort_order: number
   thumbnail_url?: string | null
   created_at?: string
+  is_cover?: boolean
 }
 
 export type ExhibitionDocumentRow = {
@@ -199,6 +200,7 @@ export function mapExhibitionMedia(row: ExhibitionMediaRow): ExhibitionMedia {
     caption: row.caption,
     sortOrder: Number(row.sort_order) || 0,
     thumbnailUrl: row.thumbnail_url || null,
+    isCover: row.is_cover !== undefined ? Boolean(row.is_cover) : false
   }
 }
 
@@ -845,6 +847,7 @@ export async function saveBoothDraft(
     bannerUrl?: string | null
     logoUrl?: string | null
     category?: string | null
+    status?: "Draft" | "Submitted" | "Published" | "Archived"
   }
 ): Promise<ExhibitionBooth> {
   const cfg = getRestConfig()
@@ -865,7 +868,7 @@ export async function saveBoothDraft(
           bannerUrl: data.bannerUrl !== undefined ? data.bannerUrl : existing.bannerUrl,
           logoUrl: data.logoUrl !== undefined ? data.logoUrl : existing.logoUrl,
           category: data.category !== undefined && data.category !== null ? data.category : existing.category,
-          status: "Draft", // Always save as Draft for TASK 006.1
+          status: data.status !== undefined ? data.status : "Draft",
           updatedAt: new Date().toISOString(),
         }
         mockData[slug][idx] = updated
@@ -883,7 +886,7 @@ export async function saveBoothDraft(
   // Real database PostgREST update
   const record: Record<string, any> = {
     updated_at: new Date().toISOString(),
-    status: "Draft", // Always save as Draft for TASK 006.1
+    status: data.status !== undefined ? data.status : "Draft",
   }
   if (data.title !== undefined) record.title = data.title
   if (data.shortDescription !== undefined) record.short_description = data.shortDescription
@@ -1058,7 +1061,7 @@ export async function updateExhibit(
     updated_at: new Date().toISOString(),
   }
   if (data.name !== undefined) record.name = data.name
-  if (data.shortDescription !== undefined) record.short_description = data.shortDescription
+  if (data.shortDescription !== undefined) record.short_description = data.short_description
   if (data.description !== undefined) record.description = data.description
   if (data.images !== undefined) record.images = data.images
   if (data.videos !== undefined) record.videos = data.videos

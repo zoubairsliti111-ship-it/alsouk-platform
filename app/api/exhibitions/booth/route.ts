@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { id, title, shortDescription, description, bannerUrl, logoUrl, category } = body
+    const { id, title, shortDescription, description, bannerUrl, logoUrl, category, status } = body
 
     if (!id) {
       return NextResponse.json(
@@ -52,6 +52,7 @@ export async function POST(request: Request) {
       bannerUrl,
       logoUrl,
       category,
+      status,
     })
 
     return NextResponse.json({ success: true, data: updated })
