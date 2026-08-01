@@ -174,3 +174,110 @@ export interface ExhibitionVisitorNote {
   createdAt: string
   updatedAt: string
 }
+
+// ===========================================================================
+// Exhibition Analytics Types (TASK 010)
+// ===========================================================================
+
+export interface OrganizerAnalytics {
+  totalExhibitions: number
+  totalBooths: number
+  activeBooths: number
+  pendingApplications: number
+  approvedApplications: number
+  rejectedApplications: number
+  totalVisitors: number
+  uniqueVisitors: number
+  totalMeetings: number
+  completedMeetings: number
+  totalRfqs: number
+  totalCatalogDownloads: number
+  qrScans: number
+  averageSessionDuration: number // in seconds
+  topPerformingBooths: {
+    id: string
+    companyName: string
+    boothNumber: string
+    views: number
+    contacts: number
+    rating: number
+  }[]
+  topCategories: {
+    name: string
+    count: number
+    percentage: number
+  }[]
+  visitorCountries: {
+    code: string
+    name: string
+    count: number
+    percentage: number
+  }[]
+  trafficTrends: {
+    label: string
+    visitors: number
+    uniqueVisitors: number
+  }[]
+  dailyTraffic: { date: string; visitors: number; uniqueVisitors: number }[]
+  weeklyTraffic: { week: string; visitors: number; uniqueVisitors: number }[]
+  monthlyTraffic: { month: string; visitors: number; uniqueVisitors: number }[]
+}
+
+export interface ExhibitorAnalytics {
+  boothViews: number
+  uniqueVisitors: number
+  exhibitViews: number
+  catalogDownloads: number
+  galleryViews: number
+  videoViews: number
+  qrScans: number
+  rfqsReceived: number
+  meetingRequests: number
+  acceptedMeetings: number
+  rejectedMeetings: number
+  completedMeetings: number
+  whatsAppClicks: number
+  emailClicks: number
+  websiteClicks: number
+  conversionRate: number
+  trafficTrends: {
+    label: string
+    views: number
+    unique: number
+  }[]
+  exhibitsPerformance: {
+    id: string
+    name: string
+    views: number
+    downloads: number
+  }[]
+  meetingTrends: {
+    label: string
+    requested: number
+    completed: number
+  }[]
+}
+
+export interface TrafficReport {
+  totalViews: number
+  uniqueViews: number
+  byDay: { date: string; views: number; unique: number }[]
+  byDevice: { device: string; percentage: number }[]
+}
+
+export interface MeetingReport {
+  totalRequested: number
+  totalAccepted: number
+  totalCompleted: number
+  byDay: { date: string; count: number }[]
+}
+
+export interface DownloadReport {
+  totalDownloads: number
+  byDocument: { id: string; name: string; count: number }[]
+}
+
+export interface QRReport {
+  totalScans: number
+  byBooth: { id: string; boothNumber: string; companyName: string; count: number }[]
+}
