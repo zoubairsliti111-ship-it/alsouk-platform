@@ -23,7 +23,7 @@ import {
 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 import { fetchBoothDetails } from "@/lib/services/exhibitions-client"
-import type { ExhibitionBooth, ExhibitionExhibit, ExhibitionMedia, ExhibitionDocument } from "@/lib/domains/exhibition/types"
+import type { ExhibitionBooth } from "@/lib/domains/exhibition/types"
 import { MarketplaceShell, Breadcrumbs, MessageState } from "@/components/marketplace/shell"
 import { directoryT } from "@/lib/directory-i18n"
 
@@ -86,7 +86,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-3">
+      <div className="flex flex-col items-center justify-center py-32 gap-3" dir={dir}>
         <Loader2 className="size-8 text-primary animate-spin" />
         <span className="text-xs font-bold text-muted-foreground">{t.marketplace.loading}</span>
       </div>
@@ -96,10 +96,10 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
   if (error || !booth || !booth.company) {
     return (
       <MessageState
-        icon={<Building2 className="size-7" />}
-        title="Booth Not Found"
-        description="This exhibition booth doesn't exist, is no longer active, or is archived."
-        action={<Link href={`/exhibitions/${slug}`} className="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white">{exT.backToExhibition}</Link>}
+        icon={<Building2 className="size-7 text-muted-foreground" />}
+        title={exT.boothNotFound}
+        description={exT.boothNotFoundDesc}
+        action={<Link href={`/exhibitions/${slug}`} className="rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white shadow-md transition-all active:scale-95 min-h-11 flex items-center justify-center">{exT.backToExhibition}</Link>}
       />
     )
   }
@@ -152,7 +152,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
         items={[
           { label: t.marketplace.breadcrumbHome, href: "/" },
           { label: exT.title, href: "/exhibitions" },
-          { label: "Exhibition Home", href: `/exhibitions/${slug}` },
+          { label: exT.backToExhibition, href: `/exhibitions/${slug}` },
           { label: comp.name },
         ]}
       />
@@ -163,7 +163,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
         <div className="h-44 w-full overflow-hidden bg-gradient-to-r from-blue-950 via-[#1E3A8A] to-slate-900 sm:h-64 relative">
           {booth.bannerUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={booth.bannerUrl} alt={comp.name} className="size-full object-cover" />
+            <img src={booth.bannerUrl} alt={comp.name} loading="lazy" className="size-full object-cover" />
           ) : (
             <div className="absolute inset-0 opacity-15 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
           )}
@@ -171,7 +171,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
           {/* Exclusive Exhibition Badge */}
           <div className="absolute top-4 right-4 bg-primary px-3 py-1.5 rounded-full text-[10px] font-extrabold text-white flex items-center gap-1.5 shadow-md">
             <Sparkles className="size-3" />
-            <span className="uppercase">VIRTUAL EXHIBITOR</span>
+            <span className="uppercase">{exT.virtualExhibitor}</span>
           </div>
         </div>
 
@@ -181,7 +181,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
           <div className="absolute -top-16 start-6 size-24 sm:size-28 rounded-3xl border-4 border-card bg-white shadow-xl flex items-center justify-center overflow-hidden shrink-0">
             {comp.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={comp.logoUrl} alt={comp.name} className="size-full object-contain p-2" />
+              <img src={comp.logoUrl} alt={comp.name} loading="lazy" className="size-full object-contain p-2" />
             ) : (
               <div className="size-full bg-gradient-to-tr from-primary to-blue-600 text-white font-black text-3xl flex items-center justify-center">
                 {comp.name.charAt(0).toUpperCase()}
@@ -196,9 +196,9 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                   {comp.name}
                 </h1>
                 {comp.verified && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     <Shield className="size-4 shrink-0 text-emerald-500" />
-                    Verified Exhibitor
+                    <span>{exT.verifiedExhibitor}</span>
                   </span>
                 )}
               </div>
@@ -213,13 +213,13 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                 {compLoc && (
                   <span className="inline-flex items-center gap-1.5">
                     <MapPin className="size-4 text-primary shrink-0" />
-                    {compLoc}
+                    <span>{compLoc}</span>
                   </span>
                 )}
                 {comp.yearEstablished && (
                   <span className="inline-flex items-center gap-1.5">
                     <Building2 className="size-4 text-primary shrink-0" />
-                    Est: {comp.yearEstablished}
+                    <span>Est: {comp.yearEstablished}</span>
                   </span>
                 )}
               </div>
@@ -229,7 +229,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
             <div className="shrink-0 flex gap-2">
               <button
                 onClick={() => setShowMeetingModal(true)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-xs font-extrabold text-white py-3.5 px-6 transition-all shadow-md shadow-primary/10 hover:shadow-lg cursor-pointer active:scale-95"
+                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-xs font-extrabold text-white py-3.5 px-6 transition-all shadow-md shadow-primary/10 hover:shadow-lg cursor-pointer active:scale-95 min-h-11"
               >
                 <Calendar className="size-4" />
                 <span>{exT.requestMeeting}</span>
@@ -249,7 +249,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
           <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm">
             <h2 className="text-base font-black text-foreground tracking-tight mb-4 flex items-center gap-2">
               <Building2 className="size-5 text-primary" />
-              <span>Exhibition Showcase Summary</span>
+              <span>{exT.showcaseSummary}</span>
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
               {booth.description}
@@ -260,7 +260,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
           <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-6">
             <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2">
               <FileCheck className="size-5 text-primary" />
-              <span>Exhibition Exhibits & Innovations</span>
+              <span>{exT.exhibitsInnovations}</span>
             </h2>
 
             {!booth.exhibits || booth.exhibits.length === 0 ? (
@@ -280,7 +280,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                       {hasImage ? (
                         <div className="relative w-full sm:w-40 aspect-square sm:aspect-auto sm:h-32 rounded-xl overflow-hidden border border-border shrink-0 bg-secondary">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={exhibit.images[0]} alt={exhibit.name} className="size-full object-cover" />
+                          <img src={exhibit.images[0]} alt={exhibit.name} loading="lazy" className="size-full object-cover" />
                         </div>
                       ) : (
                         <div className="w-full sm:w-40 h-32 rounded-xl bg-secondary flex items-center justify-center shrink-0 border border-border">
@@ -295,7 +295,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                             <h3 className="text-sm font-black text-foreground">{exhibit.name}</h3>
                             {exhibit.isFeatured && (
                               <span className="text-[9px] font-extrabold uppercase bg-amber-500/10 border border-amber-500/20 text-amber-600 px-1.5 py-0.5 rounded">
-                                Featured
+                                {exT.featuredExhibit}
                               </span>
                             )}
                           </div>
@@ -304,27 +304,16 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                           </p>
                         </div>
 
-                        {/* Document or Brochure download if attached */}
-                        {(exhibit.pdfUrl || exhibit.brochureUrl) && (
+                        {/* Brochure download CTA if available */}
+                        {exhibit.brochureUrl && (
                           <div className="flex flex-wrap gap-2 pt-3">
-                            {exhibit.pdfUrl && (
-                              <a
-                                href={exhibit.pdfUrl}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-[10px] font-black text-foreground transition-all hover:bg-secondary/40"
-                              >
-                                <FileText className="size-3.5 text-primary" />
-                                <span>Download Specifications PDF</span>
-                              </a>
-                            )}
-                            {exhibit.brochureUrl && (
-                              <a
-                                href={exhibit.brochureUrl}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-[10px] font-black text-foreground transition-all hover:bg-secondary/40"
-                              >
-                                <Download className="size-3.5 text-primary" />
-                                <span>Brochure</span>
-                              </a>
-                            )}
+                            <a
+                              href={exhibit.brochureUrl}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-[10px] font-black text-foreground transition-all hover:bg-secondary/40 min-h-11"
+                            >
+                              <Download className="size-3.5 text-primary" />
+                              <span>{exT.brochure}</span>
+                            </a>
                           </div>
                         )}
                       </div>
@@ -340,13 +329,13 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
             <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-4">
               <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2">
                 <Layers className="size-5 text-primary" />
-                <span>Gallery Photos</span>
+                <span>{exT.galleryPhotos}</span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {imagesMedia.map((med) => (
                   <div key={med.id} className="relative group rounded-xl overflow-hidden border border-border bg-secondary aspect-video">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={med.url} alt={med.caption || "Exhibition media"} className="size-full object-cover transition-all group-hover:scale-105" />
+                    <img src={med.url} alt={med.caption || ""} loading="lazy" className="size-full object-cover transition-all group-hover:scale-105" />
                     {med.caption && (
                       <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-xs p-2 text-[10px] text-white font-semibold truncate">
                         {med.caption}
@@ -363,7 +352,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
             <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-4">
               <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2">
                 <Video className="size-5 text-primary" />
-                <span>Exhibition Demos & Videos</span>
+                <span>{exT.demosVideos}</span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {videosMedia.map((med) => (
@@ -402,14 +391,14 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
             </h2>
 
             {!booth.documents || booth.documents.length === 0 ? (
-              <p className="text-[11px] text-muted-foreground italic">No catalogue PDFs attached to this booth.</p>
+              <p className="text-[11px] text-muted-foreground italic">{exT.noPdf}</p>
             ) : (
               <div className="space-y-2.5">
                 {booth.documents.map((doc) => (
                   <a
                     key={doc.id}
                     href={doc.url}
-                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border bg-secondary/15 hover:bg-secondary/40 transition-all text-xs"
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-border bg-secondary/15 hover:bg-secondary/40 transition-all text-xs min-h-11"
                   >
                     <span className="flex items-center gap-2.5 min-w-0">
                       <FileCheck className="size-4.5 text-primary shrink-0" />
@@ -426,7 +415,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
             )}
           </section>
 
-          {/* Contact Details (Tunisian flag, prefix, WhatsApp, call, email) */}
+          {/* Contact Details */}
           <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-4">
             <h2 className="text-base font-black text-foreground tracking-tight border-b border-border/60 pb-3 flex items-center gap-2">
               <Mail className="size-5 text-primary" />
@@ -439,31 +428,31 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                   href={`https://wa.me/${comp.whatsappNumber.replace(/[^0-9]/g, "")}?text=Hi! I visited your booth at ${exT.title}. I would like to request information on your showcased exhibits.`}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full flex items-center gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 rounded-xl text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-all"
+                  className="w-full flex items-center gap-3 p-3.5 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/15 rounded-xl text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-all min-h-11"
                 >
                   <svg className="size-5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.74 0-2.597-1.012-5.05-2.848-6.87C16.656 2.175 14.211 1.157 11.998 1.157c-5.44 0-9.866 4.372-9.87 9.743-.001 1.748.465 3.453 1.348 4.953l-.986 3.6 3.731-.968c1.517.825 3.03 1.259 4.336 1.259z"/></svg>
-                  <span className="truncate">Chat on WhatsApp</span>
+                  <span className="truncate">{exT.chatWhatsapp}</span>
                 </a>
               )}
 
               {comp.businessEmail && (
                 <a
                   href={`mailto:${comp.businessEmail}?subject=ALSOUK Exhibition Enquiry - ${comp.name}`}
-                  className="w-full flex items-center gap-3 p-3.5 bg-primary/10 border border-primary/20 hover:bg-primary/15 rounded-xl text-primary font-bold text-xs transition-all"
+                  className="w-full flex items-center gap-3 p-3.5 bg-primary/10 border border-primary/20 hover:bg-primary/15 rounded-xl text-primary font-bold text-xs transition-all min-h-11"
                 >
                   <Mail className="size-5 shrink-0" />
-                  <span className="truncate">Send Email</span>
+                  <span className="truncate">{exT.sendEmail}</span>
                 </a>
               )}
 
               {comp.phoneNumber && (
                 <a
                   href={`tel:${comp.phoneNumber}`}
-                  className="w-full flex items-center gap-3 p-3.5 bg-secondary/50 border border-border hover:bg-secondary rounded-xl text-foreground font-bold text-xs transition-all"
+                  className="w-full flex items-center gap-3 p-3.5 bg-secondary/50 border border-border hover:bg-secondary rounded-xl text-foreground font-bold text-xs transition-all min-h-11"
                 >
                   <Phone className="size-5 text-muted-foreground shrink-0" />
                   <span className="truncate flex items-center gap-1">
-                    <span>Call</span>
+                    <span>{exT.callLabel}</span>
                     <span className="font-mono text-[11px]">{comp.phoneNumber}</span>
                   </span>
                 </a>
@@ -477,7 +466,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
 
       {/* MODAL 1: B2B Private Meeting Request Form Overlay */}
       {showMeetingModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200" dir={dir}>
           <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
               <h3 className="text-base font-black text-foreground flex items-center gap-2">
@@ -486,7 +475,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
               </h3>
               <button
                 onClick={() => setShowMeetingModal(false)}
-                className="size-8 rounded-xl border border-border hover:bg-secondary/40 flex items-center justify-center text-muted-foreground cursor-pointer"
+                className="size-8 rounded-xl border border-border hover:bg-secondary/40 flex items-center justify-center text-muted-foreground cursor-pointer min-h-11"
               >
                 <X className="size-4" />
               </button>
@@ -500,7 +489,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                 <div>
                   <h4 className="text-base font-black text-foreground">{exT.meetingSuccess}</h4>
                   <p className="text-xs text-muted-foreground mt-1">
-                    The exhibitor has been notified and will verify the slot.
+                    {exT.meetingSuccessDesc}
                   </p>
                 </div>
               </div>
@@ -519,7 +508,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                     required
                     value={meetingDate}
                     onChange={(e) => setMeetingDate(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-secondary/15 px-3.5 py-2.5 text-xs text-foreground outline-none focus:border-primary"
+                    className="w-full rounded-xl border border-border bg-secondary/15 px-3.5 py-2.5 text-xs text-foreground outline-none focus:border-primary min-h-11"
                   />
                 </div>
 
@@ -530,7 +519,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                   <select
                     value={meetingTime}
                     onChange={(e) => setMeetingTime(e.target.value)}
-                    className="w-full rounded-xl border border-border bg-secondary/15 px-3.5 py-2.5 text-xs text-foreground outline-none focus:border-primary"
+                    className="w-full rounded-xl border border-border bg-secondary/15 px-3.5 py-2.5 text-xs text-foreground outline-none focus:border-primary min-h-11 pr-10"
                   >
                     <option value="09:00 - 10:00">09:00 - 10:00 (GMT+1)</option>
                     <option value="10:00 - 11:00">10:00 - 11:00 (GMT+1)</option>
@@ -558,7 +547,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                   <button
                     type="submit"
                     disabled={meetingSubmitting}
-                    className="flex-1 rounded-xl bg-gradient-to-r from-primary to-blue-600 py-3.5 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="flex-1 rounded-xl bg-gradient-to-r from-primary to-blue-600 py-3.5 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer flex items-center justify-center gap-2 min-h-11"
                   >
                     {meetingSubmitting ? (
                       <>
@@ -575,7 +564,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
                   <button
                     type="button"
                     onClick={() => setShowMeetingModal(false)}
-                    className="rounded-xl border border-border px-4 py-3.5 hover:bg-secondary/40 text-xs font-bold text-foreground transition-all cursor-pointer"
+                    className="rounded-xl border border-border px-4 py-3.5 hover:bg-secondary/40 text-xs font-bold text-foreground transition-all cursor-pointer min-h-11"
                   >
                     {exT.cancel}
                   </button>
@@ -592,7 +581,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
           <div className="relative w-full max-w-3xl aspect-video rounded-2xl overflow-hidden border border-border/40 shadow-2xl">
             <button
               onClick={() => setActiveVideoUrl(null)}
-              className="absolute top-4 right-4 z-20 size-9 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center text-white cursor-pointer"
+              className="absolute top-4 right-4 z-20 size-9 rounded-full bg-black/50 hover:bg-black/80 flex items-center justify-center text-white cursor-pointer min-h-11"
             >
               <X className="size-4" />
             </button>

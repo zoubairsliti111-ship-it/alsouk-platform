@@ -8,7 +8,6 @@ import {
   Trophy,
   Search,
   Building2,
-  Users,
   ArrowRight,
   Loader2,
   Tag,
@@ -16,8 +15,7 @@ import {
   Star,
   ArrowUpDown,
   SlidersHorizontal,
-  ChevronDown,
-  Info
+  ChevronDown
 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 import { fetchExhibitionBySlug, fetchBoothsByExhibition } from "@/lib/services/exhibitions-client"
@@ -88,7 +86,7 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
   }, [booths])
 
   // Split booths into Featured and Regular lists based on filter & search query
-  const { featuredBooths, filteredAllBooths } = useMemo(() => {
+  const filteredAllBooths = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
 
     // Filter booths
@@ -112,13 +110,13 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
           boothDesc.includes(query) ||
           bNum.includes(query) ||
           bCat.includes(query)
-        );
+        )
       }
       return true
     })
 
     // Sort booths
-    const sorted = [...filtered].sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       if (sortBy === "alphabetical") {
         const nameA = a.company?.name || ""
         const nameB = b.company?.name || ""
@@ -138,13 +136,6 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
       const nameB = b.company?.name || ""
       return nameA.localeCompare(nameB, lang)
     })
-
-    const featured = sorted.filter((b) => b.isFeatured)
-
-    return {
-      featuredBooths: featured,
-      filteredAllBooths: sorted,
-    }
   }, [booths, searchQuery, selectedCategory, sortBy, lang])
 
   // Premium, fully animated loading skeleton view
@@ -167,8 +158,6 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
             <div className="flex-1 space-y-4">
               <div className="h-5 w-24 bg-primary/10 border border-primary/25 rounded-full animate-pulse" />
               <div className="h-10 w-2/3 bg-secondary/35 rounded-xl animate-pulse" />
-              <div className="h-4 w-full bg-secondary/25 rounded-md animate-pulse" />
-              <div className="h-4 w-4/5 bg-secondary/25 rounded-md animate-pulse" />
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-border/40 pt-6">
                 {[1, 2, 3].map((n) => (
@@ -192,36 +181,21 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
               <div className="h-12 flex-1 bg-secondary/25 rounded-xl" />
               <div className="h-12 w-40 bg-secondary/25 rounded-xl" />
             </div>
-            <div className="space-y-2">
-              <div className="h-3 w-32 bg-secondary/25 rounded-xs" />
-              <div className="flex gap-2 overflow-x-hidden">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-8 w-24 bg-secondary/25 rounded-lg shrink-0" />
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Directory Grid Skeleton */}
           <div className="space-y-6">
-            <div className="h-6 w-36 bg-secondary/35 rounded-md" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((idx) => (
                 <div key={idx} className="rounded-[20px] border border-border bg-card p-5 space-y-4 animate-pulse">
                   <div className="flex justify-between items-start">
                     <div className="size-12 rounded-xl bg-secondary/35" />
                     <div className="space-y-1.5 flex flex-col items-end">
-                      <div className="h-4.5 w-16 bg-secondary/35 rounded-full" />
-                      <div className="h-3.5 w-20 bg-secondary/25 rounded-xs" />
+                      <div className="h-4.5 w-16 bg-secondary/35" />
                     </div>
                   </div>
                   <div className="h-5 w-32 bg-secondary/35 rounded-md" />
-                  <div className="space-y-2 pt-2">
-                    <div className="h-3 w-full bg-secondary/25 rounded-xs" />
-                    <div className="h-3 w-5/6 bg-secondary/25 rounded-xs" />
-                  </div>
                   <div className="flex justify-between items-center pt-4 border-t border-border/40">
-                    <div className="h-4 w-12 bg-secondary/25 rounded-xs" />
                     <div className="h-9 w-24 bg-secondary/35 rounded-xl" />
                   </div>
                 </div>
@@ -236,10 +210,14 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
   if (error || !exhibition) {
     return (
       <MessageState
-        icon={<Building2 className="size-7 animate-bounce text-muted-foreground" />}
+        icon={<Building2 className="size-7 text-muted-foreground" />}
         title={t.marketplace.error}
-        description="We couldn't load this virtual exhibition event."
-        action={<Link href="/exhibitions" className="rounded-[20px] bg-primary px-5 py-2.5 text-xs font-bold text-white shadow-md active:scale-95 transition-all">Back to Exhibitions</Link>}
+        description={exT.boothNotFoundDesc}
+        action={
+          <Link href="/exhibitions" className="rounded-[20px] bg-primary px-5 py-2.5 text-xs font-bold text-white shadow-md active:scale-95 transition-all">
+            {exT.backToExhibitionsList}
+          </Link>
+        }
       />
     )
   }
@@ -273,7 +251,7 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
         <div className="h-48 w-full overflow-hidden bg-gradient-to-r from-slate-900 via-[#1E3A8A] to-blue-950 sm:h-72 relative">
           {exhibition.coverUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={exhibition.coverUrl} alt={exhibition.name} className="size-full object-cover opacity-85 transition-transform duration-700 hover:scale-105" />
+            <img src={exhibition.coverUrl} alt={exhibition.name} loading="lazy" className="size-full object-cover opacity-85 transition-transform duration-700 hover:scale-105" />
           ) : (
             <div className="absolute inset-0 opacity-15 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
           )}
@@ -300,10 +278,6 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                 {exhibition.name}
               </h1>
 
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">
-                {exhibition.description}
-              </p>
-
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-semibold text-muted-foreground border-t border-border/40 pt-4">
                 <div className="flex items-center gap-3">
                   <div className="size-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 shadow-2xs">
@@ -320,7 +294,7 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                     <Calendar className="size-4.5" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase text-muted-foreground/80 tracking-wider">Exhibition Duration</p>
+                    <p className="text-[10px] font-black uppercase text-muted-foreground/80 tracking-wider">{exT.startDate}</p>
                     <p className="text-foreground font-extrabold">{startStr} – {endStr}</p>
                   </div>
                 </div>
@@ -330,8 +304,10 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                     <MapPin className="size-4.5" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase text-muted-foreground/80 tracking-wider">Location</p>
-                    <p className="text-foreground font-extrabold capitalize">{cityLoc}, {isTunisia ? "Tunisia 🇹🇳" : exhibition.country}</p>
+                    <p className="text-[10px] font-black uppercase text-muted-foreground/80 tracking-wider">{lang === "ar" ? "الموقع" : lang === "fr" ? "Lieu" : "Location"}</p>
+                    <p className="text-foreground font-extrabold capitalize">
+                      {cityLoc}, {isTunisia ? (lang === "ar" ? "تونس 🇹🇳" : lang === "fr" ? "Tunisie 🇹🇳" : "Tunisia 🇹🇳") : exhibition.country}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -340,26 +316,13 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
             {/* Quick stats counter */}
             <div className="bg-secondary/35 border border-border/80 p-4 rounded-2xl flex items-center gap-4 shrink-0 shadow-2xs">
               <div className="size-12 rounded-xl bg-gradient-to-tr from-primary to-blue-600 text-white flex items-center justify-center shadow-sm">
-                <Users className="size-5.5" />
+                <Building2 className="size-5.5" />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase text-muted-foreground/85 tracking-wider">{exT.exhibitors}</p>
-                <p className="text-lg font-black text-foreground">{booths.length} {booths.length === 1 ? "Booth" : "Booths"}</p>
+                <p className="text-[10px] font-black uppercase text-muted-foreground/85 tracking-wider">{exT.boothsCount}</p>
+                <p className="text-lg font-black text-foreground">{booths.length}</p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Concept/Help banner */}
-      <section className="mx-auto max-w-6xl px-4 pt-8">
-        <div className="p-4 rounded-[20px] bg-blue-500/5 border border-blue-500/15 text-xs font-semibold text-foreground flex gap-3.5 items-start leading-relaxed shadow-3xs">
-          <Info className="size-5 shrink-0 text-primary mt-0.5" />
-          <div className="space-y-1">
-            <span className="font-black text-primary uppercase tracking-wide">Exhibition Pavilion Walkthrough</span>
-            <p className="text-muted-foreground">
-              These digital booths host exclusive prototypes, regional technologies, and private B2B catalogues. No standard retail products are shown here. Click any pavilion booth card below to view detailed demos, PDFs, and schedule virtual private meetings.
-            </p>
           </div>
         </div>
       </section>
@@ -389,7 +352,7 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
             <div className="relative shrink-0 flex items-center gap-2">
               <span className="text-xs font-bold text-muted-foreground whitespace-nowrap flex items-center gap-1">
                 <ArrowUpDown className="size-3.5" />
-                Sort:
+                {exT.sortLabel}
               </span>
               <div className="relative">
                 <select
@@ -400,9 +363,9 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                   }}
                   className="appearance-none rounded-xl border border-border bg-secondary/10 py-3.5 ps-4 pe-10 text-xs font-black text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 cursor-pointer pr-10"
                 >
-                  <option value="featured">Featured First</option>
-                  <option value="alphabetical">Alphabetical (A-Z)</option>
-                  <option value="boothNumber">Booth Number</option>
+                  <option value="featured">{exT.sortByFeatured}</option>
+                  <option value="alphabetical">{exT.sortByAlpha}</option>
+                  <option value="boothNumber">{exT.sortByBooth}</option>
                 </select>
                 <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
               </div>
@@ -413,11 +376,13 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
           <div className="border-t border-border/50 pt-5">
             <h3 className="text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
               <SlidersHorizontal className="size-3.5 text-primary" />
-              Filter by Pavilion Category
+              {exT.filterCategory}
             </h3>
             <div className="flex flex-nowrap overflow-x-auto gap-2.5 pb-2.5 scrollbar-none snap-x snap-mandatory">
               {categoriesList.map((cat) => {
                 const isActive = selectedCategory === cat
+                const displayLabel = cat === "All" ? exT.allCategories : cat
+
                 return (
                   <button
                     key={cat}
@@ -431,7 +396,7 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                         : "bg-secondary/10 hover:bg-secondary/25 text-muted-foreground border-border"
                     }`}
                   >
-                    {cat}
+                    {displayLabel}
                   </button>
                 )
               })}
@@ -439,106 +404,15 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
           </div>
         </div>
 
-        {/* Featured Showcase Section (Rendered prominent if there are featured booths) */}
-        {featuredBooths.length > 0 && searchQuery === "" && selectedCategory === "All" && (
-          <div className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <Star className="size-5 fill-amber-500 text-amber-500 animate-spin-slow" />
-              <h2 className="text-xl font-black text-foreground tracking-tight">
-                Featured Event Pavilions
-              </h2>
-              <span className="text-[9px] font-black uppercase bg-amber-500/10 border border-amber-500/20 text-amber-600 px-2 py-0.5 rounded-full tracking-wider">
-                Elite Vetted
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {featuredBooths.map((booth) => {
-                const comp = booth.company
-                if (!comp) return null
-
-                return (
-                  <div
-                    key={`featured-${booth.id}`}
-                    className="group relative rounded-[20px] border-2 border-amber-500/25 bg-gradient-to-br from-amber-500/[0.03] via-card to-amber-500/[0.01] p-6 shadow-sm flex flex-col justify-between transition-all duration-300 hover:border-amber-500/50 hover:shadow-md"
-                  >
-                    {/* Top right badges */}
-                    <div className="absolute top-4 right-4 flex items-center gap-1.5">
-                      {booth.boothNumber && (
-                        <span className="text-[9px] font-black text-amber-800 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                          Booth {booth.boothNumber}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="space-y-4">
-                      {/* Brand details */}
-                      <div className="flex items-start gap-4">
-                        <div className="size-14 rounded-2xl border-2 border-amber-500/20 bg-white flex items-center justify-center p-1.5 shrink-0 overflow-hidden shadow-2xs group-hover:scale-105 transition-transform">
-                          {comp.logoUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={comp.logoUrl} alt={comp.name} className="size-full object-contain" />
-                          ) : (
-                            <div className="size-full bg-amber-500/10 text-amber-600 font-black text-xl flex items-center justify-center">
-                              {comp.name.charAt(0).toUpperCase()}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="min-w-0 pe-16">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <h3 className="text-base font-black text-foreground group-hover:text-primary transition-colors truncate">
-                              {comp.name}
-                            </h3>
-                            {comp.verified && (
-                              <Shield className="size-4.5 text-emerald-500 shrink-0" />
-                            )}
-                          </div>
-                          {booth.category && (
-                            <span className="inline-block text-[10px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-wider mt-0.5">
-                              {booth.category}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Description */}
-                      <p className="text-xs font-semibold text-muted-foreground leading-relaxed line-clamp-3">
-                        {booth.description}
-                      </p>
-                    </div>
-
-                    {/* Booth Actions */}
-                    <div className="mt-6 pt-4 border-t border-border/40 flex items-center justify-between gap-4">
-                      <span className="text-[10px] font-extrabold uppercase text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-full flex items-center gap-1">
-                        <Star className="size-3 fill-amber-500 text-amber-500" />
-                        Featured Pavilion
-                      </span>
-
-                      <Link
-                        href={`/exhibitions/${slug}/booths/${booth.id}`}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-primary hover:opacity-95 px-4.5 py-2.5 text-xs font-black text-white transition-all shadow-md shadow-primary/10 hover:shadow-lg active:scale-95 cursor-pointer"
-                      >
-                        <span>{exT.viewBooth}</span>
-                        <ArrowRight className="size-3.5" />
-                      </Link>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
         {/* Booth Directory Heading */}
         <div className="border-t border-border/40 pt-8 mt-4">
           <div className="flex items-center justify-between gap-4 mb-6">
             <div>
               <h2 className="text-xl font-black text-foreground tracking-tight">
-                Virtual Booth Directory
+                {exT.title}
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Showing <span className="text-foreground font-black">{filteredAllBooths.length}</span> matching pavilions
+                {exT.showingLabel} <span className="text-foreground font-black">{filteredAllBooths.length}</span> {exT.matchingPavilions}
               </p>
             </div>
           </div>
@@ -546,8 +420,8 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
           {filteredAllBooths.length === 0 ? (
             <div className="py-16 text-center border border-dashed border-border rounded-3xl bg-secondary/10">
               <Building2 className="size-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
-              <p className="text-base font-bold text-foreground">No exhibitors matched your search query</p>
-              <p className="text-xs text-muted-foreground mt-1">Try checking your spelling or selecting another category.</p>
+              <p className="text-base font-bold text-foreground">{exT.noExhibitorsMatched}</p>
+              <p className="text-xs text-muted-foreground mt-1">{exT.noExhibitorsMatchedDesc}</p>
             </div>
           ) : (
             <div className="space-y-8">
@@ -569,7 +443,7 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                           <div className="size-12 rounded-xl border border-border bg-white flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-3xs group-hover:scale-105 transition-transform duration-200">
                             {comp.logoUrl ? (
                               // eslint-disable-next-line @next/next/no-img-element
-                              <img src={comp.logoUrl} alt={comp.name} className="size-full object-contain" />
+                              <img src={comp.logoUrl} alt={comp.name} loading="lazy" className="size-full object-contain" />
                             ) : (
                               <div className="size-full bg-primary/10 text-primary font-black text-lg flex items-center justify-center">
                                 {comp.name.charAt(0).toUpperCase()}
@@ -581,7 +455,7 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                           <div className="flex flex-col items-end gap-1 min-w-0">
                             {booth.boothNumber && (
                               <span className="text-[9px] font-black tracking-wider text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full uppercase">
-                                Booth #{booth.boothNumber}
+                                {exT.boothLabel} #{booth.boothNumber}
                               </span>
                             )}
                             {booth.category && (
@@ -606,11 +480,6 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                             )}
                           </div>
                         </div>
-
-                        {/* Short Booth Description */}
-                        <p className="text-xs font-semibold text-muted-foreground leading-relaxed line-clamp-3">
-                          {booth.description}
-                        </p>
                       </div>
 
                       {/* Booth Actions */}
@@ -619,18 +488,18 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                           {booth.isFeatured ? (
                             <span className="inline-flex items-center gap-1 text-[9px] font-black text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full tracking-wide">
                               <Star className="size-2.5 fill-amber-500 text-amber-500" />
-                              VETTED
+                              {exT.vettedTag}
                             </span>
                           ) : (
                             <span className="text-[9px] font-black text-muted-foreground bg-secondary/55 border border-border px-2 py-0.5 rounded-full tracking-wide">
-                              ACTIVE
+                              {exT.activeTag}
                             </span>
                           )}
                         </div>
 
                         <Link
                           href={`/exhibitions/${slug}/booths/${booth.id}`}
-                          className="inline-flex items-center gap-1.5 rounded-xl bg-primary hover:bg-primary/95 px-4 py-2.5 text-xs font-black text-white transition-all shadow-xs shrink-0 active:scale-95 cursor-pointer"
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-primary hover:bg-primary/95 px-4 py-2.5 text-xs font-black text-white transition-all shadow-xs shrink-0 active:scale-95 cursor-pointer min-h-11"
                         >
                           <span>{exT.viewBooth}</span>
                           <ArrowRight className="size-3" />
@@ -646,10 +515,10 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
                 <div className="flex justify-center pt-6">
                   <button
                     onClick={() => setVisibleCount((prev) => prev + 8)}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card hover:bg-secondary/40 px-6 py-4 text-xs font-black text-foreground transition-all cursor-pointer shadow-xs active:scale-95"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card hover:bg-secondary/40 px-6 py-4 text-xs font-black text-foreground transition-all cursor-pointer shadow-xs active:scale-95 min-h-11"
                   >
                     <Loader2 className="size-4 text-primary animate-spin" />
-                    <span>Load More Exhibitors</span>
+                    <span>{exT.loadMore}</span>
                   </button>
                 </div>
               )}

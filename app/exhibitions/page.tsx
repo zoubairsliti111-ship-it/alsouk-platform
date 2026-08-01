@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Calendar, MapPin, Building2, Trophy, ArrowRight, Loader2, Info } from "lucide-react"
+import { Calendar, MapPin, Building2, Trophy, ArrowRight, Loader2 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 import { fetchExhibitions } from "@/lib/services/exhibitions-client"
 import type { Exhibition } from "@/lib/domains/exhibition/types"
@@ -44,17 +44,6 @@ function ExhibitionsListContent() {
       <div className="mx-auto max-w-6xl px-4 py-8">
         <ListingHeader title={exT.title} subtitle={exT.subtitle} />
 
-        {/* Feature badge about the Exhibition Concept */}
-        <div className="mb-8 p-4 rounded-[20px] bg-blue-500/10 border border-blue-500/20 text-xs font-semibold text-foreground flex gap-3 items-start leading-relaxed">
-          <Info className="size-5 shrink-0 text-primary mt-0.5" />
-          <div className="space-y-1">
-            <span className="font-black text-primary uppercase tracking-wide">ALSOUK Virtual Exhibition Pavilion</span>
-            <p className="text-muted-foreground">
-              A company&apos;s exhibition booth is isolated from its regular marketplace store. Everything showcased inside a booth (Exhibits) belongs only to that specific event, maintaining an archive of elite trade showcases even after physical shows conclude.
-            </p>
-          </div>
-        </div>
-
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <Loader2 className="size-8 text-primary animate-spin" />
@@ -88,18 +77,19 @@ function ExhibitionsListContent() {
                       <img
                         src={ex.coverUrl}
                         alt={ex.name}
+                        loading="lazy"
                         className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
                       <div className="size-full bg-gradient-to-br from-primary to-blue-900 opacity-20" />
                     )}
-                    {/* Floating status tag */}
+                    {/* Floating status tag - localized */}
                     <div className="absolute top-4 start-4 flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[10px] font-bold text-white">
                       <span className="relative flex size-2">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full size-2 bg-emerald-500"></span>
                       </span>
-                      <span>B2B Event</span>
+                      <span>{exT.b2bEvent}</span>
                     </div>
                   </div>
 
@@ -143,7 +133,7 @@ function ExhibitionsListContent() {
                         <div className="flex items-center gap-2">
                           <MapPin className="size-4 text-primary shrink-0" />
                           <span className="capitalize">
-                            {cityLoc}, {isTunisia ? "Tunisia 🇹🇳" : ex.country}
+                            {cityLoc}, {isTunisia ? (lang === "ar" ? "تونس 🇹🇳" : lang === "fr" ? "Tunisie 🇹🇳" : "Tunisia 🇹🇳") : ex.country}
                           </span>
                         </div>
                       </div>
@@ -152,10 +142,10 @@ function ExhibitionsListContent() {
                     <div className="mt-6 pt-4 border-t border-border/40">
                       <Link
                         href={`/exhibitions/${ex.slug}`}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-secondary hover:bg-primary/10 hover:text-primary px-4 py-3 text-xs font-black text-foreground transition-all"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-secondary hover:bg-primary/10 hover:text-primary px-4 py-3.5 text-xs font-black text-foreground transition-all min-h-11"
                       >
                         <span>{exT.exploreExhibitions}</span>
-                        <ArrowRight className="size-4" />
+                        <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
                       </Link>
                     </div>
                   </div>
