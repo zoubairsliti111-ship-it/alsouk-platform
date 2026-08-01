@@ -7,6 +7,11 @@ import type {
   ExhibitionDocument,
   ExhibitionApplication,
   ExhibitionApplicationStatus,
+  ExhibitionFavorite,
+  ExhibitionRecentlyViewed,
+  ExhibitionMeeting,
+  ExhibitionMeetingStatus,
+  ExhibitionVisitorNote,
 } from "@/lib/domains/exhibition/types"
 import { mapCompany, type CompanyRow } from "@/lib/services/companies-service"
 
@@ -254,7 +259,7 @@ const MOCK_EXHIBITIONS: Exhibition[] = [
     name: "Tunisia Food Expo 2026",
     slug: "tunisia-food-expo-2026",
     organizer: "APIA (Agency for Agricultural Investment Promotion)",
-    description: "The premier B2B gathering of agri-food innovators, olive oil mills, date exporters, and organic producers from across North Africa and the Mediterranean basin.",
+    description: "The premier B2B gathering of agri-food innovators, olive oil mills, date exporters, and organic producers from across North African and the Mediterranean basin.",
     coverUrl: "https://images.unsplash.com/photo-1543083505-590d26e24831?auto=format&fit=crop&q=80&w=1200",
     country: "TN",
     city: "tunis",
@@ -1083,7 +1088,7 @@ export async function updateExhibit(
     updated_at: new Date().toISOString(),
   }
   if (data.name !== undefined) record.name = data.name
-  if (data.shortDescription !== undefined) record.short_description = data.short_description
+  if (data.shortDescription !== undefined) record.short_description = data.shortDescription
   if (data.description !== undefined) record.description = data.description
   if (data.images !== undefined) record.images = data.images
   if (data.videos !== undefined) record.videos = data.videos
@@ -1941,4 +1946,295 @@ export async function updateApplicationReviewNotes(
   }
 
   return mapExhibitionApplication(appRows[0])
+}
+
+// ===========================================================================
+// Visitor Experience & B2B Networking Service Layer (TASK 009)
+// ===========================================================================
+
+// Mock global persistence fallbacks for local sandbox development
+const MOCK_FAVORITES: ExhibitionFavorite[] = []
+const MOCK_RECENTLY_VIEWED: ExhibitionRecentlyViewed[] = []
+const MOCK_MEETINGS: ExhibitionMeeting[] = [
+  {
+    id: "meet-mock-1",
+    visitorId: "visitor-local",
+    boothId: "booth-medina",
+    companyId: "comp-medina",
+    preferredDate: "2026-06-16",
+    preferredTime: "10:00 - 11:00",
+    purpose: "Explore olive oil export contracts",
+    expectedVolume: "5,000 - 10,000 Liters",
+    preferredLanguage: "French",
+    notes: "We want to purchase cold-pressed reserve for EU distribution.",
+    status: "Pending",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: "meet-mock-2",
+    visitorId: "visitor-local",
+    boothId: "booth-sahara",
+    companyId: "comp-sahara",
+    preferredDate: "2026-06-17",
+    preferredTime: "15:00 - 16:00",
+    purpose: "Bulk Dates Purchase",
+    expectedVolume: "2 Tons",
+    preferredLanguage: "English",
+    notes: "Discuss packaging options for Sahara Dates.",
+    status: "Accepted",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+]
+const MOCK_NOTES: ExhibitionVisitorNote[] = []
+
+export function getMockFavorites(): ExhibitionFavorite[] {
+  if (typeof globalThis !== "undefined") {
+    const g = globalThis as any
+    if (!g.__mockFavorites) g.__mockFavorites = MOCK_FAVORITES
+    return g.__mockFavorites
+  }
+  return MOCK_FAVORITES
+}
+
+export function getMockRecentlyViewed(): ExhibitionRecentlyViewed[] {
+  if (typeof globalThis !== "undefined") {
+    const g = globalThis as any
+    if (!g.__mockRecentlyViewed) g.__mockRecentlyViewed = MOCK_RECENTLY_VIEWED
+    return g.__mockRecentlyViewed
+  }
+  return MOCK_RECENTLY_VIEWED
+}
+
+export function getMockMeetings(): ExhibitionMeeting[] {
+  if (typeof globalThis !== "undefined") {
+    const g = globalThis as any
+    if (!g.__mockMeetings) g.__mockMeetings = MOCK_MEETINGS
+    return g.__mockMeetings
+  }
+  return MOCK_MEETINGS
+}
+
+export function getMockNotes(): ExhibitionVisitorNote[] {
+  if (typeof globalThis !== "undefined") {
+    const g = globalThis as any
+    if (!g.__mockNotes) g.__mockNotes = MOCK_NOTES
+    return g.__mockNotes
+  }
+  return MOCK_NOTES
+}
+
+// 1. Favorites Management
+export async function getFavorites(visitorId: string): Promise<ExhibitionFavorite[]> {
+  const mockFavs = getFavoritesWithRelations(getMockFavorites().filter((f) => f.visitorId === visitorId))
+  return mockFavs
+}
+
+function getFavoritesWithRelations(favorites: ExhibitionFavorite[]): ExhibitionFavorite[] {
+  const boothsMap = getMockBooths()
+  const allBooths: ExhibitionBooth[] = []
+  for (const slug in boothsMap) {
+    allBooths.push(...boothsMap[slug])
+  }
+
+  return favorites.map(fav => {
+    if (fav.targetType === "booth") {
+      const booth = allBooths.find(b => b.id === fav.targetId) || null
+      return { ...fav, booth }
+    } else {
+      let foundExhibit: ExhibitionExhibit | null = null
+      const exhibitsMap = getMockExhibits()
+      for (const bId in exhibitsMap) {
+        const found = exhibitsMap[bId].find(e => e.id === fav.targetId)
+        if (found) {
+          foundExhibit = found
+          break
+        }
+      }
+      return { ...fav, exhibit: foundExhibit }
+    }
+  })
+}
+
+export async function addFavorite(visitorId: string, targetType: "booth" | "exhibit", targetId: string): Promise<ExhibitionFavorite> {
+  const list = getMockFavorites()
+  const existing = list.find(f => f.visitorId === visitorId && f.targetType === targetType && f.targetId === targetId)
+  if (existing) return existing
+
+  const newFav: ExhibitionFavorite = {
+    id: `fav-${Math.random().toString(36).slice(2, 11)}`,
+    visitorId,
+    targetType,
+    targetId,
+    createdAt: new Date().toISOString()
+  }
+  list.push(newFav)
+  return getFavoritesWithRelations([newFav])[0]
+}
+
+export async function removeFavorite(visitorId: string, targetType: "booth" | "exhibit", targetId: string): Promise<boolean> {
+  const list = getMockFavorites()
+  const idx = list.findIndex(f => f.visitorId === visitorId && f.targetType === targetType && f.targetId === targetId)
+  if (idx !== -1) {
+    list.splice(idx, 1)
+    return true
+  }
+  return false
+}
+
+// 2. Recently Viewed Tracking
+export async function getRecentlyViewed(visitorId: string): Promise<ExhibitionRecentlyViewed[]> {
+  const list = getMockRecentlyViewed().filter(r => r.visitorId === visitorId)
+  // Sort descending by viewedAt
+  list.sort((a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime())
+
+  const boothsMap = getMockBooths()
+  const allBooths: ExhibitionBooth[] = []
+  for (const slug in boothsMap) {
+    allBooths.push(...boothsMap[slug])
+  }
+
+  return list.map(item => {
+    if (item.targetType === "booth") {
+      const booth = allBooths.find(b => b.id === item.targetId) || null
+      return { ...item, booth }
+    } else {
+      let foundExhibit: ExhibitionExhibit | null = null
+      const exhibitsMap = getMockExhibits()
+      for (const bId in exhibitsMap) {
+        const found = exhibitsMap[bId].find(e => e.id === item.targetId)
+        if (found) {
+          foundExhibit = found
+          break
+        }
+      }
+      return { ...item, exhibit: foundExhibit }
+    }
+  })
+}
+
+export async function trackRecentlyViewed(visitorId: string, targetType: "booth" | "exhibit", targetId: string): Promise<ExhibitionRecentlyViewed> {
+  const list = getMockRecentlyViewed()
+  // If already viewed, update timestamp. Keep unique to avoid clutter.
+  const idx = list.findIndex(r => r.visitorId === visitorId && r.targetType === targetType && r.targetId === targetId)
+  if (idx !== -1) {
+    list[idx].viewedAt = new Date().toISOString()
+    return list[idx]
+  }
+
+  const newItem: ExhibitionRecentlyViewed = {
+    id: `viewed-${Math.random().toString(36).slice(2, 11)}`,
+    visitorId,
+    targetType,
+    targetId,
+    viewedAt: new Date().toISOString()
+  }
+  list.push(newItem)
+  return newItem
+}
+
+// 3. Meetings Management
+export async function getMeetings(visitorId: string): Promise<ExhibitionMeeting[]> {
+  const list = getMockMeetings().filter(m => m.visitorId === visitorId)
+  // Sort by date/time
+  list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  const boothsMap = getMockBooths()
+  const allBooths: ExhibitionBooth[] = []
+  for (const slug in boothsMap) {
+    allBooths.push(...boothsMap[slug])
+  }
+
+  return list.map(m => {
+    const booth = allBooths.find(b => b.id === m.boothId) || null
+    return { ...m, booth }
+  })
+}
+
+export async function createMeeting(
+  visitorId: string,
+  input: Omit<ExhibitionMeeting, "id" | "visitorId" | "status" | "createdAt" | "updatedAt">
+): Promise<ExhibitionMeeting> {
+  const list = getMockMeetings()
+  const newMeeting: ExhibitionMeeting = {
+    ...input,
+    id: `meet-${Math.random().toString(36).slice(2, 11)}`,
+    visitorId,
+    status: "Pending",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+  list.push(newMeeting)
+
+  const boothsMap = getMockBooths()
+  const allBooths: ExhibitionBooth[] = []
+  for (const slug in boothsMap) {
+    allBooths.push(...boothsMap[slug])
+  }
+  newMeeting.booth = allBooths.find(b => b.id === newMeeting.boothId) || null
+
+  return newMeeting
+}
+
+export async function updateMeetingStatus(meetingId: string, status: ExhibitionMeetingStatus): Promise<ExhibitionMeeting> {
+  const list = getMockMeetings()
+  const idx = list.findIndex(m => m.id === meetingId)
+  if (idx === -1) throw new Error(`Meeting not found: ${meetingId}`)
+  list[idx].status = status
+  list[idx].updatedAt = new Date().toISOString()
+  return list[idx]
+}
+
+export async function rescheduleMeeting(meetingId: string, date: string, time: string, notes?: string): Promise<ExhibitionMeeting> {
+  const list = getMockMeetings()
+  const idx = list.findIndex(m => m.id === meetingId)
+  if (idx === -1) throw new Error(`Meeting not found: ${meetingId}`)
+  list[idx].preferredDate = date
+  list[idx].preferredTime = time
+  if (notes !== undefined) list[idx].notes = notes
+  list[idx].updatedAt = new Date().toISOString()
+  return list[idx]
+}
+
+// 4. Visitor Private Notes Management
+export async function getVisitorNotes(visitorId: string, boothId?: string): Promise<ExhibitionVisitorNote[]> {
+  const list = getMockNotes().filter(n => n.visitorId === visitorId)
+  if (boothId) {
+    return list.filter(n => n.boothId === boothId)
+  }
+  return list
+}
+
+export async function saveVisitorNote(visitorId: string, boothId: string, noteText: string, tags: string[]): Promise<ExhibitionVisitorNote> {
+  const list = getMockNotes()
+  const idx = list.findIndex(n => n.visitorId === visitorId && n.boothId === boothId)
+  if (idx !== -1) {
+    list[idx].noteText = noteText
+    list[idx].tags = tags
+    list[idx].updatedAt = new Date().toISOString()
+    return list[idx]
+  }
+
+  const newNote: ExhibitionVisitorNote = {
+    id: `note-${Math.random().toString(36).slice(2, 11)}`,
+    visitorId,
+    boothId,
+    noteText,
+    tags,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+  list.push(newNote)
+  return newNote
+}
+
+export async function deleteVisitorNote(visitorId: string, boothId: string): Promise<boolean> {
+  const list = getMockNotes()
+  const idx = list.findIndex(n => n.visitorId === visitorId && n.boothId === boothId)
+  if (idx !== -1) {
+    list.splice(idx, 1)
+    return true
+  }
+  return false
 }
