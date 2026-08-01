@@ -72,3 +72,29 @@ export interface ExhibitionDocument {
   sortOrder: number
   createdAt?: string
 }
+
+export type ExhibitionApplicationStatus = "Pending" | "Approved" | "Rejected"
+
+export interface ExhibitionApplication {
+  id: string
+  exhibitionId: string
+  companyId: string | null
+  companyName: string
+  contactPerson: string
+  email: string
+  phone: string
+  country: string
+  businessCategory: string
+  shortDescription: string
+  message: string | null
+  status: ExhibitionApplicationStatus
+  reviewNotes: string | null
+  submittedAt: string
+  reviewedAt: string | null
+  reviewedBy: string | null
+  createdAt?: string
+  updatedAt?: string
+
+  // Optional joined models
+  exhibition?: Exhibition | null
+}

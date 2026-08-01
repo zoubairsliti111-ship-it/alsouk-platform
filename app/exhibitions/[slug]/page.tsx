@@ -313,15 +313,27 @@ function ExhibitionDetailContent({ slug }: { slug: string }) {
               </div>
             </div>
 
-            {/* Quick stats counter */}
-            <div className="bg-secondary/35 border border-border/80 p-4 rounded-2xl flex items-center gap-4 shrink-0 shadow-2xs">
-              <div className="size-12 rounded-xl bg-gradient-to-tr from-primary to-blue-600 text-white flex items-center justify-center shadow-sm">
-                <Building2 className="size-5.5" />
+            {/* Quick stats counter and Application CTA */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0">
+              <div className="bg-secondary/35 border border-border/80 p-4 rounded-2xl flex items-center gap-4 shadow-2xs">
+                <div className="size-12 rounded-xl bg-gradient-to-tr from-primary to-blue-600 text-white flex items-center justify-center shadow-sm">
+                  <Building2 className="size-5.5" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase text-muted-foreground/85 tracking-wider">{exT.boothsCount}</p>
+                  <p className="text-lg font-black text-foreground">{booths.length}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] font-black uppercase text-muted-foreground/85 tracking-wider">{exT.boothsCount}</p>
-                <p className="text-lg font-black text-foreground">{booths.length}</p>
-              </div>
+
+              <Link
+                href={`/exhibitions/${slug}/apply`}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary/95 px-5 py-4 text-xs font-black text-white shadow-md active:scale-95 transition-all cursor-pointer min-h-11"
+              >
+                <Building2 className="size-4 text-primary-foreground" />
+                <span>
+                  {lang === "ar" ? "تقديم طلب مشاركة كعارض" : lang === "fr" ? "Postuler pour exposer" : "Apply to Exhibit"}
+                </span>
+              </Link>
             </div>
           </div>
         </div>
