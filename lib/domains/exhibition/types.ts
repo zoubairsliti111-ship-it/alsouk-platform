@@ -26,6 +26,11 @@ export interface ExhibitionBooth {
   createdAt?: string
   updatedAt?: string
 
+  // Virtual Booth Details
+  boothNumber?: string
+  category?: string
+  isFeatured?: boolean
+
   // Joined relations
   company?: Company | null
   exhibits?: ExhibitionExhibit[]
