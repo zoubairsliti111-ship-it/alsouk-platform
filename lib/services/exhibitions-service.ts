@@ -31,6 +31,9 @@ export type ExhibitionBoothRow = {
   company_id: string
   banner_url: string | null
   description: string
+  booth_number?: string | null
+  category?: string | null
+  is_featured?: boolean
   is_archived: boolean
   created_at?: string
   updated_at?: string
@@ -90,6 +93,23 @@ export function mapExhibition(row: ExhibitionRow): Exhibition {
 }
 
 export function mapExhibitionBooth(row: ExhibitionBoothRow): ExhibitionBooth {
+  const company = row.companies ? mapCompany(row.companies) : null
+
+  // Smart fallbacks to derive fields if they are missing/not set in the database
+  const derivedCategory = row.category || (company?.primaryIndustry
+    ? (company.primaryIndustry === "food" ? "Food & Agriculture"
+       : company.primaryIndustry === "textiles" ? "Textiles & Apparel"
+       : company.primaryIndustry)
+    : "General Pavilion")
+
+  // Generate a deterministic booth number based on the ID if not provided
+  let derivedBoothNumber = row.booth_number
+  if (!derivedBoothNumber) {
+    const numericPart = parseInt(row.id.replace(/[^0-9]/g, "").slice(0, 3) || "1", 10) % 99 + 1
+    const prefix = company?.primaryIndustry === "textiles" ? "B" : "A"
+    derivedBoothNumber = `${prefix}-${numericPart < 10 ? '0' : ''}${numericPart}`
+  }
+
   return {
     id: row.id,
     exhibitionId: row.exhibition_id,
@@ -97,7 +117,10 @@ export function mapExhibitionBooth(row: ExhibitionBoothRow): ExhibitionBooth {
     bannerUrl: row.banner_url,
     description: row.description,
     isArchived: Boolean(row.is_archived),
-    company: row.companies ? mapCompany(row.companies) : null,
+    boothNumber: derivedBoothNumber,
+    category: derivedCategory,
+    isFeatured: row.is_featured !== undefined ? Boolean(row.is_featured) : (company?.verificationTier === "premium"),
+    company,
   }
 }
 
@@ -177,6 +200,9 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
       bannerUrl: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=800",
       description: "Welcome to Medina Olive Co.'s official exhibition pavilion. Inside, explore our organic extra virgin olive oils cold-pressed using award-winning Sfax traditional millstones.",
       isArchived: false,
+      boothNumber: "A-01",
+      category: "Food & Agriculture",
+      isFeatured: true,
       company: {
         id: "comp-medina",
         name: "Medina Olive Co.",
@@ -222,6 +248,9 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
       bannerUrl: "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&q=80&w=800",
       description: "Sahara Dates Export presents Tunisian Deglet Nour. Pure palm delicacies, direct from our certified orchards in Tozeur, packaged sustainably for regional and worldwide distributors.",
       isArchived: false,
+      boothNumber: "A-02",
+      category: "Food & Agriculture",
+      isFeatured: false,
       company: {
         id: "comp-sahara",
         name: "Sahara Dates Export",
@@ -269,6 +298,9 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
       bannerUrl: "https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&q=80&w=800",
       description: "Step into Carthage Textiles' innovative virtual showcase. Review our 2026 collection of biological cotton fabrics, high-resilience yarns, and OEKO-TEX certified weaving.",
       isArchived: false,
+      boothNumber: "B-15",
+      category: "Textiles & Apparel",
+      isFeatured: true,
       company: {
         id: "comp-carthage",
         name: "Carthage Textiles",

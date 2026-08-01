@@ -44,11 +44,19 @@ create table if not exists public.exhibition_booths (
   company_id     uuid        not null references public.companies (id) on delete cascade,
   banner_url     text,
   description    text        not null, -- Exhibition-specific booth description
+  booth_number   text,
+  category       text,
+  is_featured    boolean     not null default false,
   is_archived    boolean     not null default false,
   created_at     timestamptz not null default now(),
   updated_at     timestamptz not null default now(),
   unique (exhibition_id, company_id)
 );
+
+-- Schema drift protection
+alter table public.exhibition_booths add column if not exists booth_number text;
+alter table public.exhibition_booths add column if not exists category text;
+alter table public.exhibition_booths add column if not exists is_featured boolean not null default false;
 
 create index if not exists exhibition_booths_exhibition_idx on public.exhibition_booths (exhibition_id);
 create index if not exists exhibition_booths_company_idx on public.exhibition_booths (company_id);
