@@ -2083,6 +2083,429 @@ export async function removeFavorite(visitorId: string, targetType: "booth" | "e
   return false
 }
 
+// ===========================================================================
+// Analytics & Reporting Service Layer (TASK 010)
+// ===========================================================================
+
+import type {
+  OrganizerAnalytics,
+  ExhibitorAnalytics,
+  TrafficReport,
+  MeetingReport,
+  DownloadReport,
+  QRReport,
+} from "@/lib/domains/exhibition/types"
+
+/** Helper to generate high-quality deterministic numbers based on seed string and date */
+function seedRandom(seedStr: string): () => number {
+  let h = 0
+  for (let i = 0; i < seedStr.length; i++) {
+    h = Math.imul(31, h) + seedStr.charCodeAt(i) | 0
+  }
+  return function() {
+    h = Math.imul(h ^ h >>> 16, 2246822507)
+    h = Math.imul(h ^ h >>> 13, 3266489909)
+    return ((h ^= h >>> 16) >>> 0) / 4294967296
+  }
+}
+
+/** Resolves filter dates */
+export function resolveFilterDates(filter: string, start?: string, end?: string): { from: Date; to: Date; labels: string[] } {
+  const to = new Date()
+  let from = new Date()
+  let labels: string[] = []
+
+  if (filter === "today") {
+    from.setHours(0, 0, 0, 0)
+    labels = ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00"]
+  } else if (filter === "7days") {
+    from.setDate(to.getDate() - 7)
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(to.getDate() - i)
+      labels.push(d.toLocaleDateString(undefined, { weekday: "short" }))
+    }
+  } else if (filter === "30days") {
+    from.setDate(to.getDate() - 30)
+    for (let i = 4; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(to.getDate() - i * 7)
+      labels.push(`Wk ${5 - i}`)
+    }
+  } else if (filter === "custom" && start && end) {
+    from = new Date(start)
+    const toDate = new Date(end)
+    const diffDays = Math.ceil((toDate.getTime() - from.getTime()) / (1000 * 60 * 60 * 24))
+    if (diffDays <= 2) {
+      labels = ["00:00", "06:00", "12:00", "18:00"]
+    } else if (diffDays <= 10) {
+      for (let i = 0; i < diffDays; i++) {
+        const d = new Date(from)
+        d.setDate(from.getDate() + i)
+        labels.push(d.toLocaleDateString(undefined, { month: "short", day: "numeric" }))
+      }
+    } else {
+      labels = ["Block 1", "Block 2", "Block 3", "Block 4"]
+    }
+  } else {
+    // Default 7 days
+    from.setDate(to.getDate() - 7)
+    labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+  }
+
+  return { from, to, labels }
+}
+
+/** Computes premium analytics statistics for organizer workspace. */
+export async function getOrganizerAnalytics(
+  exhibitionId: string,
+  filter: string,
+  startDate?: string,
+  endDate?: string
+): Promise<OrganizerAnalytics> {
+  const seed = seedRandom(exhibitionId + filter + (startDate || ""))
+  const { labels } = resolveFilterDates(filter, startDate, endDate)
+
+  // 1. Fetch exhibitions
+  const exhibitions = await getExhibitions()
+  const totalExhibitions = exhibitions.length
+
+  // 2. Fetch booths for this exhibition
+  const ex = exhibitions.find((e) => e.id === exhibitionId) || exhibitions[0]
+  const slug = ex?.slug || "tunisia-food-expo-2026"
+  const boothsMap = getMockBooths()
+  const booths = boothsMap[slug] || []
+  const totalBooths = booths.length
+  const activeBooths = booths.filter((b) => b.status === "Published").length
+
+  // 3. Fetch applications for this exhibition
+  const apps = await getExhibitionApplicationsByExhibitionId(exhibitionId)
+  const pendingApplications = apps.filter((a) => a.status === "Pending").length
+  const approvedApplications = apps.filter((a) => a.status === "Approved").length
+  const rejectedApplications = apps.filter((a) => a.status === "Rejected").length
+
+  // 4. Generate dynamic visitor & interactive metrics
+  const multiplier = filter === "today" ? 1 : filter === "7days" ? 6 : filter === "30days" ? 25 : 12
+  const totalVisitors = Math.floor(250 + seed() * 500) * multiplier
+  const uniqueVisitors = Math.floor(150 + seed() * 300) * multiplier
+  const totalMeetings = Math.floor(10 + seed() * 25) * multiplier
+  const completedMeetings = Math.floor(totalMeetings * (0.6 + seed() * 0.2))
+  const totalRfqs = Math.floor(15 + seed() * 30) * multiplier
+  const totalCatalogDownloads = Math.floor(40 + seed() * 80) * multiplier
+  const qrScans = Math.floor(30 + seed() * 60) * multiplier
+  const averageSessionDuration = Math.floor(180 + seed() * 360) // in seconds
+
+  // Top Performing Booths
+  const topPerformingBooths = booths.map((b) => {
+    const bSeed = seedRandom(b.id + filter)
+    const views = Math.floor(40 + bSeed() * 120) * multiplier
+    const contacts = Math.floor(views * (0.1 + bSeed() * 0.15))
+    const rating = Math.round((4.2 + bSeed() * 0.8) * 10) / 10
+    return {
+      id: b.id,
+      companyName: b.title || b.company?.name || "Premium Exhibitor",
+      boothNumber: b.boothNumber || "A-01",
+      views,
+      contacts,
+      rating,
+    }
+  }).sort((a, b) => b.views - a.views).slice(0, 5)
+
+  // Top Categories
+  const topCategories = [
+    { name: "Food & Agriculture", count: Math.floor(50 + seed() * 100) },
+    { name: "Textiles & Apparel", count: Math.floor(30 + seed() * 70) },
+    { name: "Handicrafts & Ceramics", count: Math.floor(20 + seed() * 40) },
+    { name: "Agri-Food Tech", count: Math.floor(15 + seed() * 30) },
+  ].map((c, i, arr) => {
+    const total = arr.reduce((acc, curr) => acc + curr.count, 0)
+    return {
+      name: c.name,
+      count: c.count,
+      percentage: Math.round((c.count / total) * 100),
+    }
+  }).sort((a, b) => b.count - a.count)
+
+  // Visitor Countries
+  const visitorCountries = [
+    { code: "TN", name: "Tunisia", count: Math.floor(120 + seed() * 200) },
+    { code: "FR", name: "France", count: Math.floor(40 + seed() * 80) },
+    { code: "IT", name: "Italy", count: Math.floor(20 + seed() * 50) },
+    { code: "DZ", name: "Algeria", count: Math.floor(30 + seed() * 60) },
+    { code: "LY", name: "Libya", count: Math.floor(15 + seed() * 40) },
+  ].map((c, i, arr) => {
+    const total = arr.reduce((acc, curr) => acc + curr.count, 0)
+    return {
+      code: c.code,
+      name: c.name,
+      count: c.count,
+      percentage: Math.round((c.count / total) * 100),
+    }
+  }).sort((a, b) => b.count - a.count)
+
+  // Traffic trends data
+  const trafficTrends = labels.map((label, index) => {
+    const tSeed = seedRandom(exhibitionId + filter + label)
+    const base = filter === "today" ? 15 : filter === "7days" ? 80 : 350
+    const visitorsVal = Math.floor(base + tSeed() * (base * 0.8))
+    const uniqueVal = Math.floor(visitorsVal * (0.6 + tSeed() * 0.2))
+    return {
+      label,
+      visitors: visitorsVal,
+      uniqueVisitors: uniqueVal,
+    }
+  })
+
+  // Daily, Weekly, Monthly traffic formats
+  const dailyTraffic = labels.map((label) => ({
+    date: label,
+    visitors: Math.floor(80 + seed() * 100),
+    uniqueVisitors: Math.floor(50 + seed() * 60),
+  }))
+
+  const weeklyTraffic = Array.from({ length: 4 }).map((_, i) => ({
+    week: `Week ${i + 1}`,
+    visitors: Math.floor(500 + seed() * 400),
+    uniqueVisitors: Math.floor(300 + seed() * 200),
+  }))
+
+  const monthlyTraffic = Array.from({ length: 3 }).map((_, i) => ({
+    month: ["April", "May", "June"][i] || `Month ${i + 1}`,
+    visitors: Math.floor(2000 + seed() * 1500),
+    uniqueVisitors: Math.floor(1200 + seed() * 800),
+  }))
+
+  return {
+    totalExhibitions,
+    totalBooths,
+    activeBooths,
+    pendingApplications,
+    approvedApplications,
+    rejectedApplications,
+    totalVisitors,
+    uniqueVisitors,
+    totalMeetings,
+    completedMeetings,
+    totalRfqs,
+    totalCatalogDownloads,
+    qrScans,
+    averageSessionDuration,
+    topPerformingBooths,
+    topCategories,
+    visitorCountries,
+    trafficTrends,
+    dailyTraffic,
+    weeklyTraffic,
+    monthlyTraffic,
+  }
+}
+
+/** Computes premium analytics statistics for exhibitor dashboard. */
+export async function getExhibitorAnalytics(
+  boothId: string,
+  filter: string,
+  startDate?: string,
+  endDate?: string
+): Promise<ExhibitorAnalytics> {
+  const seed = seedRandom(boothId + filter + (startDate || ""))
+  const { labels } = resolveFilterDates(filter, startDate, endDate)
+
+  // Derived metrics multiplier
+  const multiplier = filter === "today" ? 1 : filter === "7days" ? 5 : filter === "30days" ? 22 : 10
+  const boothViews = Math.floor(80 + seed() * 180) * multiplier
+  const uniqueVisitors = Math.floor(boothViews * (0.6 + seed() * 0.15))
+  const exhibitViews = Math.floor(boothViews * (1.2 + seed() * 0.8))
+  const catalogDownloads = Math.floor(15 + seed() * 30) * multiplier
+  const galleryViews = Math.floor(30 + seed() * 60) * multiplier
+  const videoViews = Math.floor(20 + seed() * 45) * multiplier
+  const qrScans = Math.floor(10 + seed() * 25) * multiplier
+  const rfqsReceived = Math.floor(5 + seed() * 15) * multiplier
+  const meetingRequests = Math.floor(4 + seed() * 10) * multiplier
+  const acceptedMeetings = Math.floor(meetingRequests * (0.7 + seed() * 0.25))
+  const rejectedMeetings = Math.floor((meetingRequests - acceptedMeetings) * 0.5)
+  const completedMeetings = Math.floor(acceptedMeetings * (0.8 + seed() * 0.2))
+
+  // Clicks
+  const whatsAppClicks = Math.floor(8 + seed() * 20) * multiplier
+  const emailClicks = Math.floor(4 + seed() * 12) * multiplier
+  const websiteClicks = Math.floor(6 + seed() * 18) * multiplier
+
+  // Conversion rate: (meetings + rfqs + catalog downloads + clicks) / unique visitors
+  const conversionRate = Math.round(((completedMeetings + rfqsReceived + catalogDownloads + whatsAppClicks + emailClicks + websiteClicks) / Math.max(1, uniqueVisitors)) * 1000) / 10
+
+  // Traffic trends
+  const trafficTrends = labels.map((label) => {
+    const tSeed = seedRandom(boothId + filter + label)
+    const baseViews = filter === "today" ? 10 : filter === "7days" ? 45 : 180
+    const views = Math.floor(baseViews + tSeed() * (baseViews * 0.7))
+    const unique = Math.floor(views * (0.55 + tSeed() * 0.2))
+    return {
+      label,
+      views,
+      unique,
+    }
+  })
+
+  // Exhibits Performance
+  const exhibitsPerformance = [
+    { id: "ex-1", name: "Premium Sfax Extra Reserve Olive Oil", views: Math.floor(80 + seed() * 150) * multiplier, downloads: Math.floor(10 + seed() * 40) * multiplier },
+    { id: "ex-2", name: "Organic Date Syrup (Pure Extract)", views: Math.floor(50 + seed() * 100) * multiplier, downloads: Math.floor(5 + seed() * 25) * multiplier },
+    { id: "ex-3", name: "Hand-crafted Ceramic Serving Trays", views: Math.floor(30 + seed() * 60) * multiplier, downloads: Math.floor(2 + seed() * 15) * multiplier },
+  ]
+
+  // Meeting trends
+  const meetingTrends = labels.map((label) => {
+    const mSeed = seedRandom(boothId + "meetings" + filter + label)
+    const req = Math.floor(mSeed() * 3) + (filter === "30days" ? 2 : 0)
+    const comp = Math.floor(req * (0.6 + mSeed() * 0.4))
+    return {
+      label,
+      requested: req,
+      completed: comp,
+    }
+  })
+
+  return {
+    boothViews,
+    uniqueVisitors,
+    exhibitViews,
+    catalogDownloads,
+    galleryViews,
+    videoViews,
+    qrScans,
+    rfqsReceived,
+    meetingRequests,
+    acceptedMeetings,
+    rejectedMeetings,
+    completedMeetings,
+    whatsAppClicks,
+    emailClicks,
+    websiteClicks,
+    conversionRate,
+    trafficTrends,
+    exhibitsPerformance,
+    meetingTrends,
+  }
+}
+
+/** Computes detail Traffic Report. */
+export async function getTrafficReport(
+  id: string,
+  isOrganizer: boolean,
+  filter: string,
+  startDate?: string,
+  endDate?: string
+): Promise<TrafficReport> {
+  const seed = seedRandom(id + filter + (startDate || "") + "traffic")
+  const { labels } = resolveFilterDates(filter, startDate, endDate)
+
+  const totalViews = Math.floor(1200 + seed() * 2500)
+  const uniqueViews = Math.floor(totalViews * (0.65 + seed() * 0.15))
+
+  const byDay = labels.map((label) => {
+    const dSeed = seedRandom(id + filter + label + "day")
+    const views = Math.floor(totalViews / labels.length * (0.7 + dSeed() * 0.6))
+    const unique = Math.floor(views * (0.6 + dSeed() * 0.2))
+    return {
+      date: label,
+      views,
+      unique,
+    }
+  })
+
+  const byDevice = [
+    { device: "Mobile", percentage: 65 },
+    { device: "Desktop", percentage: 30 },
+    { device: "Tablet", percentage: 5 },
+  ]
+
+  return {
+    totalViews,
+    uniqueViews,
+    byDay,
+    byDevice,
+  }
+}
+
+/** Computes detail Meeting Report. */
+export async function getMeetingReport(
+  id: string,
+  isOrganizer: boolean,
+  filter: string,
+  startDate?: string,
+  endDate?: string
+): Promise<MeetingReport> {
+  const seed = seedRandom(id + filter + (startDate || "") + "meeting")
+  const { labels } = resolveFilterDates(filter, startDate, endDate)
+
+  const totalRequested = Math.floor(35 + seed() * 75)
+  const totalAccepted = Math.floor(totalRequested * 0.8)
+  const totalCompleted = Math.floor(totalAccepted * 0.95)
+
+  const byDay = labels.map((label) => {
+    const dSeed = seedRandom(id + filter + label + "meet")
+    return {
+      date: label,
+      count: Math.floor(dSeed() * 5) + (filter === "30days" ? 3 : 0),
+    }
+  })
+
+  return {
+    totalRequested,
+    totalAccepted,
+    totalCompleted,
+    byDay,
+  }
+}
+
+/** Computes detail Download Report. */
+export async function getDownloadReport(
+  id: string,
+  isOrganizer: boolean,
+  filter: string,
+  startDate?: string,
+  endDate?: string
+): Promise<DownloadReport> {
+  const seed = seedRandom(id + filter + (startDate || "") + "download")
+
+  const totalDownloads = Math.floor(120 + seed() * 340)
+
+  const byDocument = [
+    { id: "doc-1", name: "Official B2B Export Catalogue 2026.pdf", count: Math.floor(totalDownloads * 0.5) },
+    { id: "doc-2", name: "ISO 22000 & Organic Certifications.pdf", count: Math.floor(totalDownloads * 0.3) },
+    { id: "doc-3", name: "Sahara Dates - Export Specs & Logistics.pdf", count: Math.floor(totalDownloads * 0.2) },
+  ]
+
+  return {
+    totalDownloads,
+    byDocument,
+  }
+}
+
+/** Computes detail QR scans Report. */
+export async function getQRReport(
+  id: string,
+  isOrganizer: boolean,
+  filter: string,
+  startDate?: string,
+  endDate?: string
+): Promise<QRReport> {
+  const seed = seedRandom(id + filter + (startDate || "") + "qr")
+
+  const totalScans = Math.floor(80 + seed() * 190)
+
+  const byBooth = [
+    { id: "booth-medina", boothNumber: "A-01", companyName: "Medina Olive Co.", count: Math.floor(totalScans * 0.45) },
+    { id: "booth-sahara", boothNumber: "A-02", companyName: "Sahara Dates Export", count: Math.floor(totalScans * 0.3) },
+    { id: "booth-carthage", boothNumber: "B-15", companyName: "Carthage Textiles", count: Math.floor(totalScans * 0.25) },
+  ]
+
+  return {
+    totalScans,
+    byBooth,
+  }
+}
+
 // 2. Recently Viewed Tracking
 export async function getRecentlyViewed(visitorId: string): Promise<ExhibitionRecentlyViewed[]> {
   const list = getMockRecentlyViewed().filter(r => r.visitorId === visitorId)

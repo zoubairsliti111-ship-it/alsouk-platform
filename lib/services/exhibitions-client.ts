@@ -135,6 +135,155 @@ export async function deleteExhibit(id: string): Promise<boolean> {
   }
 }
 
+// ===========================================================================
+// Analytics & Reporting Client Methods (TASK 010)
+// ===========================================================================
+
+import type {
+  OrganizerAnalytics,
+  ExhibitorAnalytics,
+  TrafficReport,
+  MeetingReport,
+  DownloadReport,
+  QRReport,
+} from "@/lib/domains/exhibition/types"
+
+/** Fetches Organizer Analytics stats. */
+export async function fetchOrganizerAnalytics(
+  exhibitionId: string,
+  range: string,
+  startDate?: string,
+  endDate?: string
+): Promise<OrganizerAnalytics | null> {
+  try {
+    let url = `/api/exhibitions/analytics/organizer?exhibitionId=${encodeURIComponent(exhibitionId)}&range=${encodeURIComponent(range)}`
+    if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`
+    if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`
+
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.success ? json.data : null
+  } catch (err) {
+    console.error("[exhibitions-client] fetchOrganizerAnalytics error:", err)
+    return null
+  }
+}
+
+/** Fetches Exhibitor Analytics stats. */
+export async function fetchExhibitorAnalytics(
+  boothId: string,
+  range: string,
+  startDate?: string,
+  endDate?: string
+): Promise<ExhibitorAnalytics | null> {
+  try {
+    let url = `/api/exhibitions/analytics/exhibitor?boothId=${encodeURIComponent(boothId)}&range=${encodeURIComponent(range)}`
+    if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`
+    if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`
+
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.success ? json.data : null
+  } catch (err) {
+    console.error("[exhibitions-client] fetchExhibitorAnalytics error:", err)
+    return null
+  }
+}
+
+/** Fetches Traffic Report details. */
+export async function fetchTrafficReport(
+  id: string,
+  isOrganizer: boolean,
+  range: string,
+  startDate?: string,
+  endDate?: string
+): Promise<TrafficReport | null> {
+  try {
+    let url = `/api/exhibitions/analytics/traffic?id=${encodeURIComponent(id)}&isOrganizer=${isOrganizer}&range=${encodeURIComponent(range)}`
+    if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`
+    if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`
+
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.success ? json.data : null
+  } catch (err) {
+    console.error("[exhibitions-client] fetchTrafficReport error:", err)
+    return null
+  }
+}
+
+/** Fetches Meeting Report details. */
+export async function fetchMeetingReport(
+  id: string,
+  isOrganizer: boolean,
+  range: string,
+  startDate?: string,
+  endDate?: string
+): Promise<MeetingReport | null> {
+  try {
+    let url = `/api/exhibitions/analytics/meetings?id=${encodeURIComponent(id)}&isOrganizer=${isOrganizer}&range=${encodeURIComponent(range)}`
+    if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`
+    if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`
+
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.success ? json.data : null
+  } catch (err) {
+    console.error("[exhibitions-client] fetchMeetingReport error:", err)
+    return null
+  }
+}
+
+/** Fetches Download Report details. */
+export async function fetchDownloadReport(
+  id: string,
+  isOrganizer: boolean,
+  range: string,
+  startDate?: string,
+  endDate?: string
+): Promise<DownloadReport | null> {
+  try {
+    let url = `/api/exhibitions/analytics/downloads?id=${encodeURIComponent(id)}&isOrganizer=${isOrganizer}&range=${encodeURIComponent(range)}`
+    if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`
+    if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`
+
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.success ? json.data : null
+  } catch (err) {
+    console.error("[exhibitions-client] fetchDownloadReport error:", err)
+    return null
+  }
+}
+
+/** Fetches QR scans Report details. */
+export async function fetchQRReport(
+  id: string,
+  isOrganizer: boolean,
+  range: string,
+  startDate?: string,
+  endDate?: string
+): Promise<QRReport | null> {
+  try {
+    let url = `/api/exhibitions/analytics/qr?id=${encodeURIComponent(id)}&isOrganizer=${isOrganizer}&range=${encodeURIComponent(range)}`
+    if (startDate) url += `&startDate=${encodeURIComponent(startDate)}`
+    if (endDate) url += `&endDate=${encodeURIComponent(endDate)}`
+
+    const res = await fetch(url)
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.success ? json.data : null
+  } catch (err) {
+    console.error("[exhibitions-client] fetchQRReport error:", err)
+    return null
+  }
+}
+
 /**
  * Duplicates an exhibit.
  */
