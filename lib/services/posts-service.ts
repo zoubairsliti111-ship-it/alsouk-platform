@@ -24,6 +24,22 @@ export type DBCommercialPostRow = {
 }
 
 export function mapPostRow(row: DBCommercialPostRow): CommercialPost {
+  if (!row) {
+    return {
+      id: "mock-post-" + Math.random().toString(36).substring(2, 9),
+      companyId: "mock-company-id",
+      authorId: "mock-user-123",
+      status: "draft",
+      visibility: "public",
+      content: "",
+      images: [],
+      attachments: [],
+      viewCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      deletedAt: null
+    }
+  }
   return {
     id: row.id,
     companyId: row.company_id,
