@@ -3,6 +3,7 @@ import { type Company, type CompanyMember, type CompanyMedia } from "@/lib/direc
 
 export type DBCompanyRow = {
   id: string
+  profile_level?: any
   supplier_id: string | null
   name: string
   slug: string
@@ -44,6 +45,7 @@ export type DBCompanyRow = {
 export function mapCompanyRow(row: DBCompanyRow): Company {
   return {
     id: row.id,
+    profileLevel: row.profile_level || row.metadata?.profile_level || "starter",
     supplierId: row.supplier_id,
     name: row.name,
     slug: row.slug,
@@ -179,6 +181,7 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
   const insertData = {
     name: companyInput.name || "My Company",
     slug: companyInput.slug || `company-${Math.random().toString(36).substring(2, 9)}`,
+    profile_level: companyInput.profileLevel || "starter",
     tagline: companyInput.tagline || null,
     description: companyInput.description || null,
     logo_url: companyInput.logoUrl || null,
@@ -263,6 +266,7 @@ export async function updateCompany(companyId: string, companyInput: Partial<Com
 
   const updateData: Record<string, any> = {
     name: companyInput.name,
+    profile_level: companyInput.profileLevel,
     tagline: companyInput.tagline,
     description: companyInput.description,
     logo_url: companyInput.logoUrl,

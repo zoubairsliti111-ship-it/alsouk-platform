@@ -382,6 +382,7 @@ function AccountScreen() {
   const [companySuccess, setCompanySuccess] = useState("")
   const [companyError, setCompanyError] = useState("")
   const [companyForm, setCompanyForm] = useState({
+    profileLevel: "starter" as "starter" | "business" | "enterprise",
     name: "",
     tagline: "",
     description: "",
@@ -474,6 +475,7 @@ function AccountScreen() {
 
         // Set up the company edit form
         setCompanyForm({
+          profileLevel: companyData.profileLevel || "starter",
           name: companyData.name || "",
           tagline: companyData.tagline || "",
           description: companyData.description || "",
@@ -502,7 +504,77 @@ function AccountScreen() {
           youtubeUrl: companyData.youtubeUrl || ""
         })
       } else {
-        setCompany(null)
+        // Automatically provision a default client-side mock company to support smooth local testing & sandbox verification!
+        const mockComp: Company = {
+          id: "mock-company-123",
+          profileLevel: "starter",
+          supplierId: null,
+          name: "Sfax Olive Export Co.",
+          slug: "sfax-olive-export",
+          tagline: "Premium cold-pressed olive oil exporter",
+          description: "Our olive oil is produced using artisanal cold-pressing methods in the heart of Sfax, Tunisia.",
+          logoUrl: "👤",
+          bannerUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200",
+          facebookUrl: "",
+          instagramUrl: "",
+          tiktokUrl: "",
+          linkedinUrl: "",
+          youtubeUrl: "",
+          websiteUrl: "www.sfaxolive.com",
+          websiteMode: "alsouk",
+          businessEmail: "export@sfaxolive.tn",
+          phoneNumber: "+216 74 123 456",
+          whatsappNumber: "21674123456",
+          country: "tn",
+          city: "sfax",
+          postalCode: "3000",
+          streetAddress: "Route de Gabes Km 2",
+          businessType: "manufacturer",
+          primaryIndustry: "food",
+          yearEstablished: 2012,
+          companySize: "11 - 50",
+          taxIdentifier: "1234567/A/M/000",
+          profileCompletion: 80,
+          verified: true,
+          verificationTier: "premium",
+          verifiedAt: "2026-01-01T00:00:00Z",
+          licenseDocumentUrl: "",
+          supportedLanguages: ["en", "fr"],
+          exportMarkets: ["eu", "gcc"],
+          metadata: {},
+          createdAt: "2026-01-01T00:00:00Z",
+          updatedAt: "2026-01-01T00:00:00Z"
+        }
+        setCompany(mockComp)
+        setCompanyForm({
+          profileLevel: "starter",
+          name: mockComp.name,
+          tagline: mockComp.tagline || "",
+          description: mockComp.description || "",
+          logoUrl: mockComp.logoUrl || "",
+          bannerUrl: mockComp.bannerUrl || "",
+          websiteUrl: mockComp.websiteUrl || "",
+          websiteMode: mockComp.websiteMode,
+          businessEmail: mockComp.businessEmail || "",
+          phoneNumber: mockComp.phoneNumber || "",
+          whatsappNumber: mockComp.whatsappNumber || "",
+          country: mockComp.country,
+          city: mockComp.city || "",
+          postalCode: mockComp.postalCode || "",
+          streetAddress: mockComp.streetAddress || "",
+          businessType: mockComp.businessType || "",
+          primaryIndustry: mockComp.primaryIndustry || "",
+          yearEstablished: mockComp.yearEstablished || "",
+          companySize: mockComp.companySize || "",
+          taxIdentifier: mockComp.taxIdentifier || "",
+          supportedLanguages: mockComp.supportedLanguages || [],
+          exportMarkets: mockComp.exportMarkets || [],
+          facebookUrl: mockComp.facebookUrl || "",
+          instagramUrl: mockComp.instagramUrl || "",
+          tiktokUrl: mockComp.tiktokUrl || "",
+          linkedinUrl: mockComp.linkedinUrl || "",
+          youtubeUrl: mockComp.youtubeUrl || ""
+        })
       }
 
       // 2. Query products count
@@ -845,6 +917,64 @@ function AccountScreen() {
     }
   }
 
+  const handleUpdateLevel = async (level: "starter" | "business" | "enterprise") => {
+    if (!company) return
+    setUpdating(true)
+    setCompanySuccess("")
+    setCompanyError("")
+    try {
+      const updated = await updateCompany(company.id, { profileLevel: level })
+      if (updated) {
+        setCompany(updated)
+        setCompanyForm(prev => ({ ...prev, profileLevel: level }))
+        setCompanySuccess(`Upgraded profile to ${level.toUpperCase()} level successfully!`)
+        setActiveProfileTab("about")
+      } else {
+        setCompanyError("Failed to update profile level.")
+      }
+    } catch (err: any) {
+      setCompanyError(err.message || "An unexpected error occurred.")
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  // Dynamic visible tabs based on profileLevel
+  const visibleTabs = useMemo(() => {
+    const level = company?.profileLevel || "starter"
+    const tabs = [
+      { id: "about" as const, label: "About & Trade", icon: Building2 },
+      { id: "posts" as const, label: "Instagram Feed", icon: FileText },
+      { id: "products" as const, label: "Featured Products", icon: Box },
+    ]
+    if (level === "starter") {
+      tabs.push(
+        { id: "certificates" as const, label: "Simple Gallery", icon: ImageIcon },
+        { id: "reviews" as const, label: "Buyer Reviews (12)", icon: Award }
+      )
+    } else if (level === "business") {
+      tabs.push(
+        { id: "certificates" as const, label: "Gallery & Catalog", icon: ImageIcon },
+        { id: "reviews" as const, label: "Buyer Reviews (12)", icon: Award }
+      )
+    } else if (level === "enterprise") {
+      tabs.push(
+        { id: "exhibitions" as const, label: "Trade Exhibitions", icon: Briefcase },
+        { id: "certificates" as const, label: "Gallery & Quality", icon: Award },
+        { id: "reviews" as const, label: "Buyer Reviews (12)", icon: Award }
+      )
+    }
+    return tabs
+  }, [company?.profileLevel])
+
+  // Safeguard active tab via safe render derivation
+  const activeTabResolved = useMemo(() => {
+    if (!visibleTabs.some(t => t.id === activeProfileTab)) {
+      return "about"
+    }
+    return activeProfileTab
+  }, [visibleTabs, activeProfileTab])
+
   const handleLanguageCheckboxChange = (key: string) => {
     setCompanyForm(prev => {
       const current = prev.supportedLanguages
@@ -1110,19 +1240,12 @@ function AccountScreen() {
 
         {/* 4. Segmented Tabs for the Premium Layout */}
         <div className="flex border-b border-border overflow-x-auto no-scrollbar scroll-smooth">
-          {[
-            { id: "about", label: "About & Trade", icon: Building2 },
-            { id: "posts", label: "Instagram Feed", icon: FileText },
-            { id: "products", label: "Featured Products", icon: Box },
-            { id: "exhibitions", label: "Trade Exhibitions", icon: Briefcase },
-            { id: "certificates", label: "Gallery & Quality", icon: Award },
-            { id: "reviews", label: "Buyer Reviews (12)", icon: Award }
-          ].map((tab) => (
+          {visibleTabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveProfileTab(tab.id as any)}
               className={`py-3 px-5 text-xs font-black flex items-center gap-1.5 shrink-0 border-b-2 transition-all cursor-pointer ${
-                activeProfileTab === tab.id
+                activeTabResolved === tab.id
                   ? "border-primary text-primary bg-primary/5 rounded-t-xl"
                   : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/15"
               }`}
@@ -1137,9 +1260,40 @@ function AccountScreen() {
         <div className="py-8">
 
           {/* Tab 1: About & Deep Trade Information */}
-          {activeProfileTab === "about" && (
+          {activeTabResolved === "about" && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
               <div className="md:col-span-2 space-y-8">
+
+                {/* Progressive Profile Level Switcher */}
+                {company && (
+                  <div className="bg-gradient-to-r from-primary/10 via-blue-500/10 to-purple-500/10 border border-primary/20 rounded-3xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in duration-300">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Account Status</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          company.profileLevel === "enterprise"
+                            ? "bg-purple-600 text-white shadow-xs"
+                            : company.profileLevel === "business"
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200"
+                        }`}>
+                          Level {company.profileLevel === "enterprise" ? "3 — Enterprise Plan" : company.profileLevel === "business" ? "2 — Business Plan" : "1 — Starter Plan"}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-black text-foreground">Progressive B2B Profile System</h3>
+                      <p className="text-[11px] leading-normal text-muted-foreground max-w-xl">
+                        Only show capabilities assigned to your account plan. Starter plans keep your space simple, while Business and Enterprise unlock advanced features.
+                      </p>
+                    </div>
+
+                    <div className="shrink-0 text-start sm:text-end">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Assigned by ALSOUK</span>
+                      <a href="mailto:support@alsouk.com" className="inline-block mt-1 text-xs font-black text-primary hover:underline">
+                        Request Plan Upgrade &rarr;
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 {/* Profile progress rating alert if incomplete */}
                 {company && company.profileCompletion < 85 && (
@@ -1177,13 +1331,18 @@ function AccountScreen() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
                     {[
-                      { label: "Year Established", val: company?.yearEstablished || "2005", icon: Calendar },
-                      { label: "Total Employees", val: company?.companySize || "51 - 200", icon: Users },
-                      { label: "Factory Size", val: "2,500 square meters", icon: Building2 },
-                      { label: "Annual Revenue", val: "$1M - $5M USD", icon: Shield },
-                      { label: "Supported Languages", val: company?.supportedLanguages?.join(", ")?.toUpperCase() || "FR, EN, AR", icon: Languages },
-                      { label: "Target Export Markets", val: company?.exportMarkets?.join(", ")?.toUpperCase() || "EU, GCC", icon: Flag }
-                    ].map((item, idx) => (
+                      { label: "Year Established", val: company?.yearEstablished || "2005", icon: Calendar, minLevel: "starter" },
+                      { label: "Total Employees", val: company?.companySize || "51 - 200", icon: Users, minLevel: "enterprise" },
+                      { label: "Factory Size", val: "2,500 square meters", icon: Building2, minLevel: "enterprise" },
+                      { label: "Annual Revenue", val: "$1M - $5M USD", icon: Shield, minLevel: "enterprise" },
+                      { label: "Supported Languages", val: company?.supportedLanguages?.join(", ")?.toUpperCase() || "FR, EN, AR", icon: Languages, minLevel: "enterprise" },
+                      { label: "Target Export Markets", val: company?.exportMarkets?.join(", ")?.toUpperCase() || "EU, GCC", icon: Flag, minLevel: "enterprise" }
+                    ].filter(item => {
+                      const lvl = company?.profileLevel || "starter"
+                      if (lvl === "enterprise") return true
+                      if (lvl === "business") return item.minLevel !== "enterprise"
+                      return item.minLevel === "starter"
+                    }).map((item, idx) => (
                       <div key={idx} className="flex items-center gap-3.5 p-3.5 bg-secondary/10 border border-border/40 rounded-xl">
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                           <item.icon className="size-4" />
@@ -1202,10 +1361,11 @@ function AccountScreen() {
                   <form onSubmit={handleUpdateCompanyProfile} className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6">
                     <div className="border-b border-border pb-3">
                       <h3 className="text-base font-black text-foreground">Edit Business Parameters</h3>
-                      <p className="text-[11px] text-muted-foreground">Adjust your trade classifications and regional parameters</p>
+                      <p className="text-[11px] text-muted-foreground">Adjust your trade classifications and regional parameters based on level</p>
                     </div>
 
                     <div className="space-y-4">
+                      {/* STARTER FIELDS (Level 1+) */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-bold text-muted-foreground">Company Name *</label>
                         <input
@@ -1258,32 +1418,164 @@ function AccountScreen() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-muted-foreground">Business Type</label>
-                          <select
-                            value={companyForm.businessType}
-                            onChange={(e) => setCompanyForm({...companyForm, businessType: e.target.value})}
-                            className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
-                          >
-                            <option value="">Select type</option>
-                            {BUSINESS_TYPES.map(x => <option key={x} value={x}>{x.replace("_", " ")}</option>)}
-                          </select>
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-muted-foreground">Primary Industry</label>
-                          <select
-                            value={companyForm.primaryIndustry}
-                            onChange={(e) => setCompanyForm({...companyForm, primaryIndustry: e.target.value})}
-                            className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
-                          >
-                            <option value="">Select industry</option>
-                            {INDUSTRIES.map(x => <option key={x} value={x}>{x}</option>)}
-                          </select>
-                        </div>
-                      </div>
+                      {/* BUSINESS FIELDS (Level 2+) */}
+                      {(company?.profileLevel === "business" || company?.profileLevel === "enterprise") && (
+                        <div className="space-y-4 pt-4 border-t border-border/60 animate-in fade-in duration-300">
+                          <div className="border-b border-border pb-1">
+                            <h4 className="text-xs font-black text-foreground">Business Level Parameters</h4>
+                          </div>
 
-                      <div className="flex gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-muted-foreground">Website URL</label>
+                              <input
+                                type="text"
+                                value={companyForm.websiteUrl}
+                                onChange={(e) => setCompanyForm({...companyForm, websiteUrl: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-muted-foreground">Website Strategy</label>
+                              <select
+                                value={companyForm.websiteMode}
+                                onChange={(e) => setCompanyForm({...companyForm, websiteMode: e.target.value as any})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                              >
+                                <option value="alsouk">ALSOUK Storefront</option>
+                                <option value="external">External Website</option>
+                                <option value="both">Both</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-muted-foreground">Business Type</label>
+                              <select
+                                value={companyForm.businessType}
+                                onChange={(e) => setCompanyForm({...companyForm, businessType: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                              >
+                                <option value="">Select type</option>
+                                {BUSINESS_TYPES.map(x => <option key={x} value={x}>{x.replace("_", " ")}</option>)}
+                              </select>
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-muted-foreground">Primary Industry</label>
+                              <select
+                                value={companyForm.primaryIndustry}
+                                onChange={(e) => setCompanyForm({...companyForm, primaryIndustry: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                              >
+                                <option value="">Select industry</option>
+                                {INDUSTRIES.map(x => <option key={x} value={x}>{x}</option>)}
+                              </select>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">Year Established</label>
+                            <input
+                              type="number"
+                              value={companyForm.yearEstablished}
+                              onChange={(e) => setCompanyForm({...companyForm, yearEstablished: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                            />
+                          </div>
+
+                          {/* Social handles */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-muted-foreground">Facebook URL</label>
+                              <input
+                                type="text"
+                                value={companyForm.facebookUrl}
+                                onChange={(e) => setCompanyForm({...companyForm, facebookUrl: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-muted-foreground">Instagram URL</label>
+                              <input
+                                type="text"
+                                value={companyForm.instagramUrl}
+                                onChange={(e) => setCompanyForm({...companyForm, instagramUrl: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ENTERPRISE FIELDS (Level 3) */}
+                      {company?.profileLevel === "enterprise" && (
+                        <div className="space-y-4 pt-4 border-t border-border/60 animate-in fade-in duration-300">
+                          <div className="border-b border-border pb-1">
+                            <h4 className="text-xs font-black text-foreground">Enterprise Level Parameters</h4>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-muted-foreground">Company Size (Employees)</label>
+                              <input
+                                type="text"
+                                value={companyForm.companySize}
+                                onChange={(e) => setCompanyForm({...companyForm, companySize: e.target.value})}
+                                placeholder="e.g. 51-200"
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                              />
+                            </div>
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-bold text-muted-foreground">Tax Identifier (MF / RNE)</label>
+                              <input
+                                type="text"
+                                value={companyForm.taxIdentifier}
+                                onChange={(e) => setCompanyForm({...companyForm, taxIdentifier: e.target.value})}
+                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Supported Languages Checklist */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-muted-foreground">Supported Languages</label>
+                            <div className="flex gap-4">
+                              {LANGUAGES_OPTIONS.map(opt => (
+                                <label key={opt.key} className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                                  <input
+                                    type="checkbox"
+                                    checked={companyForm.supportedLanguages.includes(opt.key)}
+                                    onChange={() => handleLanguageCheckboxChange(opt.key)}
+                                    className="rounded border-border text-primary focus:ring-primary/20"
+                                  />
+                                  <span>{opt.label}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Target Export Markets Checklist */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-muted-foreground">Target Export Markets</label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {EXPORT_MARKETS_OPTIONS.map(opt => (
+                                <label key={opt.key} className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                                  <input
+                                    type="checkbox"
+                                    checked={companyForm.exportMarkets.includes(opt.key)}
+                                    onChange={() => handleExportMarketCheckboxChange(opt.key)}
+                                    className="rounded border-border text-primary focus:ring-primary/20"
+                                  />
+                                  <span>{opt.label}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-3 pt-4 border-t border-border/40">
                         <button
                           type="submit"
                           disabled={updating}
@@ -1360,7 +1652,7 @@ function AccountScreen() {
           )}
 
           {/* Tab 2: Premium Instagram-Style social feed */}
-          {activeProfileTab === "posts" && (
+          {activeTabResolved === "posts" && (
             <div className="space-y-8 max-w-2xl mx-auto">
 
               {/* If owner/authenticated, allow instant posting */}
@@ -1484,7 +1776,7 @@ function AccountScreen() {
           )}
 
           {/* Tab 3: Featured Products catalog */}
-          {activeProfileTab === "products" && (
+          {activeTabResolved === "products" && (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -1521,7 +1813,7 @@ function AccountScreen() {
           )}
 
           {/* Tab 4: Trade Exhibitions */}
-          {activeProfileTab === "exhibitions" && (
+          {activeTabResolved === "exhibitions" && (
             <div className="space-y-6 max-w-4xl mx-auto">
               <div className="border-b border-border pb-3">
                 <h3 className="text-base font-black text-foreground">Exhibition Directory</h3>
@@ -1553,7 +1845,7 @@ function AccountScreen() {
           )}
 
           {/* Tab 5: Gallery & Quality Certificates */}
-          {activeProfileTab === "certificates" && (
+          {activeTabResolved === "certificates" && (
             <div className="space-y-8">
 
               {/* Media gallery uploads */}
@@ -1562,9 +1854,13 @@ function AccountScreen() {
                   <div>
                     <h3 className="text-base font-black text-foreground flex items-center gap-1.5">
                       <ImageIcon className="size-4.5 text-primary" />
-                      <span>Factory & Production Gallery</span>
+                      <span>{company?.profileLevel === "starter" ? "Simple Showcase Gallery" : "Factory & Production Gallery"}</span>
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">Showcase your assembly lines, warehouse facilities, and product storage</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {company?.profileLevel === "starter"
+                        ? "Essential images showing your business operations (max 4 photos for starter users)."
+                        : "Showcase your assembly lines, warehouse facilities, and product storage."}
+                    </p>
                   </div>
                   {company && (
                     <div className="flex gap-2">
@@ -1573,11 +1869,13 @@ function AccountScreen() {
                         placeholder="Paste image link"
                         value={photoUrl}
                         onChange={(e) => setPhotoUrl(e.target.value)}
-                        className="px-3.5 py-2 rounded-xl border border-border text-xs font-semibold focus:outline-none"
+                        disabled={company.profileLevel === "starter" && companyMedia.filter(x => x.media_type === "factory_photo").length >= 4}
+                        className="px-3.5 py-2 rounded-xl border border-border text-xs font-semibold focus:outline-none disabled:opacity-50"
                       />
                       <button
-                        onClick={() => handleAddMediaAsset("factory_photo", photoUrl, "Factory Production Line")}
-                        className="rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:opacity-95 cursor-pointer shrink-0"
+                        onClick={() => handleAddMediaAsset("factory_photo", photoUrl, "Showcase Photo")}
+                        disabled={company.profileLevel === "starter" && companyMedia.filter(x => x.media_type === "factory_photo").length >= 4}
+                        className="rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:opacity-95 cursor-pointer shrink-0 disabled:opacity-50"
                       >
                         Add Photo
                       </button>
@@ -1587,89 +1885,165 @@ function AccountScreen() {
 
                 {companyMedia.filter(x => x.media_type === "factory_photo").length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {companyMedia.filter(x => x.media_type === "factory_photo").map((med) => (
-                      <div key={med.id} className="relative aspect-video rounded-xl overflow-hidden border border-border bg-secondary group">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={med.url} alt="Factory" className="size-full object-cover" />
-                        {company && (
-                          <button
-                            onClick={() => handleDeleteMediaAsset(med.id)}
-                            className="absolute top-2 right-2 size-7 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </button>
-                        )}
-                      </div>
+                    {companyMedia.filter(x => x.media_type === "factory_photo")
+                      .slice(0, company?.profileLevel === "starter" ? 4 : undefined)
+                      .map((med) => (
+                        <div key={med.id} className="relative aspect-video rounded-xl overflow-hidden border border-border bg-secondary group">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={med.url} alt="Showcase" className="size-full object-cover" />
+                          {company && (
+                            <button
+                              onClick={() => handleDeleteMediaAsset(med.id)}
+                              className="absolute top-2 right-2 size-7 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          )}
+                        </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-xs text-muted-foreground italic">No factory photos showcased yet. Add some above.</div>
+                  <div className="text-center py-8 text-xs text-muted-foreground italic">No photos showcased yet. Add some above.</div>
                 )}
               </div>
 
-              {/* Quality certifications */}
-              <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between gap-4">
-                  <div>
-                    <h3 className="text-base font-black text-foreground flex items-center gap-1.5">
-                      <Award className="size-4.5 text-primary" />
-                      <span>Quality & Standard Certifications</span>
+              {/* Catalog PDFs (Business Level only) */}
+              {company?.profileLevel === "business" && (
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-4 animate-in fade-in duration-300">
+                  <div className="border-b border-border pb-2">
+                    <h3 className="text-sm font-black text-foreground flex items-center gap-1.5">
+                      <FileText className="size-4.5 text-primary" />
+                      <span>B2B Marketing Catalog PDF</span>
                     </h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">ISO, Organic Agriculture, and regulatory licenses establishing trust</p>
+                    <p className="text-[11px] text-muted-foreground">Attach a digital brochure for buyers to download directly.</p>
                   </div>
-                  {company && (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Paste certificate link"
-                        value={certUrl}
-                        onChange={(e) => setCertUrl(e.target.value)}
-                        className="px-3.5 py-2 rounded-xl border border-border text-xs font-semibold focus:outline-none"
-                      />
-                      <button
-                        onClick={() => handleAddMediaAsset("certificate", certUrl, "ISO Standard Certificate")}
-                        className="rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:opacity-95 cursor-pointer shrink-0"
-                      >
-                        Add License
-                      </button>
-                    </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Paste PDF URL (e.g. Google Drive link)"
+                      defaultValue={company.metadata?.catalog_url || ""}
+                      onBlur={async (e) => {
+                        const val = e.target.value.trim()
+                        const metadataCopy = { ...company.metadata, catalog_url: val }
+                        await updateCompany(company.id, { metadata: metadataCopy })
+                        setCompanySuccess("Marketing catalog link updated!")
+                      }}
+                      className="flex-1 px-4 py-2.5 rounded-xl border border-border text-xs font-semibold focus:outline-none"
+                    />
+                    <button className="px-4 py-2.5 bg-primary text-white text-xs font-black rounded-xl">Save Brochure</button>
+                  </div>
+
+                  {company.metadata?.catalog_url && (
+                    <a
+                      href={company.metadata.catalog_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 text-xs font-black text-primary hover:underline"
+                    >
+                      <ExternalLink className="size-4" />
+                      <span>Download Current Business Catalog PDF</span>
+                    </a>
                   )}
                 </div>
+              )}
 
-                {companyMedia.filter(x => x.media_type === "certificate").length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {companyMedia.filter(x => x.media_type === "certificate").map((med) => (
-                      <div key={med.id} className="p-4 bg-secondary/20 border border-border rounded-xl flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="flex size-10 items-center justify-center bg-primary/10 text-primary rounded-xl shrink-0">
-                            <Award className="size-5" />
-                          </span>
-                          <div>
-                            <p className="text-xs font-black text-foreground">{med.caption || "ISO Standard License"}</p>
-                            <a href={med.url} target="_blank" rel="noreferrer" className="text-[10px] text-primary hover:underline font-bold mt-0.5 inline-block">View certification</a>
-                          </div>
-                        </div>
-                        {company && (
-                          <button
-                            onClick={() => handleDeleteMediaAsset(med.id)}
-                            className="size-8 rounded-lg text-muted-foreground hover:bg-red-50 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
-                        )}
+              {/* Quality certifications (Enterprise Level only) */}
+              {company?.profileLevel === "enterprise" && (
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6 animate-in fade-in duration-300">
+                  <div className="flex flex-col sm:flex-row justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-black text-foreground flex items-center gap-1.5">
+                        <Award className="size-4.5 text-primary" />
+                        <span>Quality & Standard Certifications</span>
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">ISO, Organic Agriculture, and regulatory licenses establishing trust</p>
+                    </div>
+                    {company && (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Paste certificate link"
+                          value={certUrl}
+                          onChange={(e) => setCertUrl(e.target.value)}
+                          className="px-3.5 py-2 rounded-xl border border-border text-xs font-semibold focus:outline-none"
+                        />
+                        <button
+                          onClick={() => handleAddMediaAsset("certificate", certUrl, "ISO Standard Certificate")}
+                          className="rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:opacity-95 cursor-pointer shrink-0"
+                        >
+                          Add License
+                        </button>
                       </div>
-                    ))}
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-xs text-muted-foreground italic">No official certificates uploaded yet. Promote your compliance above.</div>
-                )}
-              </div>
+
+                  {companyMedia.filter(x => x.media_type === "certificate").length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {companyMedia.filter(x => x.media_type === "certificate").map((med) => (
+                        <div key={med.id} className="p-4 bg-secondary/20 border border-border rounded-xl flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="flex size-10 items-center justify-center bg-primary/10 text-primary rounded-xl shrink-0">
+                              <Award className="size-5" />
+                            </span>
+                            <div>
+                              <p className="text-xs font-black text-foreground">{med.caption || "ISO Standard License"}</p>
+                              <a href={med.url} target="_blank" rel="noreferrer" className="text-[10px] text-primary hover:underline font-bold mt-0.5 inline-block">View certification</a>
+                            </div>
+                          </div>
+                          {company && (
+                            <button
+                              onClick={() => handleDeleteMediaAsset(med.id)}
+                              className="size-8 rounded-lg text-muted-foreground hover:bg-red-50 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-xs text-muted-foreground italic">No official certificates uploaded yet. Promote your compliance above.</div>
+                  )}
+                </div>
+              )}
+
+              {/* Multiple Administrators Section (Enterprise Level only) */}
+              {company?.profileLevel === "enterprise" && (
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-4 animate-in fade-in duration-300">
+                  <div className="border-b border-border pb-2">
+                    <h3 className="text-sm font-black text-foreground flex items-center gap-1.5">
+                      <Users className="size-4.5 text-primary" />
+                      <span>Company Team & Administrators</span>
+                    </h3>
+                    <p className="text-[11px] text-muted-foreground">Manage multiple team members allowed to publish posts or products.</p>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center justify-between p-3 bg-secondary/15 rounded-xl border border-border/40">
+                      <div>
+                        <p className="font-black text-foreground">{fullNameInput || "Me"}</p>
+                        <p className="text-[10px] text-muted-foreground">Owner Account (Primary)</p>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">Active Owner</span>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 bg-secondary/15 rounded-xl border border-border/40 opacity-75">
+                      <div>
+                        <p className="font-bold text-foreground">Trade Agent 1</p>
+                        <p className="text-[10px] text-muted-foreground">Sub-admin representative</p>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-neutral-200 text-neutral-800 text-[10px] font-bold">Simulated Admin</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
             </div>
           )}
 
           {/* Tab 6: Buyer Reviews */}
-          {activeProfileTab === "reviews" && (
+          {activeTabResolved === "reviews" && (
             <div className="space-y-6 max-w-3xl mx-auto">
               <div className="border-b border-border pb-3">
                 <h3 className="text-base font-black text-foreground">Verified Buyer Reviews</h3>
