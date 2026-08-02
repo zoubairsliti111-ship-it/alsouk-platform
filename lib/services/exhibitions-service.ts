@@ -125,7 +125,22 @@ export type ExhibitionApplicationRow = {
 }
 
 // Map helpers
+// In-memory global store to hold exhibition status overrides safely
+function getExhibitionStatusOverrides(): Record<string, "Draft" | "Published" | "Archived" | "Open" | "Closed"> {
+  if (typeof globalThis !== "undefined") {
+    const g = globalThis as any
+    if (!g.__exhibitionStatusOverrides) {
+      g.__exhibitionStatusOverrides = {}
+    }
+    return g.__exhibitionStatusOverrides
+  }
+  return {}
+}
+
 export function mapExhibition(row: ExhibitionRow): Exhibition {
+  const overrides = getExhibitionStatusOverrides()
+  const status = overrides[row.id] || "Published"
+
   return {
     id: row.id,
     name: row.name,
@@ -142,6 +157,7 @@ export function mapExhibition(row: ExhibitionRow): Exhibition {
     contactEmail: row.contact_email || null,
     contactPhone: row.contact_phone || null,
     website: row.website || null,
+    status: status as any,
   }
 }
 
@@ -1625,6 +1641,93 @@ export async function updateExhibition(
   }
 
   return mapExhibition(rows[0])
+}
+
+/**
+ * Creates a brand new exhibition.
+ */
+export async function createExhibition(
+  input: Omit<Exhibition, "id" | "slug">
+): Promise<Exhibition> {
+  const cfg = getRestConfig()
+  const slug = input.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+  const id = `exh-${Math.random().toString(36).slice(2, 11)}`
+
+  if (!cfg) {
+    const list = getMockExhibitions()
+    const newExh: Exhibition = {
+      ...input,
+      id,
+      slug,
+      categories: input.categories || [],
+      status: "Published",
+    }
+    list.push(newExh)
+    return newExh
+  }
+
+  const record = {
+    name: input.name,
+    slug,
+    organizer: input.organizer,
+    description: input.description || null,
+    cover_url: input.coverUrl || null,
+    country: input.country || "TN",
+    city: input.city || "tunis",
+    start_date: input.startDate,
+    end_date: input.endDate,
+    categories: input.categories || [],
+    logo_url: input.logoUrl || null,
+    contact_email: input.contactEmail || null,
+    contact_phone: input.contactPhone || null,
+    website: input.website || null,
+  }
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibitions`, {
+    method: "POST",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify(record),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to create exhibition: ${res.status} ${text}`)
+  }
+
+  const rows = (await res.json()) as ExhibitionRow[]
+  if (!rows || rows.length === 0) {
+    throw new Error("No exhibition row returned from insert.")
+  }
+
+  return mapExhibition(rows[0])
+}
+
+/**
+ * Updates an exhibition status in-memory overlay safely.
+ */
+export async function updateExhibitionStatus(
+  id: string,
+  status: "Draft" | "Published" | "Archived" | "Open" | "Closed"
+): Promise<Exhibition> {
+  const overrides = getExhibitionStatusOverrides()
+  overrides[id] = status
+
+  // Find the exhibition to return it mapped with updated status
+  const list = await getExhibitions()
+  const found = list.find((e) => e.id === id)
+  if (!found) {
+    throw new Error(`Exhibition not found to update status: ${id}`)
+  }
+  return {
+    ...found,
+    status,
+  }
 }
 
 /**
