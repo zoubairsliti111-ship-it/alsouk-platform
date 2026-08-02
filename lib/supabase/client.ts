@@ -37,7 +37,22 @@ export function createClient() {
           return () => Promise.resolve()
         }
         if (prop === "single" || prop === "maybeSingle") {
-          return async () => ({ data: null, error: null })
+          return async () => ({
+            data: {
+              id: "mock-id-" + Math.random().toString(36).substring(2, 9),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              company_id: "mock-company-id",
+              author_id: "mock-user-123",
+              status: "published",
+              visibility: "public",
+              content: "Mock post content from client",
+              images: [],
+              attachments: [],
+              view_count: 0
+            },
+            error: null
+          })
         }
         return () => new Proxy({}, queryProxyHandler)
       }
