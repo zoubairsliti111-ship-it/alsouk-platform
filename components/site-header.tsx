@@ -3,13 +3,17 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Check, ChevronDown, Globe, Heart, Menu, Search, ShoppingCart, User, X } from "lucide-react"
+import { Check, ChevronDown, Globe, Heart, LogOut, Menu, Search, ShoppingCart, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
+import { useAuth } from "@/components/auth-provider"
+import { socialT } from "@/lib/social-i18n"
 import { LANGS } from "@/lib/i18n"
 
 export function SiteHeader() {
   const { t, lang, setLang } = useLanguage()
+  const { user, signOut } = useAuth()
+  const s = socialT[lang]
   const router = useRouter()
   const [langOpen, setLangOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -147,13 +151,39 @@ export function SiteHeader() {
             <ShoppingCart className="size-5" />
           </button>
 
-          <Button variant="ghost" className="hidden lg:inline-flex">
-            <User className="size-4" />
-            {t.nav.signIn}
-          </Button>
-          <Button className="hidden bg-primary text-primary-foreground hover:bg-primary/90 sm:inline-flex">
-            {t.nav.joinFree}
-          </Button>
+          {user ? (
+            <>
+              <Button variant="ghost" className="hidden lg:inline-flex" render={<Link href="/account" />}>
+                <User className="size-4" />
+                {s.account}
+              </Button>
+              <Button
+                variant="outline"
+                className="hidden sm:inline-flex"
+                onClick={async () => {
+                  await signOut()
+                  router.push("/")
+                  router.refresh()
+                }}
+              >
+                <LogOut className="size-4" />
+                {s.signOut}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" className="hidden lg:inline-flex" render={<Link href="/login" />}>
+                <User className="size-4" />
+                {t.nav.signIn}
+              </Button>
+              <Button
+                className="hidden bg-primary text-primary-foreground hover:bg-primary/90 sm:inline-flex"
+                render={<Link href="/signup" />}
+              >
+                {t.nav.joinFree}
+              </Button>
+            </>
+          )}
 
           <button
             className="rounded-lg p-2 text-foreground lg:hidden"
@@ -193,13 +223,42 @@ export function SiteHeader() {
             <div className="mt-2 flex items-center justify-between gap-3 border-t border-border pt-3">
               {LangSwitcher}
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <User className="size-4" />
-                  {t.nav.signIn}
-                </Button>
-                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  {t.nav.joinFree}
-                </Button>
+                {user ? (
+                  <>
+                    <Button variant="outline" size="sm" render={<Link href="/account" />} onClick={() => setMobileOpen(false)}>
+                      <User className="size-4" />
+                      {s.account}
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      onClick={async () => {
+                        setMobileOpen(false)
+                        await signOut()
+                        router.push("/")
+                        router.refresh()
+                      }}
+                    >
+                      <LogOut className="size-4" />
+                      {s.signOut}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" size="sm" render={<Link href="/login" />} onClick={() => setMobileOpen(false)}>
+                      <User className="size-4" />
+                      {t.nav.signIn}
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      render={<Link href="/signup" />}
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {t.nav.joinFree}
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </nav>

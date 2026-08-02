@@ -7,9 +7,15 @@ export interface Company {
   slug: string
   description: string | null
   logoUrl: string | null
+  coverUrl: string | null
+  businessType: string | null
   website: string | null
   country: string | null
   city: string | null
+  phone: string | null
+  whatsapp: string | null
+  facebookUrl: string | null
+  tiktokUrl: string | null
   verified: boolean
   createdAt?: string
 }

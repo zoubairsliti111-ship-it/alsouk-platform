@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Cairo } from 'next/font/google'
 import './globals.css'
 import { SITE_NAME, SITE_URL } from '@/lib/site'
+import { AuthProvider } from '@/components/auth-provider'
 
 const cairo = Cairo({
   subsets: ['latin', 'arabic'],
@@ -83,7 +84,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

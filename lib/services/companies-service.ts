@@ -10,15 +10,22 @@ export type CompanyRow = {
   slug: string
   description: string | null
   logo_url: string | null
+  cover_url: string | null
+  business_type: string | null
   website: string | null
   country: string | null
   city: string | null
+  phone: string | null
+  whatsapp: string | null
+  facebook_url: string | null
+  tiktok_url: string | null
   verified: boolean
   created_at?: string
 }
 
 export const COMPANY_COLUMNS =
-  "id,name,slug,description,logo_url,website,country,city,verified,created_at"
+  "id,name,slug,description,logo_url,cover_url,business_type,website,country,city," +
+  "phone,whatsapp,facebook_url,tiktok_url,verified,created_at"
 
 /** Maps a raw company row to the domain model, or `null` when invalid. */
 export function mapCompany(row: CompanyRow): Company | null {
@@ -29,9 +36,15 @@ export function mapCompany(row: CompanyRow): Company | null {
     slug: row.slug,
     description: row.description?.trim() || null,
     logoUrl: row.logo_url?.trim() || null,
+    coverUrl: row.cover_url?.trim() || null,
+    businessType: row.business_type?.trim() || null,
     website: row.website?.trim() || null,
     country: row.country?.trim() || null,
     city: row.city?.trim() || null,
+    phone: row.phone?.trim() || null,
+    whatsapp: row.whatsapp?.trim() || null,
+    facebookUrl: row.facebook_url?.trim() || null,
+    tiktokUrl: row.tiktok_url?.trim() || null,
     verified: Boolean(row.verified),
     createdAt: row.created_at,
   }
