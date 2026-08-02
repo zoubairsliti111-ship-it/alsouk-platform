@@ -18,6 +18,7 @@ export interface Exhibition {
   contactEmail?: string | null
   contactPhone?: string | null
   website?: string | null
+  status?: "Draft" | "Published" | "Archived" | "Open" | "Closed"
 }
 
 export interface ExhibitionBooth {

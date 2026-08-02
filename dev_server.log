@@ -1,26 +1,20 @@
 
-> my-project@0.1.0 dev /app
+> my-project@0.1.0 dev
 > next dev
 
 ▲ Next.js 16.2.6 (Turbopack)
 - Local:         http://localhost:3000
 - Network:       http://192.168.0.2:3000
-✓ Ready in 819ms
+✓ Ready in 602ms
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
 
-○ Compiling /exhibitions/analytics ...
- GET /exhibitions/analytics 200 in 5.7s (next.js: 4.6s, proxy.ts: 165ms, application-code: 964ms)
+○ Compiling /admin ...
+ HEAD /admin 200 in 4.4s (next.js: 3.8s, proxy.ts: 163ms, application-code: 366ms)
+ GET /admin 200 in 197ms (next.js: 22ms, proxy.ts: 26ms, application-code: 148ms)
 [browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 1932ms (next.js: 1839ms, proxy.ts: 13ms, application-code: 80ms)
- GET /exhibitions/analytics/organizer 200 in 1605ms (next.js: 1538ms, proxy.ts: 11ms, application-code: 56ms)
-Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 63ms (next.js: 39ms, proxy.ts: 16ms, application-code: 9ms)
-Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 21ms (next.js: 6ms, proxy.ts: 7ms, application-code: 8ms)
 [exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
     at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitions (lib/services/exhibitions-service.ts:592:31)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
     at GET (app/api/exhibitions/route.ts:8:45)
   39 | export async function restGet<Row>(path: string): Promise<Row[]> {
   40 |   const cfg = getRestConfig()
@@ -32,10 +26,27 @@ Supabase is not configured on server. Returning dummy client.
   reason: 'unconfigured',
   status: undefined
 }
- GET /api/exhibitions 200 in 701ms (next.js: 282ms, proxy.ts: 7ms, application-code: 412ms)
+ GET /api/exhibitions 200 in 1390ms (next.js: 831ms, proxy.ts: 9ms, application-code: 550ms)
+ GET /api/exhibitions/organizer/applications 200 in 197ms (next.js: 184ms, proxy.ts: 5ms, application-code: 8ms)
 [exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
     at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitions (lib/services/exhibitions-service.ts:592:31)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/organizer/booths/route.ts:15:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions/organizer/booths?exhibitionId=exh-101 200 in 560ms (next.js: 170ms, proxy.ts: 7ms, application-code: 383ms)
+ GET /admin/exhibitions 200 in 931ms (next.js: 801ms, proxy.ts: 5ms, application-code: 125ms)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
     at GET (app/api/exhibitions/route.ts:8:45)
   39 | export async function restGet<Row>(path: string): Promise<Row[]> {
   40 |   const cfg = getRestConfig()
@@ -47,48 +58,192 @@ Supabase is not configured on server. Returning dummy client.
   reason: 'unconfigured',
   status: undefined
 }
- GET /api/exhibitions 200 in 879ms (next.js: 691ms, proxy.ts: 10ms, application-code: 178ms)
-[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitions (lib/services/exhibitions-service.ts:592:31)
-    at getOrganizerAnalytics (lib/services/exhibitions-service.ts:2170:29)
-    at GET (app/api/exhibitions/analytics/organizer/route.ts:14:46)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/exhibitions/analytics/organizer?exhibitionId=exh-101&range=30days 200 in 495ms (next.js: 239ms, proxy.ts: 11ms, application-code: 245ms)
-[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
-    at restGet (lib/supabase/rest.ts:41:19)
-    at getExhibitions (lib/services/exhibitions-service.ts:592:31)
-    at getOrganizerAnalytics (lib/services/exhibitions-service.ts:2170:29)
-    at GET (app/api/exhibitions/analytics/organizer/route.ts:14:46)
-  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
-  40 |   const cfg = getRestConfig()
-> 41 |   if (!cfg) throw new RestError("unconfigured")
-     |                   ^
-  42 |
-  43 |   let res: Response
-  44 |   try { {
-  reason: 'unconfigured',
-  status: undefined
-}
- GET /api/exhibitions/analytics/organizer?exhibitionId=exh-102&range=30days 200 in 156ms (next.js: 8ms, proxy.ts: 9ms, application-code: 139ms)
- GET /exhibitions/analytics 200 in 355ms (next.js: 204ms, proxy.ts: 16ms, application-code: 136ms)
+ GET /api/exhibitions 200 in 219ms (next.js: 4ms, proxy.ts: 6ms, application-code: 209ms)
 [browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
-Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 24ms (next.js: 9ms, proxy.ts: 7ms, application-code: 8ms)
- GET /exhibitions/analytics/exhibitor 200 in 937ms (next.js: 820ms, proxy.ts: 4ms, application-code: 112ms)
-Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 32ms (next.js: 14ms, proxy.ts: 6ms, application-code: 11ms)
-Supabase is not configured on server. Returning dummy client.
- GET /api/notifications/unread-count 200 in 14ms (next.js: 3ms, proxy.ts: 4ms, application-code: 8ms)
- GET /api/exhibitions/analytics/exhibitor?boothId=booth-medina&range=7days 200 in 453ms (next.js: 192ms, proxy.ts: 9ms, application-code: 252ms)
- GET /api/exhibitions/analytics/exhibitor?boothId=booth-medina&range=7days 200 in 12ms (next.js: 3ms, proxy.ts: 4ms, application-code: 5ms)
- GET /api/exhibitions/analytics/exhibitor?boothId=booth-medina&range=today 200 in 11ms (next.js: 3ms, proxy.ts: 4ms, application-code: 4ms)
+ GET /admin/applications 200 in 817ms (next.js: 696ms, proxy.ts: 6ms, application-code: 116ms)
+ GET /api/exhibitions/organizer/applications 200 in 19ms (next.js: 6ms, proxy.ts: 8ms, application-code: 5ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+ GET /admin/booths 200 in 877ms (next.js: 706ms, proxy.ts: 7ms, application-code: 164ms)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/route.ts:8:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions 200 in 168ms (next.js: 5ms, proxy.ts: 6ms, application-code: 156ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/organizer/booths/route.ts:15:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions/organizer/booths?exhibitionId=exh-101 200 in 161ms (next.js: 3ms, proxy.ts: 3ms, application-code: 154ms)
+ GET /admin/statistics 200 in 774ms (next.js: 640ms, proxy.ts: 4ms, application-code: 130ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/route.ts:8:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions 200 in 170ms (next.js: 11ms, proxy.ts: 5ms, application-code: 155ms)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at getOrganizerAnalytics (lib/services/exhibitions-service.ts:2273:29)
+    at GET (app/api/exhibitions/analytics/organizer/route.ts:14:46)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions/analytics/organizer?exhibitionId=exh-101&range=7days 200 in 659ms (next.js: 220ms, proxy.ts: 13ms, application-code: 427ms)
+ GET /api/exhibitions/organizer/applications 200 in 17ms (next.js: 4ms, proxy.ts: 5ms, application-code: 7ms)
+ GET /admin 200 in 97ms (next.js: 7ms, proxy.ts: 4ms, application-code: 87ms)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/route.ts:8:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions 200 in 217ms (next.js: 6ms, proxy.ts: 7ms, application-code: 204ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+ GET /api/exhibitions/organizer/applications 200 in 28ms (next.js: 20ms, proxy.ts: 4ms, application-code: 4ms)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/organizer/booths/route.ts:15:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions/organizer/booths?exhibitionId=exh-101 200 in 198ms (next.js: 9ms, proxy.ts: 5ms, application-code: 184ms)
+ GET /admin/exhibitions 200 in 89ms (next.js: 4ms, proxy.ts: 6ms, application-code: 79ms)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/route.ts:8:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions 200 in 192ms (next.js: 10ms, proxy.ts: 14ms, application-code: 168ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+ GET /admin/applications 200 in 93ms (next.js: 4ms, proxy.ts: 4ms, application-code: 85ms)
+ GET /api/exhibitions/organizer/applications 200 in 14ms (next.js: 3ms, proxy.ts: 4ms, application-code: 6ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+ GET /admin/booths 200 in 132ms (next.js: 4ms, proxy.ts: 3ms, application-code: 124ms)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/route.ts:8:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions 200 in 191ms (next.js: 5ms, proxy.ts: 7ms, application-code: 180ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/organizer/booths/route.ts:15:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions/organizer/booths?exhibitionId=exh-101 200 in 164ms (next.js: 3ms, proxy.ts: 5ms, application-code: 156ms)
+ GET /admin/statistics 200 in 190ms (next.js: 17ms, proxy.ts: 9ms, application-code: 164ms)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at GET (app/api/exhibitions/route.ts:8:45)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions 200 in 287ms (next.js: 11ms, proxy.ts: 10ms, application-code: 266ms)
+[browser] Supabase is not configured. Returning dummy mock client. (lib/supabase/client.ts:16:13)
+[exhibitions-service] Failed to fetch. Using fallback mock data: Error [RestError]: unconfigured
+    at restGet (lib/supabase/rest.ts:41:19)
+    at getExhibitions (lib/services/exhibitions-service.ts:608:31)
+    at getOrganizerAnalytics (lib/services/exhibitions-service.ts:2273:29)
+    at GET (app/api/exhibitions/analytics/organizer/route.ts:14:46)
+  39 | export async function restGet<Row>(path: string): Promise<Row[]> {
+  40 |   const cfg = getRestConfig()
+> 41 |   if (!cfg) throw new RestError("unconfigured")
+     |                   ^
+  42 |
+  43 |   let res: Response
+  44 |   try { {
+  reason: 'unconfigured',
+  status: undefined
+}
+ GET /api/exhibitions/analytics/organizer?exhibitionId=exh-101&range=7days 200 in 275ms (next.js: 9ms, proxy.ts: 9ms, application-code: 257ms)
