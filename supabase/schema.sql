@@ -52,6 +52,7 @@ create index if not exists suppliers_verified_idx on public.suppliers (verified)
 create table if not exists public.rfqs (
   id                   uuid        primary key default gen_random_uuid(),
   supplier_id          uuid        references public.suppliers (id) on delete set null,
+  company_id           uuid        references public.companies (id) on delete set null,
   supplier_name        text,
   company_name         text        not null,
   contact_person       text        not null,
@@ -111,12 +112,6 @@ create table if not exists public.companies (
   city         text,
   website       text,
   logo_url      text,
-  cover_url     text,
-  business_type text,
-  phone         text,
-  whatsapp      text,
-  facebook_url  text,
-  tiktok_url    text,
   verified     boolean     not null default false,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()

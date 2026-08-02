@@ -2,30 +2,16 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Check, ChevronDown, Globe, Heart, LogOut, Menu, Search, ShoppingCart, User, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Check, ChevronDown, Globe, Menu, X } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
-import { useAuth } from "@/components/auth-provider"
-import { socialT } from "@/lib/social-i18n"
 import { LANGS } from "@/lib/i18n"
+import { NotificationBell } from "@/components/marketplace/notification-bell"
 
 export function SiteHeader() {
   const { t, lang, setLang } = useLanguage()
-  const { user, signOut } = useAuth()
-  const s = socialT[lang]
-  const router = useRouter()
   const [langOpen, setLangOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [query, setQuery] = useState("")
   const langRef = useRef<HTMLDivElement>(null)
-
-  function submitSearch(e: React.FormEvent) {
-    e.preventDefault()
-    const q = query.trim()
-    setMobileOpen(false)
-    router.push(q ? `/search?q=${encodeURIComponent(q)}` : "/search")
-  }
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -35,15 +21,6 @@ export function SiteHeader() {
     return () => document.removeEventListener("mousedown", onClick)
   }, [])
 
-  const navLinks = [
-    { label: t.marketplace.companies.title, href: "/companies" },
-    { label: t.nav.suppliers, href: "/suppliers" },
-    { label: t.nav.categories, href: "/categories" },
-    { label: t.nav.products, href: "/products" },
-    { label: t.nav.rfq, href: "/rfq" },
-    { label: t.nav.about, href: "/#why" },
-  ]
-
   const current = LANGS.find((l) => l.code === lang)!
 
   const LangSwitcher = (
@@ -51,18 +28,18 @@ export function SiteHeader() {
       <button
         type="button"
         onClick={() => setLangOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+        className="flex items-center gap-1.5 rounded-full border border-border bg-card/60 px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary hover:border-primary/30 transition-all shadow-sm"
         aria-haspopup="listbox"
         aria-expanded={langOpen}
       >
-        <Globe className="size-4 text-primary" />
+        <Globe className="size-3.5 text-primary/80" />
         <span>{current.native}</span>
-        <ChevronDown className={`size-3.5 transition-transform ${langOpen ? "rotate-180" : ""}`} />
+        <ChevronDown className={`size-3 transition-transform duration-200 ${langOpen ? "rotate-180" : ""}`} />
       </button>
       {langOpen && (
         <div
           role="listbox"
-          className="absolute end-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-border bg-popover p-1 shadow-lg"
+          className="absolute end-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-border/80 bg-popover/95 backdrop-blur-md p-1 shadow-xl animate-in fade-in slide-in-from-top-1 duration-150"
         >
           {LANGS.map((l) => (
             <button
@@ -73,13 +50,13 @@ export function SiteHeader() {
                 setLang(l.code)
                 setLangOpen(false)
               }}
-              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm text-popover-foreground transition-colors hover:bg-secondary"
+              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs text-popover-foreground transition-colors hover:bg-secondary/80"
             >
-              <span className="flex flex-col items-start">
-                <span className="font-medium">{l.native}</span>
-                <span className="text-xs text-muted-foreground">{l.label}</span>
+              <span className="flex flex-col items-start text-start">
+                <span className="font-semibold">{l.native}</span>
+                <span className="text-[10px] text-muted-foreground">{l.label}</span>
               </span>
-              {l.code === lang && <Check className="size-4 text-accent" />}
+              {l.code === lang && <Check className="size-3.5 text-primary" />}
             </button>
           ))}
         </div>
@@ -88,179 +65,75 @@ export function SiteHeader() {
   )
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 backdrop-blur-md">
-      {/* Top strip */}
-      <div className="hidden border-b border-border bg-secondary/60 md:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-1.5 text-xs text-muted-foreground">
-          <p>{t.hero.trusted}</p>
-          <div className="flex items-center gap-4">
-            <Link href="/suppliers" className="transition-colors hover:text-primary">{t.nav.forSuppliers}</Link>
-            <Link href="/products" className="transition-colors hover:text-primary">{t.nav.forBuyers}</Link>
-            <a href="#" className="transition-colors hover:text-primary">{t.nav.help}</a>
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
-        {/* Logo */}
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground">
+    <header className="sticky top-0 z-50 w-full h-16 border-b border-border/40 bg-background/70 backdrop-blur-lg flex items-center">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 flex items-center justify-between">
+        {/* ALSOUK Logo */}
+        <Link href="/" className="flex items-center gap-2 group transition-transform duration-200">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-tr from-primary to-blue-600 font-black text-sm text-primary-foreground shadow-md shadow-primary/20 group-hover:scale-105 transition-all">
             A
           </span>
-          <span className="text-xl font-bold tracking-tight text-foreground">
-            AL<span className="text-primary">SOUK</span>
+          <span className="text-lg font-black tracking-tight text-foreground">
+            AL<span className="bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">SOUK</span>
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="ms-4 hidden items-center gap-1 lg:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-foreground/80 transition-colors hover:bg-secondary hover:text-primary"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+        {/* Right Side: Lang, Notification, Menu */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {LangSwitcher}
 
-        {/* Desktop search */}
-        <form onSubmit={submitSearch} role="search" className="relative ms-auto hidden max-w-xs flex-1 md:block">
-          <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t.search.placeholder}
-            aria-label={t.search.title}
-            className="w-full rounded-full border border-border bg-secondary/50 py-2 ps-9 pe-3 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-card"
-          />
-        </form>
+          {/* Notification Dropdown Bell */}
+          <NotificationBell />
 
-        <div className="ms-auto flex items-center gap-2 md:ms-2">
-          <div className="hidden md:block">{LangSwitcher}</div>
-
-          <button className="inline-flex rounded-full p-2 text-foreground/70 transition-colors hover:bg-secondary hover:text-primary md:hidden" aria-label={t.search.title} onClick={() => router.push("/search")}>
-            <Search className="size-5" />
-          </button>
-          <button className="hidden rounded-full p-2 text-foreground/70 transition-colors hover:bg-secondary hover:text-primary sm:inline-flex" aria-label="Wishlist">
-            <Heart className="size-5" />
-          </button>
-          <button className="hidden rounded-full p-2 text-foreground/70 transition-colors hover:bg-secondary hover:text-primary sm:inline-flex" aria-label="Cart">
-            <ShoppingCart className="size-5" />
-          </button>
-
-          {user ? (
-            <>
-              <Button variant="ghost" className="hidden lg:inline-flex" render={<Link href="/account" />}>
-                <User className="size-4" />
-                {s.account}
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden sm:inline-flex"
-                onClick={async () => {
-                  await signOut()
-                  router.push("/")
-                  router.refresh()
-                }}
-              >
-                <LogOut className="size-4" />
-                {s.signOut}
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" className="hidden lg:inline-flex" render={<Link href="/login" />}>
-                <User className="size-4" />
-                {t.nav.signIn}
-              </Button>
-              <Button
-                className="hidden bg-primary text-primary-foreground hover:bg-primary/90 sm:inline-flex"
-                render={<Link href="/signup" />}
-              >
-                {t.nav.joinFree}
-              </Button>
-            </>
-          )}
-
+          {/* Menu Button */}
           <button
-            className="rounded-lg p-2 text-foreground lg:hidden"
+            className="inline-flex size-9 items-center justify-center rounded-xl border border-border/50 bg-card/50 text-foreground transition-all hover:bg-secondary hover:scale-105 active:scale-95"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Menu"
           >
-            {mobileOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+            {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Simple Mobile Navigation / Menu Overlay */}
       {mobileOpen && (
-        <div className="border-t border-border bg-background lg:hidden">
-          <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
-            <form onSubmit={submitSearch} role="search" className="relative mb-2">
-              <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t.search.placeholder}
-                aria-label={t.search.title}
-                className="w-full rounded-full border border-border bg-secondary/50 py-2.5 ps-9 pe-3 text-sm text-foreground outline-none focus:border-primary focus:bg-card"
-              />
-            </form>
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="mt-2 flex items-center justify-between gap-3 border-t border-border pt-3">
-              {LangSwitcher}
-              <div className="flex gap-2">
-                {user ? (
-                  <>
-                    <Button variant="outline" size="sm" render={<Link href="/account" />} onClick={() => setMobileOpen(false)}>
-                      <User className="size-4" />
-                      {s.account}
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-primary text-primary-foreground hover:bg-primary/90"
-                      onClick={async () => {
-                        setMobileOpen(false)
-                        await signOut()
-                        router.push("/")
-                        router.refresh()
-                      }}
-                    >
-                      <LogOut className="size-4" />
-                      {s.signOut}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="outline" size="sm" render={<Link href="/login" />} onClick={() => setMobileOpen(false)}>
-                      <User className="size-4" />
-                      {t.nav.signIn}
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="bg-primary text-primary-foreground hover:bg-primary/90"
-                      render={<Link href="/signup" />}
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      {t.nav.joinFree}
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
+        <div className="absolute top-16 left-0 right-0 border-b border-border/30 bg-background/95 backdrop-blur-lg shadow-lg animate-in slide-in-from-top-2 duration-200 p-4">
+          <nav className="flex flex-col gap-2">
+            <Link
+              href="/"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
+            >
+              Home
+            </Link>
+            <Link
+              href="/categories"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
+            >
+              Categories
+            </Link>
+            <Link
+              href="/rfq"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
+            >
+              Request Quote
+            </Link>
+            <Link
+              href="/suppliers"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
+            >
+              {t.nav.suppliers}
+            </Link>
+            <Link
+              href="/exhibitions"
+              onClick={() => setMobileOpen(false)}
+              className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
+            >
+              {t.nav.exhibitions}
+            </Link>
           </nav>
         </div>
       )}

@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, Flame, Store } from "lucide-react"
+import { ArrowRight, Flame } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 
@@ -19,73 +19,79 @@ export function FeaturedProducts() {
   const { t } = useLanguage()
 
   return (
-    <section id="products" className="mx-auto max-w-7xl px-4 py-8 lg:py-12">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-2.5 py-1 text-xs font-semibold text-destructive">
-            <Flame className="size-3.5" />
-            {t.home.trendingTag}
-          </span>
-          <h2 className="mt-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl lg:text-3xl">
-            {t.home.trendingTitle}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">{t.home.trendingSubtitle}</p>
-        </div>
-        <Link
-          href="/products"
-          className="group inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary hover:underline"
-        >
-          {t.home.viewAll}
-          <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180" />
-        </Link>
-      </div>
-
-      {/* Horizontal rail on mobile, grid on desktop */}
-      <div className="no-scrollbar -mx-4 mt-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0">
-        {t.products.items.map((p, i) => (
-          <div
-            key={p.name}
-            className="group flex w-[70%] shrink-0 snap-start flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl sm:w-[45%] lg:w-auto"
-          >
-            <Link href="/products" className="relative aspect-[4/3] w-full overflow-hidden bg-secondary">
-              <Image
-                src={IMAGES[i % IMAGES.length] || "/placeholder.svg"}
-                alt={p.name}
-                fill
-                sizes="(max-width: 1024px) 70vw, 25vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              {i < 3 && (
-                <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-destructive px-2 py-0.5 text-[11px] font-semibold text-white shadow">
-                  <Flame className="size-3" />
-                  {t.home.hotBadge}
-                </span>
-              )}
-              <span className="absolute end-3 top-3 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold text-foreground shadow-sm backdrop-blur">
-                {t.products.moq}: {p.moq}
-              </span>
-            </Link>
-            <div className="flex flex-1 flex-col p-4">
-              <Link href="/products" className="line-clamp-1 font-semibold text-foreground hover:text-primary">
-                {p.name}
-              </Link>
-              <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                <Store className="size-3.5" />
-                <span className="truncate">{p.supplier}</span>
-              </p>
-              <p className="mt-3 text-lg font-bold text-primary">
-                {p.price}
-                <span className="text-xs font-normal text-muted-foreground"> {t.products.perUnit}</span>
-              </p>
-              <Link
-                href="/rfq"
-                className={buttonVariants({ className: "mt-4 w-full bg-primary text-primary-foreground hover:bg-primary/90" })}
-              >
-                {t.products.inquire}
-              </Link>
-            </div>
+    <section id="products" className="py-6 bg-background">
+      <div className="mx-auto max-w-7xl px-6">
+        {/* Section Heading */}
+        <div className="flex items-end justify-between gap-4 border-b border-border/60 pb-3">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              {t.products.title}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">{t.products.subtitle}</p>
           </div>
-        ))}
+          <Link
+            href="/products"
+            className="group inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+          >
+            {t.home.viewAll}
+            <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180" />
+          </Link>
+        </div>
+
+        {/* Horizontal rail on mobile, grid on desktop */}
+        <div className="no-scrollbar -mx-6 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4 sm:grid sm:grid-cols-2 md:grid-cols-3 sm:overflow-visible sm:px-0 sm:mx-0">
+          {t.products.items.map((p, i) => (
+            <div
+              key={p.name}
+              className="group flex w-[280px] shrink-0 snap-start flex-col overflow-hidden rounded-[20px] border border-border bg-card p-4 transition-all duration-300 hover:border-primary/25 sm:w-auto animate-fade-in"
+            >
+              {/* Product Image */}
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[16px] bg-secondary mb-3">
+                <Image
+                  src={IMAGES[i % IMAGES.length] || "/placeholder.svg"}
+                  alt={p.name}
+                  fill
+                  sizes="(max-width: 640px) 280px, 20vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-102"
+                />
+                {i < 3 && (
+                  <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#EF4444] px-2 py-0.5 text-[9px] font-bold text-white shadow-sm">
+                    <Flame className="size-3 text-white" />
+                    <span>HOT</span>
+                  </span>
+                )}
+                <span className="absolute end-3 top-3 rounded-full bg-background/90 px-2 py-0.5 text-[9px] font-bold text-foreground shadow-sm backdrop-blur">
+                  {t.products.moq}: {p.moq}
+                </span>
+              </div>
+
+              {/* Product Details */}
+              <div className="flex flex-1 flex-col">
+                <h3 className="line-clamp-1 text-sm font-bold text-foreground leading-snug">
+                  {p.name}
+                </h3>
+                <p className="mt-1.5 text-[11px] font-semibold text-muted-foreground truncate">
+                  {p.supplier}
+                </p>
+                <p className="mt-3 text-base font-extrabold text-[#2563EB]">
+                  {p.price}
+                  <span className="text-[10px] font-medium text-muted-foreground"> {t.products.perUnit}</span>
+                </p>
+
+                {/* Request Quote Button */}
+                <Link
+                  href="/rfq"
+                  className={buttonVariants({
+                    size: "sm",
+                    className: "mt-4 w-full rounded-xl bg-[#2563EB] hover:bg-blue-700 text-[11px] font-semibold text-white transition-all duration-300",
+                  })}
+                >
+                  Request Quote
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

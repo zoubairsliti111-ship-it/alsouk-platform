@@ -1,21 +1,27 @@
-import { cookies } from "next/headers"
 import { createServerClient } from "@supabase/ssr"
-import type { SupabaseClient } from "@supabase/supabase-js"
+import { cookies } from "next/headers"
+import { KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
 
 /**
- * Server-side Supabase client bound to the request cookies. Route handlers and
- * server components use this so RLS runs with the signed-in user's session.
- * Returns `null` when Supabase env vars are absent.
+ * Creates a server-side Supabase client for use in Server Components,
+ * Route Handlers, and Server Actions. Correctly awaits next/headers cookies.
  */
-export async function getSupabaseServerClient(): Promise<SupabaseClient | null> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL
-  const key =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    process.env.SUPABASE_ANON_KEY
-  if (!url || !key) return null
-
+export async function createClient() {
   const cookieStore = await cookies()
+
+  const url = firstDefined(URL_VARS).value || ""
+  const key = firstDefined(KEY_VARS).value || ""
+
+  if (!url || !key) {
+    console.warn("Supabase is not configured on server. Returning dummy client.")
+    return {
+      auth: {
+        getSession: async () => ({ data: { session: null } }),
+        getUser: async () => ({ data: { user: null } }),
+      }
+    } as any
+  }
+
   return createServerClient(url, key, {
     cookies: {
       getAll() {
@@ -23,22 +29,15 @@ export async function getSupabaseServerClient(): Promise<SupabaseClient | null> 
       },
       setAll(cookiesToSet) {
         try {
-          for (const { name, value, options } of cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
             cookieStore.set(name, value, options)
-          }
+          )
         } catch {
-          // `set` throws in Server Components; the middleware refreshes cookies.
+          // The `setAll` method was called from a Server Component.
+          // This can be ignored if you have middleware refreshing
+          // user sessions.
         }
       },
     },
   })
 }
-
-export async function getCurrentUserId(): Promise<string | null> {
-  const supabase = await getSupabaseServerClient()
-  if (!supabase) return null
-  const { data } = await supabase.auth.getUser()
-  return data.user?.id ?? null
-}
-
-export type { SupabaseClient }

@@ -18,6 +18,7 @@ type Dict = {
     forBuyers: string
     forSuppliers: string
     help: string
+    exhibitions: string
   }
   hero: {
     badge: string
@@ -317,6 +318,121 @@ type Dict = {
     save: string
     saved: string
   }
+  auth: {
+    loginTitle: string
+    registerTitle: string
+    forgotTitle: string
+    fullName: string
+    phone: string
+    email: string
+    password: string
+    confirmPassword: string
+    newPassword: string
+    signIn: string
+    signUp: string
+    logout: string
+    resetPasswordBtn: string
+    haveAccount: string
+    noAccount: string
+    forgotPasswordLink: string
+    newToAlsouk: string
+    createFreeAccountBtn: string
+    chooseRoleTitle: string
+    chooseRoleDesc: string
+    buyer: string
+    buyerDesc: string
+    supplier: string
+    supplierDesc: string
+    saveRoleBtn: string
+    welcomeBack: string
+    requiredField: string
+    invalidEmail: string
+    invalidPhone: string
+    passwordLength: string
+    passwordRequirements: string
+    passwordsDoNotMatch: string
+    signUpSuccess: string
+    signInSuccess: string
+    resetSuccess: string
+    phoneTab: string
+    emailTab: string
+    phonePlaceholder: string
+    emailPlaceholder: string
+    passwordPlaceholder: string
+    fullNamePlaceholder: string
+    duplicateEmail: string
+    duplicatePhone: string
+    profileTitle: string
+    profileSubtitle: string
+    accountTypeLabel: string
+    notSet: string
+    backToLogin: string
+  }
+  exhibitions: {
+    title: string
+    subtitle: string
+    organizer: string
+    startDate: string
+    endDate: string
+    categories: string
+    searchPlaceholder: string
+    exhibitorsCount: string
+    empty: string
+    boothsCount: string
+    viewBooth: string
+    noExhibits: string
+    catalogPdfs: string
+    contact: string
+    requestMeeting: string
+    requestMeetingTitle: string
+    requestMeetingDesc: string
+    meetingDate: string
+    meetingTime: string
+    meetingNotes: string
+    meetingNotesPlaceholder: string
+    meetingSuccess: string
+    meetingSubmitting: string
+    meetingSubmit: string
+    cancel: string
+    backToExhibition: string
+    activeUntil: string
+    archived: string
+    exploreExhibitions: string
+    exhibitors: string
+    b2bEvent: string
+    exhibitorsCountLabel: string
+    filterCategory: string
+    allCategories: string
+    sortLabel: string
+    sortByFeatured: string
+    sortByAlpha: string
+    sortByBooth: string
+    boothLabel: string
+    verifiedExhibitor: string
+    downloadPdf: string
+    brochure: string
+    galleryPhotos: string
+    demosVideos: string
+    noPdf: string
+    chatWhatsapp: string
+    sendEmail: string
+    callLabel: string
+    boothNotFound: string
+    boothNotFoundDesc: string
+    backToExhibitionsList: string
+    meetingSuccessDesc: string
+    showcaseSummary: string
+    exhibitsInnovations: string
+    featuredExhibit: string
+    virtualExhibitor: string
+    showingLabel: string
+    matchingPavilions: string
+    noExhibitorsMatched: string
+    noExhibitorsMatchedDesc: string
+    vettedTag: string
+    activeTag: string
+    loadMore: string
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
@@ -332,6 +448,7 @@ export const translations: Record<Lang, Dict> = {
       forBuyers: "For Buyers",
       forSuppliers: "For Suppliers",
       help: "Help Center",
+      exhibitions: "Exhibitions",
     },
     hero: {
       badge: "Tunisia's leading B2B trade platform",
@@ -708,6 +825,121 @@ export const translations: Record<Lang, Dict> = {
       save: "Save",
       saved: "Saved",
     },
+    auth: {
+      loginTitle: "Sign in to ALSOUK",
+      registerTitle: "Create your free account",
+      forgotTitle: "Reset your password",
+      fullName: "Full Name",
+      phone: "Phone Number",
+      email: "Email Address",
+      password: "Password",
+      confirmPassword: "Confirm Password",
+      newPassword: "New Password",
+      signIn: "Sign In",
+      signUp: "Create Account",
+      logout: "Sign Out",
+      resetPasswordBtn: "Reset Password",
+      haveAccount: "Already have an account? Sign In",
+      noAccount: "New to ALSOUK? Join Free",
+      forgotPasswordLink: "Forgot password?",
+      newToAlsouk: "New to ALSOUK?",
+      createFreeAccountBtn: "Create Free Account",
+      chooseRoleTitle: "Who are you?",
+      chooseRoleDesc: "Select your account type to personalize your experience. You can browse both ways, but this tells other businesses your primary focus.",
+      buyer: "Buyer",
+      buyerDesc: "I want to source products, submit RFQs, and connect with Tunisian suppliers.",
+      supplier: "Supplier / Manufacturer",
+      supplierDesc: "I want to showcase my products, receive RFQs, and export to regional/global markets.",
+      saveRoleBtn: "Continue to ALSOUK",
+      welcomeBack: "Welcome back!",
+      requiredField: "This field is required",
+      invalidEmail: "Please enter a valid email address",
+      invalidPhone: "Please enter a valid Tunisian phone number (8 digits)",
+      passwordLength: "Password must be at least 8 characters long",
+      passwordRequirements: "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+      passwordsDoNotMatch: "Passwords do not match",
+      signUpSuccess: "Your account has been created successfully!",
+      signInSuccess: "Signed in successfully!",
+      resetSuccess: "Your password has been successfully reset!",
+      phoneTab: "Phone Number",
+      emailTab: "Email Address",
+      phonePlaceholder: "21345678",
+      emailPlaceholder: "e.g. name@company.com",
+      passwordPlaceholder: "Enter your password",
+      fullNamePlaceholder: "e.g. Mohamed Ben Ali",
+      duplicateEmail: "This email address is already registered",
+      duplicatePhone: "This phone number is already registered",
+      profileTitle: "My Profile",
+      profileSubtitle: "Manage your B2B account information and preferences",
+      accountTypeLabel: "Account Type",
+      notSet: "Not specified",
+      backToLogin: "Back to Sign In",
+    },
+    exhibitions: {
+      title: "Souk Exhibitions",
+      subtitle: "Discover virtual trade shows, browse unique company pavilions, and negotiate directly with elite local producers.",
+      organizer: "Organizer",
+      startDate: "Start Date",
+      endDate: "End Date",
+      categories: "Industry Segments",
+      searchPlaceholder: "Search pavilion booths or exhibits...",
+      exhibitorsCount: "Exhibitors Count",
+      empty: "No exhibitions scheduled at this moment. Check back soon!",
+      boothsCount: "Active booths",
+      viewBooth: "Enter Pavilion Booth",
+      noExhibits: "No exclusive exhibition exhibits showcased yet.",
+      catalogPdfs: "Catalog & Spec sheets (PDFs)",
+      contact: "Get in Touch",
+      requestMeeting: "Request Private B2B Meeting",
+      requestMeetingTitle: "Schedule a Virtual Meeting",
+      requestMeetingDesc: "Submit your preferred slot to book a direct virtual discussion with their export sales team.",
+      meetingDate: "Preferred Date",
+      meetingTime: "Preferred Time Slot",
+      meetingNotes: "Meeting Agenda / Key Exhibits of Interest",
+      meetingNotesPlaceholder: "Describe your business needs, volume interest, or meeting goals...",
+      meetingSuccess: "Meeting request submitted successfully!",
+      meetingSubmitting: "Submitting request...",
+      meetingSubmit: "Confirm Meeting Slot",
+      cancel: "Cancel",
+      backToExhibition: "Back to Exhibition Home",
+      activeUntil: "Active until",
+      archived: "Archived Exhibition Booth",
+      exploreExhibitions: "Explore Virtual Exhibitions",
+      exhibitors: "Exhibitors",
+      b2bEvent: "B2B Event",
+      exhibitorsCountLabel: "Booth",
+      filterCategory: "Filter by Pavilion Category",
+      allCategories: "All",
+      sortLabel: "Sort:",
+      sortByFeatured: "Featured First",
+      sortByAlpha: "Alphabetical (A-Z)",
+      sortByBooth: "Booth Number",
+      boothLabel: "Booth",
+      verifiedExhibitor: "Verified Exhibitor",
+      downloadPdf: "Download Specifications PDF",
+      brochure: "Brochure",
+      galleryPhotos: "Gallery Photos",
+      demosVideos: "Exhibition Demos & Videos",
+      noPdf: "No catalogue PDFs attached to this booth.",
+      chatWhatsapp: "Chat on WhatsApp",
+      sendEmail: "Send Email",
+      callLabel: "Call",
+      boothNotFound: "Booth Not Found",
+      boothNotFoundDesc: "This exhibition booth doesn't exist, is no longer active, or is archived.",
+      backToExhibitionsList: "Back to Exhibitions",
+      meetingSuccessDesc: "The exhibitor has been notified and will verify the slot.",
+      showcaseSummary: "Exhibition Showcase Summary",
+      exhibitsInnovations: "Exhibition Exhibits & Innovations",
+      featuredExhibit: "Featured",
+      virtualExhibitor: "VIRTUAL EXHIBITOR",
+      showingLabel: "Showing",
+      matchingPavilions: "matching pavilions",
+      noExhibitorsMatched: "No exhibitors matched your search query",
+      noExhibitorsMatchedDesc: "Try checking your spelling or selecting another category.",
+      vettedTag: "VETTED",
+      activeTag: "ACTIVE",
+      loadMore: "Load More Exhibitors",
+    },
   },
   fr: {
     nav: {
@@ -721,6 +953,7 @@ export const translations: Record<Lang, Dict> = {
       forBuyers: "Pour les acheteurs",
       forSuppliers: "Pour les fournisseurs",
       help: "Centre d'aide",
+      exhibitions: "Expositions",
     },
     hero: {
       badge: "La 1ère plateforme B2B de Tunisie",
@@ -1097,6 +1330,121 @@ export const translations: Record<Lang, Dict> = {
       save: "Enregistrer",
       saved: "Enregistré",
     },
+    auth: {
+      loginTitle: "Se connecter à ALSOUK",
+      registerTitle: "Créer votre compte gratuit",
+      forgotTitle: "Réinitialiser votre mot de passe",
+      fullName: "Nom complet",
+      phone: "Numéro de téléphone",
+      email: "Adresse e-mail",
+      password: "Mot de passe",
+      confirmPassword: "Confirmer le mot de passe",
+      newPassword: "Nouveau mot de passe",
+      signIn: "Se connecter",
+      signUp: "Créer un compte",
+      logout: "Se déconnecter",
+      resetPasswordBtn: "Réinitialiser le mot de passe",
+      haveAccount: "Vous avez déjà un compte ? Se connecter",
+      noAccount: "Nouveau sur ALSOUK ? S'inscrire gratuitement",
+      forgotPasswordLink: "Mot de passe oublié ?",
+      newToAlsouk: "Nouveau sur ALSOUK ?",
+      createFreeAccountBtn: "Créer un compte gratuit",
+      chooseRoleTitle: "Qui êtes-vous ?",
+      chooseRoleDesc: "Sélectionnez votre type de compte pour personnaliser votre expérience. Vous pouvez naviguer des deux manières, mais cela indique aux autres entreprises votre objectif principal.",
+      buyer: "Acheteur",
+      buyerDesc: "Je souhaite sourcer des produits, soumettre des RFQ et entrer en contact avec des fournisseurs tunisiens.",
+      supplier: "Fournisseur / Fabricant",
+      supplierDesc: "Je souhaite présenter mes produits, recevoir des RFQ et exporter vers les marchés régionaux/globaux.",
+      saveRoleBtn: "Continuer vers ALSOUK",
+      welcomeBack: "Bon retour !",
+      requiredField: "Ce champ est requis",
+      invalidEmail: "Veuillez entrer une adresse e-mail valide",
+      invalidPhone: "Veuillez entrer un numéro de téléphone tunisien valide (8 chiffres)",
+      passwordLength: "Le mot de passe doit contenir au moins 8 caractères",
+      passwordRequirements: "Le mot de passe doit contenir au moins une lettre majuscule, une lettre minuscule et un chiffre",
+      passwordsDoNotMatch: "Les mots de passe ne correspondent pas",
+      signUpSuccess: "Votre compte a été créé avec succès !",
+      signInSuccess: "Connexion réussie !",
+      resetSuccess: "Votre mot de passe a été réinitialisé avec succès !",
+      phoneTab: "Numéro de téléphone",
+      emailTab: "Adresse e-mail",
+      phonePlaceholder: "21345678",
+      emailPlaceholder: "ex. nom@entreprise.com",
+      passwordPlaceholder: "Entrez votre mot de passe",
+      fullNamePlaceholder: "ex. Mohamed Ben Ali",
+      duplicateEmail: "Cette adresse e-mail est déjà enregistrée",
+      duplicatePhone: "Ce numéro de téléphone est déjà enregistré",
+      profileTitle: "Mon profil",
+      profileSubtitle: "Gérez les informations de votre compte B2B et vos préférences",
+      accountTypeLabel: "Type de compte",
+      notSet: "Non spécifié",
+      backToLogin: "Retour à la connexion",
+    },
+    exhibitions: {
+      title: "Expositions Souk",
+      subtitle: "Découvrez des salons virtuels, visitez des stands d'entreprises exclusifs et négociez en direct avec les meilleurs producteurs.",
+      organizer: "Organisateur",
+      startDate: "Date de début",
+      endDate: "Date de fin",
+      categories: "Secteurs d'activité",
+      searchPlaceholder: "Rechercher des stands ou pièces exposées...",
+      exhibitorsCount: "Nombre d'exposants",
+      empty: "Aucune exposition programmée pour le moment. Revenez bientôt !",
+      boothsCount: "Stands actifs",
+      viewBooth: "Entrer dans le stand",
+      noExhibits: "Aucune pièce exposée exclusive n'est présentée pour l'instant.",
+      catalogPdfs: "Catalogues et fiches techniques (PDF)",
+      contact: "Contactez-nous",
+      requestMeeting: "Demander un rendez-vous B2B",
+      requestMeetingTitle: "Planifier un rendez-vous virtuel",
+      requestMeetingDesc: "Proposez un créneau horaire pour réserver un entretien en direct avec l'équipe commerciale export.",
+      meetingDate: "Date souhaitée",
+      meetingTime: "Tranche horaire souhaitée",
+      meetingNotes: "Ordre du jour / Pièces d'intérêt",
+      meetingNotesPlaceholder: "Décrivez vos besoins, volumes souhaités ou objectifs de la réunion...",
+      meetingSuccess: "Demande de rendez-vous soumise avec succès !",
+      meetingSubmitting: "Envoi en cours...",
+      meetingSubmit: "Confirmer le rendez-vous",
+      cancel: "Annuler",
+      backToExhibition: "Retour à l'accueil de l'exposition",
+      activeUntil: "Actif jusqu'au",
+      archived: "Stand d'exposition archivé",
+      exploreExhibitions: "Explorer les expositions virtuelles",
+      exhibitors: "Exposants",
+      b2bEvent: "Événement B2B",
+      exhibitorsCountLabel: "Stand",
+      filterCategory: "Filtrer par catégorie",
+      allCategories: "Tout",
+      sortLabel: "Tri :",
+      sortByFeatured: "En vedette d'abord",
+      sortByAlpha: "Alphabétique (A-Z)",
+      sortByBooth: "Numéro de stand",
+      boothLabel: "Stand",
+      verifiedExhibitor: "Exposant vérifié",
+      downloadPdf: "Télécharger le PDF",
+      brochure: "Brochure",
+      galleryPhotos: "Photos de la galerie",
+      demosVideos: "Démos & vidéos d'exposition",
+      noPdf: "Aucun catalogue PDF joint à ce stand.",
+      chatWhatsapp: "Discuter sur WhatsApp",
+      sendEmail: "Envoyer un e-mail",
+      callLabel: "Appeler",
+      boothNotFound: "Stand introuvable",
+      boothNotFoundDesc: "Ce stand d'exposition n'existe pas, n'est plus actif ou est archivé.",
+      backToExhibitionsList: "Retour aux expositions",
+      meetingSuccessDesc: "L'exposant a été notifié et va vérifier le créneau.",
+      showcaseSummary: "Résumé de la présentation",
+      exhibitsInnovations: "Expositions & Innovations",
+      featuredExhibit: "En vedette",
+      virtualExhibitor: "EXPOSANT VIRTUEL",
+      showingLabel: "Affichage de",
+      matchingPavilions: "stands correspondants",
+      noExhibitorsMatched: "Aucun exposant ne correspond à votre recherche",
+      noExhibitorsMatchedDesc: "Essayez un autre mot-clé ou modifiez la catégorie.",
+      vettedTag: "SÉLECTIONNÉ",
+      activeTag: "ACTIF",
+      loadMore: "Charger plus d'exposants",
+    },
   },
   ar: {
     nav: {
@@ -1110,6 +1458,7 @@ export const translations: Record<Lang, Dict> = {
       forBuyers: "للمشترين",
       forSuppliers: "للموردين",
       help: "مركز المساعدة",
+      exhibitions: "المعارض",
     },
     hero: {
       badge: "المنصة التجارية B2B الرائدة في تونس",
@@ -1283,7 +1632,7 @@ export const translations: Record<Lang, Dict> = {
     },
     marketplace: {
       breadcrumbHome: "الرئيسية",
-      loading: "جارٍ التحميل…",
+      loading: "الرجاء الانتظار…",
       error: "حدث خطأ ما",
       errorDesc: "تعذّر تحميل هذا المحتوى. يرجى المحاولة مرة أخرى.",
       retry: "إعادة المحاولة",
@@ -1485,6 +1834,121 @@ export const translations: Record<Lang, Dict> = {
       contact: "تواصل",
       save: "حفظ",
       saved: "محفوظ",
+    },
+    auth: {
+      loginTitle: "تسجيل الدخول إلى ألسوق",
+      registerTitle: "أنشئ حسابك المجاني",
+      forgotTitle: "إعادة تعيين كلمة المرور",
+      fullName: "الاسم الكامل",
+      phone: "رقم الهاتف",
+      email: "البريد الإلكتروني",
+      password: "كلمة المرور",
+      confirmPassword: "تأكيد كلمة المرور",
+      newPassword: "كلمة المرور الجديدة",
+      signIn: "تسجيل الدخول",
+      signUp: "إنشاء حساب",
+      logout: "تسجيل الخروج",
+      resetPasswordBtn: "إعادة تعيين كلمة المرور",
+      haveAccount: "هل لديك حساب بالفعل؟ تسجيل الدخول",
+      noAccount: "جديد في ألسوق؟ انضم مجاناً",
+      forgotPasswordLink: "هل نسيت كلمة المرور؟",
+      newToAlsouk: "هل أنت جديد في ألسوق؟",
+      createFreeAccountBtn: "إنشاء حساب مجاني",
+      chooseRoleTitle: "من أنت؟",
+      chooseRoleDesc: "حدد نوع حسابك لتخصيص تجربتك. يمكنك التصفح بكلا الطريقتين، ولكن هذا يخبر الشركات الأخرى بتركيزك الأساسي.",
+      buyer: "مشتري",
+      buyerDesc: "أريد توريد المنتجات، وتقديم طلبات عروض الأسعار، والتواصل مع الموردين التونسيين.",
+      supplier: "مورد / مصنع",
+      supplierDesc: "أريد عرض منتجاتي، واستلام طلبات عروض الأسعار، والتصدير إلى الأسواق الإقليمية والعالمية.",
+      saveRoleBtn: "المتابعة إلى ألسوق",
+      welcomeBack: "مرحباً بعودتك!",
+      requiredField: "هذا الحقل مطلوب",
+      invalidEmail: "يرجى إدخال بريد إلكتروني صحيح",
+      invalidPhone: "يرجى إدخال رقم هاتف تونسي صحيح (8 أرقام)",
+      passwordLength: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+      passwordRequirements: "يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل، وحرف صغير واحد، ورقم واحد",
+      passwordsDoNotMatch: "كلمات المرور غير متطابقة",
+      signUpSuccess: "تم إنشاء حسابك بنجاح!",
+      signInSuccess: "تم تسجيل الدخول بنجاح!",
+      resetSuccess: "تم إعادة تعيين كلمة المرور بنجاح!",
+      phoneTab: "رقم الهاتف",
+      emailTab: "البريد الإلكتروني",
+      phonePlaceholder: "21345678",
+      emailPlaceholder: "مثال: name@company.com",
+      passwordPlaceholder: "أدخل كلمة المرور الخاصة بك",
+      fullNamePlaceholder: "مثال: محمد بن علي",
+      duplicateEmail: "هذا البريد الإلكتروني مسجل بالفعل",
+      duplicatePhone: "رقم الهاتف هذا مسجل بالفعل",
+      profileTitle: "ملفي الشخصي",
+      profileSubtitle: "إدارة معلومات حسابك B2B وتفضيلاتك",
+      accountTypeLabel: "نوع الحساب",
+      notSet: "غير محدد",
+      backToLogin: "العودة لتسجيل الدخول",
+    },
+    exhibitions: {
+      title: "معارض السوق",
+      subtitle: "اكتشف المعارض التجارية الافتراضية، وتصفح أجنحة الشركات المميزة، وتفاوض مباشرة مع نخبة المنتجين المحليين.",
+      organizer: "الجهة المنظمة",
+      startDate: "تاريخ البدء",
+      endDate: "تاريخ الانتهاء",
+      categories: "قطاعات الصناعة",
+      searchPlaceholder: "ابحث في أجنحة العارضين أو المعروضات...",
+      exhibitorsCount: "عدد العارضين",
+      empty: "لا توجد معارض مجدولة في الوقت الحالي. يرجى المتابعة لاحقاً!",
+      boothsCount: "الأجنحة النشطة",
+      viewBooth: "دخول جناح العارض",
+      noExhibits: "لم يتم عرض أي معروضات حصرية في هذا الجناح بعد.",
+      catalogPdfs: "الكتالوجات والمواصفات الفنية (PDF)",
+      contact: "اتصل بنا",
+      requestMeeting: "طلب اجتماع B2B افتراضي",
+      requestMeetingTitle: "حجز موعد اجتماع افتراضي",
+      requestMeetingDesc: "قدّم تفاصيل وتفضيلات الوقت لحجز مناقشة افتراضية مباشرة مع فريق مبيعات التصدير.",
+      meetingDate: "التاريخ المفضل",
+      meetingTime: "الفترة الزمنية المفضلة",
+      meetingNotes: "جدول أعمال الاجتماع / المعروضات التي تهمك",
+      meetingNotesPlaceholder: "صف متطلبات عملك، حجم الطلب المتوقع، أو أهداف الاجتماع...",
+      meetingSuccess: "تم تقديم طلب الاجتماع بنجاح!",
+      meetingSubmitting: "جاري إرسال الطلب...",
+      meetingSubmit: "تأكيد موعد الاجتماع",
+      cancel: "إلغاء",
+      backToExhibition: "العودة لصفحة المعرض الرئيسية",
+      activeUntil: "نشط حتى تاريخ",
+      archived: "جناح معرض مؤرشف",
+      exploreExhibitions: "استكشف المعارض الافتراضية",
+      exhibitors: "العارضون",
+      b2bEvent: "حدث B2B متميز",
+      exhibitorsCountLabel: "جناح عارض",
+      filterCategory: "تصفية حسب الفئة",
+      allCategories: "الكل",
+      sortLabel: "ترتيب:",
+      sortByFeatured: "المميز أولاً",
+      sortByAlpha: "أبجدياً (أ-ي)",
+      sortByBooth: "رقم الجناح",
+      boothLabel: "جناح",
+      verifiedExhibitor: "عارض موثق",
+      downloadPdf: "تحميل المواصفات الفنية PDF",
+      brochure: "كتيب المنتج",
+      galleryPhotos: "معرض الصور الفنية",
+      demosVideos: "استعراضات وعروض فيديو حية",
+      noPdf: "لا توجد ملفات كتالوج PDF مرفقة بهذا الجناح.",
+      chatWhatsapp: "التحدث عبر واتساب",
+      sendEmail: "إرسال بريد إلكتروني",
+      callLabel: "اتصال هاتفي",
+      boothNotFound: "الجناح غير موجود",
+      boothNotFoundDesc: "جناح المعرض هذا غير موجود، أو لم يعد نشطًا، أو تم أرشفته.",
+      backToExhibitionsList: "العودة للمعارض",
+      meetingSuccessDesc: "تم إرسال إشعار للعارض وسيتم التحقق من الموعد.",
+      showcaseSummary: "ملخص العرض الصناعي الخاص",
+      exhibitsInnovations: "المعروضات والابتكارات",
+      featuredExhibit: "مميز",
+      virtualExhibitor: "عارض افتراضي",
+      showingLabel: "عرض",
+      matchingPavilions: "أجنحة عارضين مطابقة",
+      noExhibitorsMatched: "لم يتطابق أي عارض مع استعلام البحث الخاص بك",
+      noExhibitorsMatchedDesc: "يرجى التحقق من الكلمة المفتاحية أو اختيار فئة أخرى.",
+      vettedTag: "معتمد ونخبة",
+      activeTag: "نشط حالياً",
+      loadMore: "تحميل المزيد من العارضين",
     },
   },
 }

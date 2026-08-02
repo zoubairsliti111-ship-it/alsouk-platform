@@ -28,6 +28,7 @@ import { ProductCard } from "@/components/marketplace/product-card"
 import { RfqDialog } from "@/components/rfq/rfq-dialog"
 import { useLanguage } from "@/components/language-provider"
 import { useAuth } from "@/components/auth-provider"
+import { isSupabaseConfigured } from "@/lib/supabase/browser"
 import { socialT } from "@/lib/social-i18n"
 import { fetchCompanyBySlug } from "@/lib/services/companies-client"
 import { fetchProducts } from "@/lib/services/products-client"
@@ -54,7 +55,8 @@ export function CompanyProfile({ slug }: { slug: string }) {
   const { lang, dir } = useLanguage()
   const s = socialT[lang]
   const router = useRouter()
-  const { user, configured } = useAuth()
+  const { user } = useAuth()
+  const configured = isSupabaseConfigured()
 
   const [status, setStatus] = useState<Status>("loading")
   const [resultSlug, setResultSlug] = useState<string | null>(null)
@@ -182,7 +184,7 @@ export function CompanyProfile({ slug }: { slug: string }) {
     <div dir={dir} className="pb-10">
       {/* Cover */}
       <div className="relative h-36 w-full overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 sm:h-52">
-        {c.coverUrl && <Image src={c.coverUrl} alt="" fill className="object-cover" sizes="100vw" unoptimized priority />}
+        {c.bannerUrl && <Image src={c.bannerUrl} alt="" fill className="object-cover" sizes="100vw" unoptimized priority />}
       </div>
 
       <div className="mx-auto max-w-4xl px-4">
@@ -505,8 +507,8 @@ function AboutTab({ company }: { company: CompanyDetails }) {
   const { lang, dir } = useLanguage()
   const s = socialT[lang]
   const channels = [
-    company.whatsapp && { icon: <Phone className="size-4" />, label: "WhatsApp", href: `https://wa.me/${company.whatsapp.replace(/[^0-9]/g, "")}` },
-    company.phone && { icon: <Phone className="size-4" />, label: company.phone, href: `tel:${company.phone}` },
+    company.whatsappNumber && { icon: <Phone className="size-4" />, label: "WhatsApp", href: `https://wa.me/${company.whatsappNumber.replace(/[^0-9]/g, "")}` },
+    company.phoneNumber && { icon: <Phone className="size-4" />, label: company.phoneNumber, href: `tel:${company.phoneNumber}` },
     company.facebookUrl && { icon: <AtSign className="size-4" />, label: "Facebook", href: company.facebookUrl },
     company.tiktokUrl && { icon: <Music2 className="size-4" />, label: "TikTok", href: company.tiktokUrl },
     company.website && { icon: <Globe className="size-4" />, label: s.website, href: company.website },
