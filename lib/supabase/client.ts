@@ -55,11 +55,11 @@ export function createClient() {
         signUp: async () => ({ data: { user: null, session: null }, error: null }),
         signInWithPassword: async () => ({ data: { user: null, session: null }, error: null }),
         signOut: async () => ({ error: null }),
-        getUser: async () => ({ data: { user: null }, error: null }),
-        getSession: async () => ({ data: { session: null }, error: null }),
+        getUser: async () => ({ data: { user: { id: "mock-user-123", created_at: "2026-01-01T00:00:00Z", email: "export@medinaolive.tn", user_metadata: { full_name: "Sfax Olive Export", account_type: "supplier", country: "tn", city: "sfax" } } }, error: null }),
+        getSession: async () => ({ data: { session: { user: { id: "mock-user-123", created_at: "2026-01-01T00:00:00Z", email: "export@medinaolive.tn", user_metadata: { full_name: "Sfax Olive Export", account_type: "supplier", country: "tn", city: "sfax" } } } }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
         resetPasswordForEmail: async () => ({ error: null }),
-        updateUser: async () => ({ data: { user: null }, error: null })
+        updateUser: async () => ({ data: { user: { id: "mock-user-123", created_at: "2026-01-01T00:00:00Z", email: "export@medinaolive.tn", user_metadata: { full_name: "Sfax Olive Export", account_type: "supplier", country: "tn", city: "sfax" } } }, error: null })
       },
       storage: {
         from: () => ({
