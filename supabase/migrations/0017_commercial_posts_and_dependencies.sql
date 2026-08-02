@@ -1,12 +1,64 @@
--- ALSOUK — Commercial Posts and Dependent Tables Migration.
+-- ALSOUK — Commercial Posts, Dependent Tables, and Storage Bucket Migration.
 -- Adds `public.commercial_posts` (defensively with IF NOT EXISTS) and all dependent tables:
 -- `commercial_post_media`, `commercial_post_likes`, `commercial_post_comments`,
 -- `commercial_post_bookmarks`, and `commercial_post_views`.
--- Sets up indexes, Row-Level Security (RLS) policies, and API grants.
+-- Sets up indexes, Row-Level Security (RLS) policies, API grants, and the
+-- 'commercial-posts' storage bucket with public-read and authenticated-insert/delete storage policies.
 --
 -- Idempotent: safe to re-run.
 
--- 1. Create table public.commercial_posts
+-- 1. Ensure set_updated_at trigger helper exists
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+-- 2. Adaptive authentication helper function (handles both simple owner model and company_members)
+create or replace function public.is_company_member_adaptive(cid uuid)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  has_owner_match boolean;
+  has_member_match boolean := false;
+  members_table_exists boolean;
+begin
+  -- Check direct owner first
+  select exists (
+    select 1 from public.companies c
+    where c.id = cid and c.owner_id = auth.uid()
+  ) into has_owner_match;
+
+  if has_owner_match then
+    return true;
+  end if;
+
+  -- Check if company_members table exists
+  select exists (
+    select 1 from information_schema.tables
+    where table_schema = 'public' and table_name = 'company_members'
+  ) into members_table_exists;
+
+  if members_table_exists then
+    -- Dynamically execute query to avoid compile-time dependency if table is not fully cached yet
+    execute 'select exists (select 1 from public.company_members where company_id = $1 and user_id = auth.uid())'
+    into has_member_match
+    using cid;
+  end if;
+
+  return has_member_match;
+end;
+$$;
+
+-- 3. Create table public.commercial_posts
 create table if not exists public.commercial_posts (
   id           uuid        primary key default gen_random_uuid(),
   company_id   uuid        not null references public.companies (id) on delete cascade,
@@ -22,7 +74,7 @@ create table if not exists public.commercial_posts (
   deleted_at   timestamptz
 );
 
--- 2. Create table public.commercial_post_media
+-- 4. Create table public.commercial_post_media
 create table if not exists public.commercial_post_media (
   id             uuid        primary key default gen_random_uuid(),
   post_id        uuid        not null references public.commercial_posts (id) on delete cascade,
@@ -34,7 +86,7 @@ create table if not exists public.commercial_post_media (
   created_at     timestamptz not null default now()
 );
 
--- 3. Create table public.commercial_post_likes
+-- 5. Create table public.commercial_post_likes
 create table if not exists public.commercial_post_likes (
   id         uuid        primary key default gen_random_uuid(),
   post_id    uuid        not null references public.commercial_posts (id) on delete cascade,
@@ -43,7 +95,7 @@ create table if not exists public.commercial_post_likes (
   unique (post_id, user_id)
 );
 
--- 4. Create table public.commercial_post_comments
+-- 6. Create table public.commercial_post_comments
 create table if not exists public.commercial_post_comments (
   id         uuid        primary key default gen_random_uuid(),
   post_id    uuid        not null references public.commercial_posts (id) on delete cascade,
@@ -53,7 +105,7 @@ create table if not exists public.commercial_post_comments (
   updated_at timestamptz not null default now()
 );
 
--- 5. Create table public.commercial_post_bookmarks
+-- 7. Create table public.commercial_post_bookmarks
 create table if not exists public.commercial_post_bookmarks (
   id         uuid        primary key default gen_random_uuid(),
   post_id    uuid        not null references public.commercial_posts (id) on delete cascade,
@@ -62,7 +114,7 @@ create table if not exists public.commercial_post_bookmarks (
   unique (post_id, user_id)
 );
 
--- 6. Create table public.commercial_post_views
+-- 8. Create table public.commercial_post_views
 create table if not exists public.commercial_post_views (
   id         uuid        primary key default gen_random_uuid(),
   post_id    uuid        not null references public.commercial_posts (id) on delete cascade,
@@ -72,7 +124,7 @@ create table if not exists public.commercial_post_views (
   created_at timestamptz not null default now()
 );
 
--- 7. Indexes for performance
+-- 9. Indexes for performance
 create index if not exists commercial_posts_company_id_idx on public.commercial_posts (company_id);
 create index if not exists commercial_posts_author_id_idx on public.commercial_posts (author_id);
 create index if not exists commercial_posts_status_idx on public.commercial_posts (status);
@@ -92,7 +144,7 @@ create index if not exists commercial_post_bookmarks_user_id_idx on public.comme
 
 create index if not exists commercial_post_views_post_id_idx on public.commercial_post_views (post_id);
 
--- 8. Trigger for updated_at
+-- 10. Triggers for updated_at
 drop trigger if exists commercial_posts_set_updated_at on public.commercial_posts;
 create trigger commercial_posts_set_updated_at
   before update on public.commercial_posts
@@ -103,7 +155,7 @@ create trigger commercial_post_comments_set_updated_at
   before update on public.commercial_post_comments
   for each row execute function public.set_updated_at();
 
--- 9. Enable Row Level Security (RLS)
+-- 11. Enable Row Level Security (RLS)
 alter table public.commercial_posts enable row level security;
 alter table public.commercial_post_media enable row level security;
 alter table public.commercial_post_likes enable row level security;
@@ -138,8 +190,8 @@ drop policy if exists "Users can remove their own bookmarks" on public.commercia
 drop policy if exists "Company members can view views stats" on public.commercial_post_views;
 drop policy if exists "Anyone can record a view" on public.commercial_post_views;
 
--- 10. Define Policies
--- commercial_posts policies
+-- 12. Define Policies
+-- commercial_posts policies using adaptive auth helper
 create policy "Anyone can view published posts"
   on public.commercial_posts
   for select
@@ -148,53 +200,23 @@ create policy "Anyone can view published posts"
 create policy "Company members can view draft/any posts of their company"
   on public.commercial_posts
   for select
-  using (
-    exists (
-      select 1 from public.company_members cm
-      where cm.company_id = public.commercial_posts.company_id
-        and cm.user_id = auth.uid()
-    )
-  );
+  using (public.is_company_member_adaptive(company_id));
 
 create policy "Company members can insert posts"
   on public.commercial_posts
   for insert
-  with check (
-    exists (
-      select 1 from public.company_members cm
-      where cm.company_id = public.commercial_posts.company_id
-        and cm.user_id = auth.uid()
-    )
-  );
+  with check (public.is_company_member_adaptive(company_id));
 
 create policy "Company members can update their posts"
   on public.commercial_posts
   for update
-  using (
-    exists (
-      select 1 from public.company_members cm
-      where cm.company_id = public.commercial_posts.company_id
-        and cm.user_id = auth.uid()
-    )
-  )
-  with check (
-    exists (
-      select 1 from public.company_members cm
-      where cm.company_id = public.commercial_posts.company_id
-        and cm.user_id = auth.uid()
-    )
-  );
+  using (public.is_company_member_adaptive(company_id))
+  with check (public.is_company_member_adaptive(company_id));
 
 create policy "Company members can delete their posts"
   on public.commercial_posts
   for delete
-  using (
-    exists (
-      select 1 from public.company_members cm
-      where cm.company_id = public.commercial_posts.company_id
-        and cm.user_id = auth.uid()
-    )
-  );
+  using (public.is_company_member_adaptive(company_id));
 
 -- commercial_post_media policies
 create policy "Anyone can view media of published posts"
@@ -215,9 +237,8 @@ create policy "Company members can view all media of their posts"
   using (
     exists (
       select 1 from public.commercial_posts p
-      join public.company_members cm on cm.company_id = p.company_id
       where p.id = commercial_post_media.post_id
-        and cm.user_id = auth.uid()
+        and public.is_company_member_adaptive(p.company_id)
     )
   );
 
@@ -227,17 +248,15 @@ create policy "Company members can manage media of their posts"
   using (
     exists (
       select 1 from public.commercial_posts p
-      join public.company_members cm on cm.company_id = p.company_id
       where p.id = commercial_post_media.post_id
-        and cm.user_id = auth.uid()
+        and public.is_company_member_adaptive(p.company_id)
     )
   )
   with check (
     exists (
       select 1 from public.commercial_posts p
-      join public.company_members cm on cm.company_id = p.company_id
       where p.id = commercial_post_media.post_id
-        and cm.user_id = auth.uid()
+        and public.is_company_member_adaptive(p.company_id)
     )
   );
 
@@ -281,9 +300,8 @@ create policy "Users or company members can delete comments"
     user_id = auth.uid()
     or exists (
       select 1 from public.commercial_posts p
-      join public.company_members cm on cm.company_id = p.company_id
       where p.id = commercial_post_comments.post_id
-        and cm.user_id = auth.uid()
+        and public.is_company_member_adaptive(p.company_id)
     )
   );
 
@@ -310,9 +328,8 @@ create policy "Company members can view views stats"
   using (
     exists (
       select 1 from public.commercial_posts p
-      join public.company_members cm on cm.company_id = p.company_id
       where p.id = commercial_post_views.post_id
-        and cm.user_id = auth.uid()
+        and public.is_company_member_adaptive(p.company_id)
     )
   );
 
@@ -321,7 +338,7 @@ create policy "Anyone can record a view"
   for insert
   with check (true);
 
--- 11. GRANT privileges for all roles
+-- 13. GRANT privileges for all roles
 grant select, insert, update, delete on
   public.commercial_posts,
   public.commercial_post_media,
@@ -330,3 +347,103 @@ grant select, insert, update, delete on
   public.commercial_post_bookmarks,
   public.commercial_post_views
 to anon, authenticated, service_role;
+
+-- 14. Storage Bucket Setup
+-- Ensure 'commercial-posts' bucket is registered in storage.buckets if the schema exists
+do $$
+begin
+  if exists (select 1 from information_schema.tables where table_schema = 'storage' and table_name = 'buckets') then
+    insert into storage.buckets (id, name, public)
+    values ('commercial-posts', 'commercial-posts', true)
+    on conflict (id) do nothing;
+  end if;
+end
+$$;
+
+-- Ensure RLS is active on storage.objects if the table exists
+do $$
+begin
+  if exists (select 1 from information_schema.tables where table_schema = 'storage' and table_name = 'objects') then
+    alter table storage.objects enable row level security;
+  end if;
+end
+$$;
+
+-- Storage Policies for 'commercial-posts' bucket
+drop policy if exists "Anyone can select from commercial posts bucket" on storage.objects;
+create policy "Anyone can select from commercial posts bucket"
+  on storage.objects
+  for select
+  using (bucket_id = 'commercial-posts');
+
+drop policy if exists "Company members can upload files to commercial posts bucket" on storage.objects;
+create policy "Company members can upload files to commercial posts bucket"
+  on storage.objects
+  for insert
+  with check (
+    bucket_id = 'commercial-posts'
+    and auth.role() = 'authenticated'
+    and (
+      exists (
+        select 1 from public.companies c
+        where c.owner_id = auth.uid()
+      )
+      or (
+        exists (
+          select 1 from information_schema.tables
+          where table_schema = 'public' and table_name = 'company_members'
+        ) and exists (
+          select 1 from public.company_members cm
+          where cm.user_id = auth.uid()
+        )
+      )
+    )
+  );
+
+drop policy if exists "Company members can update files in commercial posts bucket" on storage.objects;
+create policy "Company members can update files in commercial posts bucket"
+  on storage.objects
+  for update
+  using (
+    bucket_id = 'commercial-posts'
+    and auth.role() = 'authenticated'
+    and (
+      exists (
+        select 1 from public.companies c
+        where c.owner_id = auth.uid()
+      )
+      or (
+        exists (
+          select 1 from information_schema.tables
+          where table_schema = 'public' and table_name = 'company_members'
+        ) and exists (
+          select 1 from public.company_members cm
+          where cm.user_id = auth.uid()
+        )
+      )
+    )
+  );
+
+drop policy if exists "Company members can delete files from commercial posts bucket" on storage.objects;
+create policy "Company members can delete files from commercial posts bucket"
+  on storage.objects
+  for delete
+  using (
+    bucket_id = 'commercial-posts'
+    and auth.role() = 'authenticated'
+    and (
+      exists (
+        select 1 from public.companies c
+        where c.owner_id = auth.uid()
+      )
+      or (
+        exists (
+          select 1 from information_schema.tables
+          where table_schema = 'public' and table_name = 'company_members'
+        ) and exists (
+          select 1 from public.company_members cm
+          where cm.user_id = auth.uid()
+        )
+      )
+    )
+  );
