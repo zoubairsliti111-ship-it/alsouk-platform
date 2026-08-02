@@ -3,9 +3,11 @@ import type { Category } from "@/lib/domains/category/types"
 
 export type CompanyWebsiteMode = "external" | "alsouk" | "both"
 export type CompanyVerificationTier = "basic" | "verified" | "premium"
+export type ProfileLevel = "starter" | "business" | "enterprise"
 
 export interface Company {
   id: string
+  profileLevel: ProfileLevel
   name: string
   slug: string
   description: string | null

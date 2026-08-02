@@ -13,9 +13,11 @@ export type BusinessTypeKey = "manufacturer" | "supplier" | "exporter" | "wholes
 
 export type CompanyWebsiteMode = "external" | "alsouk" | "both"
 export type CompanyVerificationTier = "basic" | "verified" | "premium"
+export type ProfileLevel = "starter" | "business" | "enterprise"
 
 export type Company = {
   id: string
+  profileLevel: ProfileLevel
   supplierId: string | null
   name: string
   slug: string
