@@ -2,13 +2,13 @@
 
 import { use } from "react"
 import { MarketplaceShell } from "@/components/marketplace/shell"
-import { CompanyDetailsView } from "@/components/marketplace/company-details"
+import { CompanyProfile } from "@/components/marketplace/company-profile"
 
 export default function CompanyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
   return (
     <MarketplaceShell>
-      <CompanyDetailsView slug={slug} />
+      <CompanyProfile slug={slug} />
     </MarketplaceShell>
   )
 }

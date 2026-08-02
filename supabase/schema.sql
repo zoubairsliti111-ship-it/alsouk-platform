@@ -110,8 +110,8 @@ create table if not exists public.companies (
   description  text,
   country      text,
   city         text,
-  website      text,
-  logo_url     text,
+  website       text,
+  logo_url      text,
   verified     boolean     not null default false,
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
