@@ -1,9 +1,13 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Cairo } from 'next/font/google'
+import { cookies } from 'next/headers'
 import './globals.css'
 import { SITE_NAME, SITE_URL } from '@/lib/site'
 import { AuthProvider } from '@/components/auth-provider'
+import { LANGS, type Lang } from '@/lib/i18n'
+
+const LANG_COOKIE = 'alsouk_lang'
 
 const cairo = Cairo({
   subsets: ['latin', 'arabic'],
@@ -72,13 +76,18 @@ const jsonLd = {
   ],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+  const stored = cookieStore.get(LANG_COOKIE)?.value
+  const lang: Lang = LANGS.some((l) => l.code === stored) ? (stored as Lang) : 'en'
+  const dir = LANGS.find((l) => l.code === lang)?.dir ?? 'ltr'
+
   return (
-    <html lang="en" dir="ltr" className={`${cairo.variable} bg-background`}>
+    <html lang={lang} dir={dir} className={`${cairo.variable} bg-background`}>
       <body className="font-sans antialiased">
         <script
           type="application/ld+json"

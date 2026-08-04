@@ -161,7 +161,44 @@ const localT = {
     photoUrlLabel: "Photo/Document URL",
     captionLabel: "Caption / Title",
     addBtn: "Add Asset",
-    noMedia: "No media assets uploaded yet."
+    noMedia: "No media assets uploaded yet.",
+    companyName: "Company Name",
+    selectType: "Select type",
+    selectIndustry: "Select industry",
+    selectSize: "Select size",
+    saveProfile: "Save Profile",
+    websitePlaceholder: "e.g. www.mycompany.com",
+    websiteModeAlsouk: "ALSOUK Generated Store only",
+    websiteModeExternal: "External Custom Website only",
+    websiteModeBoth: "Both strategies",
+    socialFacebook: "Facebook Page URL",
+    socialInstagram: "Instagram Account URL",
+    socialTiktok: "TikTok Handle URL",
+    socialLinkedin: "LinkedIn Company URL",
+    saveDigital: "Save Digital Presence",
+    photoUrlPlaceholder: "Photo Image URL (e.g. /photos/factory1.jpg)",
+    photoCaptionPlaceholder: "Photo Caption (e.g. Sfax Assembly Factory)",
+    deletePhoto: "Delete Photo",
+    factoryImageAlt: "Factory image",
+    certUrlPlaceholder: "Certificate Document URL (e.g. /certs/iso9001.pdf)",
+    certTitlePlaceholder: "Certificate Title (e.g. ISO 9001:2015 Quality cert)",
+    qualityLicenseFallback: "Quality standard license",
+    viewDocument: "View Document",
+    deleteCert: "Delete Cert",
+    healthScoreTitle: "B2B Profile Health Score",
+    healthScoreDesc: "Suppliers with completion ratings above 80% generate up to 4x more buyer leads and RFQ matching opportunities regionally.",
+    verificationRating: "Verification Rating:",
+    verifBasicDesc: "Your profile is on basic verification. To upgrade to premium verified visibility, please upload your official tax documentation or register matching catalog products.",
+    verifPremiumDesc: "Congratulations! Your profile has been verified as premium on ALSOUK. You have premium listing preference in searches.",
+    checklistComplete: "Your company profile is 100% complete! Great job!",
+    companyLegalName: "Company legal Name",
+    legalNamePlaceholder: "e.g. Sfax Olive Processing S.A.",
+    slugLabel: "Slug (Public profile link)",
+    slugPlaceholder: "sfax-olive-oil",
+    taglineCoreLabel: "Tagline / Core Pitch",
+    taglineCorePlaceholder: "e.g. Leader in premium organic olive oils export in Tunisia",
+    nextClassification: "Next: Classification Details",
+    back: "Back"
   },
   fr: {
     personalInfo: "Informations Personnelles",
@@ -230,7 +267,44 @@ const localT = {
     photoUrlLabel: "URL du document/photo",
     captionLabel: "Légende / Titre",
     addBtn: "Ajouter l'élément",
-    noMedia: "Aucun fichier multimédia téléchargé pour le moment."
+    noMedia: "Aucun fichier multimédia téléchargé pour le moment.",
+    companyName: "Nom de l'entreprise",
+    selectType: "Sélectionnez un type",
+    selectIndustry: "Sélectionnez un secteur",
+    selectSize: "Sélectionnez une taille",
+    saveProfile: "Enregistrer le profil",
+    websitePlaceholder: "ex. www.monentreprise.com",
+    websiteModeAlsouk: "Boutique générée par ALSOUK uniquement",
+    websiteModeExternal: "Site web personnalisé externe uniquement",
+    websiteModeBoth: "Les deux stratégies",
+    socialFacebook: "URL de la page Facebook",
+    socialInstagram: "URL du compte Instagram",
+    socialTiktok: "URL du compte TikTok",
+    socialLinkedin: "URL de l'entreprise LinkedIn",
+    saveDigital: "Enregistrer la présence numérique",
+    photoUrlPlaceholder: "URL de l'image (ex. /photos/usine1.jpg)",
+    photoCaptionPlaceholder: "Légende de la photo (ex. Usine d'assemblage de Sfax)",
+    deletePhoto: "Supprimer la photo",
+    factoryImageAlt: "Image de l'usine",
+    certUrlPlaceholder: "URL du document de certificat (ex. /certs/iso9001.pdf)",
+    certTitlePlaceholder: "Titre du certificat (ex. Certificat qualité ISO 9001:2015)",
+    qualityLicenseFallback: "Licence de norme de qualité",
+    viewDocument: "Voir le document",
+    deleteCert: "Supprimer le certificat",
+    healthScoreTitle: "Score de santé du profil B2B",
+    healthScoreDesc: "Les fournisseurs dont le taux de complétion dépasse 80 % génèrent jusqu'à 4× plus de prospects et d'opportunités de RFQ dans la région.",
+    verificationRating: "Niveau de vérification :",
+    verifBasicDesc: "Votre profil est en vérification de base. Pour passer à une visibilité premium vérifiée, veuillez télécharger votre documentation fiscale officielle ou enregistrer des produits de catalogue correspondants.",
+    verifPremiumDesc: "Félicitations ! Votre profil a été vérifié comme premium sur ALSOUK. Vous bénéficiez d'une préférence de référencement dans les recherches.",
+    checklistComplete: "Le profil de votre entreprise est complet à 100 % ! Excellent travail !",
+    companyLegalName: "Nom légal de l'entreprise",
+    legalNamePlaceholder: "ex. Sfax Olive Processing S.A.",
+    slugLabel: "Slug (lien du profil public)",
+    slugPlaceholder: "sfax-olive-oil",
+    taglineCoreLabel: "Slogan / Argument principal",
+    taglineCorePlaceholder: "ex. Leader de l'exportation d'huiles d'olive biologiques premium en Tunisie",
+    nextClassification: "Suivant : détails de classification",
+    back: "Retour"
   },
   ar: {
     personalInfo: "المعلومات الشخصية",
@@ -299,7 +373,44 @@ const localT = {
     photoUrlLabel: "رابط الصورة / المستند",
     captionLabel: "الوصف / العنوان",
     addBtn: "إضافة عنصر",
-    noMedia: "لم يتم تحميل أي ملفات وسائط بعد."
+    noMedia: "لم يتم تحميل أي ملفات وسائط بعد.",
+    companyName: "اسم الشركة",
+    selectType: "اختر النوع",
+    selectIndustry: "اختر الصناعة",
+    selectSize: "اختر الحجم",
+    saveProfile: "حفظ الملف",
+    websitePlaceholder: "مثال: www.mycompany.com",
+    websiteModeAlsouk: "متجر من إنشاء ألسوق فقط",
+    websiteModeExternal: "موقع إلكتروني خارجي خاص فقط",
+    websiteModeBoth: "كلتا الاستراتيجيتين",
+    socialFacebook: "رابط صفحة فيسبوك",
+    socialInstagram: "رابط حساب إنستغرام",
+    socialTiktok: "رابط حساب تيك توك",
+    socialLinkedin: "رابط شركة لينكد إن",
+    saveDigital: "حفظ الحضور الرقمي",
+    photoUrlPlaceholder: "رابط الصورة (مثال: /photos/factory1.jpg)",
+    photoCaptionPlaceholder: "وصف الصورة (مثال: مصنع التجميع بصفاقس)",
+    deletePhoto: "حذف الصورة",
+    factoryImageAlt: "صورة المصنع",
+    certUrlPlaceholder: "رابط مستند الشهادة (مثال: /certs/iso9001.pdf)",
+    certTitlePlaceholder: "عنوان الشهادة (مثال: شهادة الجودة ISO 9001:2015)",
+    qualityLicenseFallback: "رخصة معيار الجودة",
+    viewDocument: "عرض المستند",
+    deleteCert: "حذف الشهادة",
+    healthScoreTitle: "مؤشر اكتمال الملف التجاري",
+    healthScoreDesc: "الموردون الذين تتجاوز نسبة اكتمال ملفاتهم 80٪ يحصلون على فرص وطلبات أسعار أكثر بـ 4 أضعاف إقليمياً.",
+    verificationRating: "مستوى التوثيق:",
+    verifBasicDesc: "ملفك على التوثيق الأساسي. للترقية إلى توثيق مميز، يرجى تحميل وثائقك الضريبية الرسمية أو تسجيل منتجات مطابقة في الكتالوج.",
+    verifPremiumDesc: "تهانينا! تم توثيق ملفك كملف مميز على ألسوق. لديك أفضلية في ظهور القوائم في البحث.",
+    checklistComplete: "ملف شركتك مكتمل بنسبة 100٪! عمل رائع!",
+    companyLegalName: "الاسم القانوني للشركة",
+    legalNamePlaceholder: "مثال: Sfax Olive Processing S.A.",
+    slugLabel: "المعرّف (رابط الملف العام)",
+    slugPlaceholder: "sfax-olive-oil",
+    taglineCoreLabel: "الشعار / العرض الأساسي",
+    taglineCorePlaceholder: "مثال: رائد في تصدير زيت الزيتون العضوي الفاخر في تونس",
+    nextClassification: "التالي: تفاصيل التصنيف",
+    back: "رجوع"
   }
 }
 
@@ -1292,7 +1403,7 @@ function AccountScreen() {
                     {activeTab === "profile" && (
                       <form onSubmit={handleUpdateCompanyProfile} className="space-y-6">
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-muted-foreground">Company Name *</label>
+                          <label className="text-xs font-bold text-muted-foreground">{dict.companyName} *</label>
                           <input
                             type="text"
                             value={companyForm.name}
@@ -1351,7 +1462,7 @@ function AccountScreen() {
                               onChange={(e) => setCompanyForm({...companyForm, businessType: e.target.value})}
                               className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all capitalize"
                             >
-                              <option value="">Select type</option>
+                              <option value="">{dict.selectType}</option>
                               {BUSINESS_TYPES.map(x => (
                                 <option key={x} value={x}>{x.replace("_", " ")}</option>
                               ))}
@@ -1364,7 +1475,7 @@ function AccountScreen() {
                               onChange={(e) => setCompanyForm({...companyForm, primaryIndustry: e.target.value})}
                               className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all capitalize"
                             >
-                              <option value="">Select industry</option>
+                              <option value="">{dict.selectIndustry}</option>
                               {INDUSTRIES.map(x => (
                                 <option key={x} value={x}>{x}</option>
                               ))}
@@ -1389,7 +1500,7 @@ function AccountScreen() {
                               onChange={(e) => setCompanyForm({...companyForm, companySize: e.target.value})}
                               className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
                             >
-                              <option value="">Select size</option>
+                              <option value="">{dict.selectSize}</option>
                               <option value="1-10">1-10</option>
                               <option value="11-50">11-50</option>
                               <option value="51-200">51-200</option>
@@ -1415,7 +1526,7 @@ function AccountScreen() {
                             className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 py-3.5 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer shadow-md disabled:opacity-50"
                           >
                             {updating && <Loader2 className="size-4 animate-spin" />}
-                            <span>Save Profile</span>
+                            <span>{dict.saveProfile}</span>
                           </button>
                         </div>
                       </form>
@@ -1431,7 +1542,7 @@ function AccountScreen() {
                               type="text"
                               value={companyForm.websiteUrl}
                               onChange={(e) => setCompanyForm({...companyForm, websiteUrl: e.target.value})}
-                              placeholder="e.g. www.mycompany.com"
+                              placeholder={dict.websitePlaceholder}
                               className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
                             />
                           </div>
@@ -1442,9 +1553,9 @@ function AccountScreen() {
                               onChange={(e) => setCompanyForm({...companyForm, websiteMode: e.target.value as any})}
                               className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
                             >
-                              <option value="alsouk">ALSOUK Generated Store only</option>
-                              <option value="external">External Custom Website only</option>
-                              <option value="both">Both strategies</option>
+                              <option value="alsouk">{dict.websiteModeAlsouk}</option>
+                              <option value="external">{dict.websiteModeExternal}</option>
+                              <option value="both">{dict.websiteModeBoth}</option>
                             </select>
                           </div>
                         </div>
@@ -1453,7 +1564,7 @@ function AccountScreen() {
                           <h4 className="text-xs font-black text-foreground uppercase tracking-wider">{dict.socialLinks}</h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1">
-                              <label className="text-[10px] font-bold text-muted-foreground">Facebook Page URL</label>
+                              <label className="text-[10px] font-bold text-muted-foreground">{dict.socialFacebook}</label>
                               <input
                                 type="text"
                                 value={companyForm.facebookUrl}
@@ -1462,7 +1573,7 @@ function AccountScreen() {
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-[10px] font-bold text-muted-foreground">Instagram Account URL</label>
+                              <label className="text-[10px] font-bold text-muted-foreground">{dict.socialInstagram}</label>
                               <input
                                 type="text"
                                 value={companyForm.instagramUrl}
@@ -1471,7 +1582,7 @@ function AccountScreen() {
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-[10px] font-bold text-muted-foreground">TikTok Handle URL</label>
+                              <label className="text-[10px] font-bold text-muted-foreground">{dict.socialTiktok}</label>
                               <input
                                 type="text"
                                 value={companyForm.tiktokUrl}
@@ -1480,7 +1591,7 @@ function AccountScreen() {
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-[10px] font-bold text-muted-foreground">LinkedIn Company URL</label>
+                              <label className="text-[10px] font-bold text-muted-foreground">{dict.socialLinkedin}</label>
                               <input
                                 type="text"
                                 value={companyForm.linkedinUrl}
@@ -1498,7 +1609,7 @@ function AccountScreen() {
                             className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 py-3.5 text-xs font-black text-white hover:opacity-90 transition-all cursor-pointer shadow-md disabled:opacity-50"
                           >
                             {updating && <Loader2 className="size-4 animate-spin" />}
-                            <span>Save Digital Presence</span>
+                            <span>{dict.saveDigital}</span>
                           </button>
                         </div>
                       </form>
@@ -1517,14 +1628,14 @@ function AccountScreen() {
                           <div className="flex flex-col sm:flex-row gap-3">
                             <input
                               type="text"
-                              placeholder="Photo Image URL (e.g. /photos/factory1.jpg)"
+                              placeholder={dict.photoUrlPlaceholder}
                               value={photoUrl}
                               onChange={(e) => setPhotoUrl(e.target.value)}
                               className="flex-1 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
                             />
                             <input
                               type="text"
-                              placeholder="Photo Caption (e.g. Sfax Assembly Factory)"
+                              placeholder={dict.photoCaptionPlaceholder}
                               value={photoCaption}
                               onChange={(e) => setPhotoCaption(e.target.value)}
                               className="sm:w-64 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
@@ -1545,11 +1656,11 @@ function AccountScreen() {
                               {companyMedia.filter(x => x.media_type === "factory_photo").map((med) => (
                                 <div key={med.id} className="relative group rounded-xl overflow-hidden border border-border bg-secondary aspect-video">
                                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img src={med.url} alt={med.caption || "Factory image"} className="size-full object-cover" />
+                                  <img src={med.url} alt={med.caption || dict.factoryImageAlt} className="size-full object-cover" />
                                   <button
                                     onClick={() => handleDeleteMediaAsset(med.id)}
                                     className="absolute top-2 right-2 size-7 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
-                                    title="Delete Photo"
+                                    title={dict.deletePhoto}
                                   >
                                     <Trash2 className="size-3.5" />
                                   </button>
@@ -1570,14 +1681,14 @@ function AccountScreen() {
                           <div className="flex flex-col sm:flex-row gap-3">
                             <input
                               type="text"
-                              placeholder="Certificate Document URL (e.g. /certs/iso9001.pdf)"
+                              placeholder={dict.certUrlPlaceholder}
                               value={certUrl}
                               onChange={(e) => setCertUrl(e.target.value)}
                               className="flex-1 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
                             />
                             <input
                               type="text"
-                              placeholder="Certificate Title (e.g. ISO 9001:2015 Quality cert)"
+                              placeholder={dict.certTitlePlaceholder}
                               value={certCaption}
                               onChange={(e) => setCertCaption(e.target.value)}
                               className="sm:w-64 px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none"
@@ -1602,14 +1713,14 @@ function AccountScreen() {
                                       <Award className="size-5" />
                                     </div>
                                     <div>
-                                      <p className="text-xs font-bold text-foreground">{med.caption || "Quality standard license"}</p>
-                                      <a href={med.url} target="_blank" rel="noreferrer" className="text-[10px] text-primary font-semibold hover:underline">View Document</a>
+                                      <p className="text-xs font-bold text-foreground">{med.caption || dict.qualityLicenseFallback}</p>
+                                      <a href={med.url} target="_blank" rel="noreferrer" className="text-[10px] text-primary font-semibold hover:underline">{dict.viewDocument}</a>
                                     </div>
                                   </div>
                                   <button
                                     onClick={() => handleDeleteMediaAsset(med.id)}
                                     className="size-8 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex items-center justify-center transition-all cursor-pointer"
-                                    title="Delete Cert"
+                                    title={dict.deleteCert}
                                   >
                                     <Trash2 className="size-4" />
                                   </button>
@@ -1643,9 +1754,9 @@ function AccountScreen() {
                             <span className="absolute text-xl font-black text-foreground">{company.profileCompletion}%</span>
                           </div>
                           <div>
-                            <h4 className="text-sm font-black text-foreground">B2B Profile Health Score</h4>
+                            <h4 className="text-sm font-black text-foreground">{dict.healthScoreTitle}</h4>
                             <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                              Suppliers with completion ratings above 80% generate up to 4x more buyer leads and RFQ matching opportunities regionally.
+                              {dict.healthScoreDesc}
                             </p>
                           </div>
                         </div>
@@ -1657,14 +1768,10 @@ function AccountScreen() {
                           </span>
                           <div>
                             <div className="flex items-center gap-1.5">
-                              <h4 className="text-sm font-black text-foreground">Verification Rating: <span className="uppercase text-emerald-600 dark:text-emerald-400">{company.verificationTier}</span></h4>
+                              <h4 className="text-sm font-black text-foreground">{dict.verificationRating} <span className="uppercase text-emerald-600 dark:text-emerald-400">{company.verificationTier}</span></h4>
                             </div>
                             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                              {company.verificationTier === "basic" ? (
-                                "Your profile is on basic verification. To upgrade to premium verified visibility, please upload your official tax documentation or register matching catalog products."
-                              ) : (
-                                "Congratulations! Your profile has been verified as premium on ALSOUK. You have premium listing preference in searches."
-                              )}
+                              {company.verificationTier === "basic" ? dict.verifBasicDesc : dict.verifPremiumDesc}
                             </p>
                           </div>
                         </div>
@@ -1694,7 +1801,7 @@ function AccountScreen() {
                           ) : (
                             <p className="text-xs text-emerald-600 font-bold flex items-center gap-1.5 bg-emerald-500/10 p-4 border border-emerald-500/20 rounded-xl">
                               <CheckCircle className="size-4" />
-                              <span>Your company profile is 100% complete! Great job!</span>
+                              <span>{dict.checklistComplete}</span>
                             </p>
                           )}
                         </div>
@@ -1724,11 +1831,11 @@ function AccountScreen() {
                     {onboardingStep === 1 ? (
                       <div className="space-y-4 animate-scale-up">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-black uppercase text-muted-foreground">Company legal Name *</label>
+                          <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.companyLegalName} *</label>
                           <input
                             type="text"
                             required
-                            placeholder="e.g. Sfax Olive Processing S.A."
+                            placeholder={dict.legalNamePlaceholder}
                             value={onboardingForm.name}
                             onChange={(e) => setOnboardingForm({
                               ...onboardingForm,
@@ -1740,11 +1847,11 @@ function AccountScreen() {
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-[10px] font-black uppercase text-muted-foreground">Slug (Public profile link) *</label>
+                          <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.slugLabel} *</label>
                           <input
                             type="text"
                             required
-                            placeholder="sfax-olive-oil"
+                            placeholder={dict.slugPlaceholder}
                             value={onboardingForm.slug}
                             onChange={(e) => setOnboardingForm({
                               ...onboardingForm,
@@ -1755,10 +1862,10 @@ function AccountScreen() {
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-[10px] font-black uppercase text-muted-foreground">Tagline / Core Pitch</label>
+                          <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.taglineCoreLabel}</label>
                           <input
                             type="text"
-                            placeholder="e.g. Leader in premium organic olive oils export in Tunisia"
+                            placeholder={dict.taglineCorePlaceholder}
                             value={onboardingForm.tagline}
                             onChange={(e) => setOnboardingForm({ ...onboardingForm, tagline: e.target.value })}
                             className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
@@ -1771,7 +1878,7 @@ function AccountScreen() {
                           onClick={() => setOnboardingStep(2)}
                           className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-xs font-black text-white hover:opacity-95 transition-all disabled:opacity-50 cursor-pointer"
                         >
-                          <span>Next: Classification Details</span>
+                          <span>{dict.nextClassification}</span>
                           <ChevronRight className="size-4 rtl:rotate-180" />
                         </button>
                       </div>
@@ -1779,28 +1886,28 @@ function AccountScreen() {
                       <div className="space-y-4 animate-scale-up">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase text-muted-foreground">Business Type *</label>
+                            <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.businessType} *</label>
                             <select
                               required
                               value={onboardingForm.businessType}
                               onChange={(e) => setOnboardingForm({ ...onboardingForm, businessType: e.target.value })}
                               className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
                             >
-                              <option value="">Select classification</option>
+                              <option value="">{dict.selectType}</option>
                               {BUSINESS_TYPES.map(x => (
                                 <option key={x} value={x}>{x.replace("_", " ")}</option>
                               ))}
                             </select>
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase text-muted-foreground">Primary Industry *</label>
+                            <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.primaryIndustry} *</label>
                             <select
                               required
                               value={onboardingForm.primaryIndustry}
                               onChange={(e) => setOnboardingForm({ ...onboardingForm, primaryIndustry: e.target.value })}
                               className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
                             >
-                              <option value="">Select industry</option>
+                              <option value="">{dict.selectIndustry}</option>
                               {INDUSTRIES.map(x => (
                                 <option key={x} value={x}>{x}</option>
                               ))}
@@ -1810,7 +1917,7 @@ function AccountScreen() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase text-muted-foreground">Country *</label>
+                            <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.country} *</label>
                             <select
                               value={onboardingForm.country}
                               onChange={(e) => setOnboardingForm({ ...onboardingForm, country: e.target.value, city: "" })}
@@ -1822,13 +1929,13 @@ function AccountScreen() {
                             </select>
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase text-muted-foreground">City *</label>
+                            <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.city} *</label>
                             <select
                               value={onboardingForm.city}
                               onChange={(e) => setOnboardingForm({ ...onboardingForm, city: e.target.value })}
                               className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
                             >
-                              <option value="">Select city</option>
+                              <option value="">{dict.selectCity}</option>
                               {COUNTRY_TO_CITIES[onboardingForm.country].map(city => (
                                 <option key={city} value={city}>{dirT.cities[city] || city}</option>
                               ))}
@@ -1854,7 +1961,7 @@ function AccountScreen() {
                             onClick={() => setOnboardingStep(1)}
                             className="rounded-xl border border-border px-5 py-3.5 text-xs font-bold text-foreground hover:bg-secondary/40 transition-all cursor-pointer"
                           >
-                            Back
+                            {dict.back}
                           </button>
                         </div>
                       </div>

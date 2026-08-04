@@ -83,7 +83,32 @@ const LOCAL_I18N = {
     emailUs: "Send Email",
     websiteModeLabel: "Website Mode",
     storeLink: "Visit Company Storefront",
-    externalLink: "Visit External Website"
+    externalLink: "Visit External Website",
+    dailyFeed: "Daily Feed Updates",
+    announcedUpdate: "Announced Update",
+    postMediaAlt: "Post media",
+    industry: "Industry",
+    companySize: "Company Size",
+    employeesSuffix: "Employees",
+    mfRne: "MF / RNE Number",
+    digitalPresence: "Digital Presence",
+    rfqBusinessName: "My Business Name *",
+    rfqContactName: "Contact Person Name *",
+    rfqEmail: "Email Address *",
+    rfqPhone: "Phone Number *",
+    rfqCountry: "Country *",
+    rfqDestination: "Delivery Destination *",
+    rfqProduct: "Product Requested *",
+    rfqQuantity: "Quantity Required *",
+    rfqTargetPrice: "Target Price (Optional)",
+    rfqTargetPricePlaceholder: "e.g. 5 TND / unit",
+    rfqDetails: "RFQ Details Message *",
+    rfqDetailsPlaceholder: "Describe specific standard, certifications, or custom parameters required.",
+    sendRfqRequest: "Send RFQ Request",
+    closeWindow: "Close Window",
+    submissionFailed: "Submission failed. Please check values and try again.",
+    callLabel: "Call",
+    reportPlaceholder: "e.g. Outdated phone number or spam products..."
   },
   fr: {
     sendRfq: "Envoyer un devis",
@@ -118,7 +143,32 @@ const LOCAL_I18N = {
     emailUs: "Envoyer un email",
     websiteModeLabel: "Mode du site Web",
     storeLink: "Visiter la boutique ALSOUK",
-    externalLink: "Visiter le site externe"
+    externalLink: "Visiter le site externe",
+    dailyFeed: "Actualités quotidiennes",
+    announcedUpdate: "Mise à jour annoncée",
+    postMediaAlt: "Média de la publication",
+    industry: "Secteur",
+    companySize: "Taille de l'entreprise",
+    employeesSuffix: "Employés",
+    mfRne: "Numéro MF / RNE",
+    digitalPresence: "Présence numérique",
+    rfqBusinessName: "Nom de mon entreprise *",
+    rfqContactName: "Nom du contact *",
+    rfqEmail: "Adresse e-mail *",
+    rfqPhone: "Numéro de téléphone *",
+    rfqCountry: "Pays *",
+    rfqDestination: "Destination de livraison *",
+    rfqProduct: "Produit demandé *",
+    rfqQuantity: "Quantité requise *",
+    rfqTargetPrice: "Prix cible (Optionnel)",
+    rfqTargetPricePlaceholder: "ex. 5 TND / unité",
+    rfqDetails: "Message de détails du devis *",
+    rfqDetailsPlaceholder: "Décrivez les normes, certifications ou paramètres personnalisés requis.",
+    sendRfqRequest: "Envoyer la demande de devis",
+    closeWindow: "Fermer la fenêtre",
+    submissionFailed: "Échec de l'envoi. Vérifiez les valeurs et réessayez.",
+    callLabel: "Appeler",
+    reportPlaceholder: "ex. Numéro de téléphone obsolète ou produits indésirables..."
   },
   ar: {
     sendRfq: "أرسل طلب عرض سعر",
@@ -153,7 +203,32 @@ const LOCAL_I18N = {
     emailUs: "إرسال بريد إلكتروني",
     websiteModeLabel: "استراتيجية الموقع",
     storeLink: "زيارة متجر ALSOUK",
-    externalLink: "زيارة الموقع الخارجي"
+    externalLink: "زيارة الموقع الخارجي",
+    dailyFeed: "آخر التحديثات اليومية",
+    announcedUpdate: "تحديث معلن",
+    postMediaAlt: "وسائط المنشور",
+    industry: "القطاع",
+    companySize: "حجم الشركة",
+    employeesSuffix: "موظف",
+    mfRne: "رقم MF / RNE",
+    digitalPresence: "الحضور الرقمي",
+    rfqBusinessName: "اسم شركتي *",
+    rfqContactName: "اسم الشخص المسؤول *",
+    rfqEmail: "البريد الإلكتروني *",
+    rfqPhone: "رقم الهاتف *",
+    rfqCountry: "البلد *",
+    rfqDestination: "وجهة التسليم *",
+    rfqProduct: "المنتج المطلوب *",
+    rfqQuantity: "الكمية المطلوبة *",
+    rfqTargetPrice: "السعر المستهدف (اختياري)",
+    rfqTargetPricePlaceholder: "مثال: 5 دينار / وحدة",
+    rfqDetails: "رسالة تفاصيل طلب السعر *",
+    rfqDetailsPlaceholder: "صف المعايير أو الشهادات أو المواصفات المخصصة المطلوبة.",
+    sendRfqRequest: "إرسال طلب عرض السعر",
+    closeWindow: "إغلاق النافذة",
+    submissionFailed: "فشل الإرسال. يرجى التحقق من القيم والمحاولة مرة أخرى.",
+    callLabel: "اتصل",
+    reportPlaceholder: "مثال: رقم هاتف قديم أو منتجات غير مرغوبة..."
   }
 }
 
@@ -577,7 +652,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
             <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-6">
               <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2">
                 <FileCheck className="size-5 text-primary" />
-                <span>Daily Feed Updates</span>
+                <span>{dict.dailyFeed}</span>
               </h2>
               <div className="space-y-4">
                 {companyPosts.map((post) => {
@@ -589,7 +664,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                   return (
                     <div key={post.id} className="p-4 rounded-xl border border-border/60 bg-secondary/20 space-y-3">
                       <div className="flex justify-between items-center text-[10px] text-muted-foreground font-bold">
-                        <span>Announced Update</span>
+                        <span>{dict.announcedUpdate}</span>
                         <span>{dateStr}</span>
                       </div>
                       <p className="text-xs font-semibold text-foreground leading-relaxed whitespace-pre-wrap break-words">{post.content}</p>
@@ -598,7 +673,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                           {post.images.map((img, idx) => (
                             <div key={idx} className="relative size-20 rounded-xl overflow-hidden border border-border/50 shrink-0">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={img} alt="Post media" className="size-full object-cover" />
+                              <img src={img} alt={dict.postMediaAlt} className="size-full object-cover" />
                             </div>
                           ))}
                         </div>
@@ -653,7 +728,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
 
               {company.primaryIndustry && (
                 <div className="flex justify-between items-center border-b border-border/50 pb-3">
-                  <span className="text-muted-foreground">Industry</span>
+                  <span className="text-muted-foreground">{dict.industry}</span>
                   <span className="text-foreground font-black capitalize">
                     {INDUSTRY_LABELS[lang]?.[company.primaryIndustry] || company.primaryIndustry}
                   </span>
@@ -662,8 +737,8 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
 
               {company.companySize && (
                 <div className="flex justify-between items-center border-b border-border/50 pb-3">
-                  <span className="text-muted-foreground">Company Size</span>
-                  <span className="text-foreground font-black">{company.companySize} Employees</span>
+                  <span className="text-muted-foreground">{dict.companySize}</span>
+                  <span className="text-foreground font-black">{company.companySize} {dict.employeesSuffix}</span>
                 </div>
               )}
 
@@ -678,7 +753,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
 
               {company.taxIdentifier && (
                 <div className="flex justify-between items-center border-b border-border/50 pb-3">
-                  <span className="text-muted-foreground">MF / RNE Number</span>
+                  <span className="text-muted-foreground">{dict.mfRne}</span>
                   <span className="text-foreground font-mono">{company.taxIdentifier}</span>
                 </div>
               )}
@@ -704,7 +779,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
           {/* Social Presence card */}
           {(company.facebookUrl || company.instagramUrl || company.tiktokUrl || company.linkedinUrl || company.youtubeUrl) && (
             <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-4">
-              <h2 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Digital Presence</h2>
+              <h2 className="text-xs font-black uppercase tracking-wider text-muted-foreground">{dict.digitalPresence}</h2>
               <div className="flex flex-wrap gap-2.5">
                 {company.facebookUrl && (
                   <a href={company.facebookUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center size-10 rounded-xl border border-border bg-card text-blue-600 hover:bg-blue-500/5 hover:border-blue-500/25 transition-all">
@@ -799,20 +874,20 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                   }}
                   className="rounded-xl border border-border px-5 py-2.5 hover:bg-secondary/40 text-xs font-bold text-foreground transition-all cursor-pointer"
                 >
-                  Close Window
+                  {dict.closeWindow}
                 </button>
               </div>
             ) : (
               <form onSubmit={handleRfqSubmit} className="space-y-4" noValidate>
                 {rfqStatus === "error" && (
                   <p className="p-3 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive text-xs font-bold">
-                    Submission failed. Please check values and try again.
+                    {dict.submissionFailed}
                   </p>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground">My Business Name *</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqBusinessName}</label>
                     <input
                       type="text"
                       value={rfqValues.companyName}
@@ -822,7 +897,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                     {rfqErrors.companyName && <span className="text-[10px] text-destructive block font-bold">{rfqErrText("companyName")}</span>}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground">Contact Person Name *</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqContactName}</label>
                     <input
                       type="text"
                       value={rfqValues.contactPerson}
@@ -832,7 +907,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                     {rfqErrors.contactPerson && <span className="text-[10px] text-destructive block font-bold">{rfqErrText("contactPerson")}</span>}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground">Email Address *</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqEmail}</label>
                     <input
                       type="email"
                       value={rfqValues.email}
@@ -842,7 +917,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                     {rfqErrors.email && <span className="text-[10px] text-destructive block font-bold">{rfqErrText("email")}</span>}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground">Phone Number *</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqPhone}</label>
                     <input
                       type="text"
                       value={rfqValues.phone}
@@ -852,7 +927,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                     {rfqErrors.phone && <span className="text-[10px] text-destructive block font-bold">{rfqErrText("phone")}</span>}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground">Country *</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqCountry}</label>
                     <input
                       type="text"
                       value={rfqValues.country}
@@ -862,7 +937,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                     {rfqErrors.country && <span className="text-[10px] text-destructive block font-bold">{rfqErrText("country")}</span>}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground">Delivery Destination *</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqDestination}</label>
                     <input
                       type="text"
                       value={rfqValues.deliveryDestination}
@@ -872,7 +947,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                     {rfqErrors.deliveryDestination && <span className="text-[10px] text-destructive block font-bold">{rfqErrText("deliveryDestination")}</span>}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground">Product Requested *</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqProduct}</label>
                     <input
                       type="text"
                       value={rfqValues.productRequested}
@@ -882,7 +957,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                     {rfqErrors.productRequested && <span className="text-[10px] text-destructive block font-bold">{rfqErrText("productRequested")}</span>}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground">Quantity Required *</label>
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqQuantity}</label>
                     <input
                       type="text"
                       value={rfqValues.quantity}
@@ -894,22 +969,22 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase text-muted-foreground">Target Price (Optional)</label>
+                  <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqTargetPrice}</label>
                   <input
                     type="text"
                     value={rfqValues.targetPrice}
                     onChange={(e) => setRfqValues({...rfqValues, targetPrice: e.target.value})}
-                    placeholder="e.g. 5 TND / unit"
+                    placeholder={dict.rfqTargetPricePlaceholder}
                     className={inputClass(false)}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-black uppercase text-muted-foreground">RFQ Details Message *</label>
+                  <label className="text-[10px] font-black uppercase text-muted-foreground">{dict.rfqDetails}</label>
                   <textarea
                     value={rfqValues.message}
                     onChange={(e) => setRfqValues({...rfqValues, message: e.target.value})}
-                    placeholder="Describe specific standard, certifications, or custom parameters required."
+                    placeholder={dict.rfqDetailsPlaceholder}
                     rows={4}
                     className={`${inputClass(Boolean(rfqErrors.message))} resize-none`}
                   />
@@ -930,7 +1005,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                     ) : (
                       <>
                         <Send className="size-4" />
-                        <span>Send RFQ Request</span>
+                        <span>{dict.sendRfqRequest}</span>
                       </>
                     )}
                   </button>
@@ -988,7 +1063,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                   className="w-full flex items-center gap-3 p-4 bg-secondary/50 border border-border hover:bg-secondary rounded-2xl text-foreground font-bold text-xs transition-all"
                 >
                   <Phone className="size-5 text-muted-foreground" />
-                  <span>Call {company.phoneNumber}</span>
+                  <span>{dict.callLabel} {company.phoneNumber}</span>
                 </a>
               )}
             </div>
@@ -1023,7 +1098,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                   required
                   value={reportReason}
                   onChange={(e) => setReportReason(e.target.value)}
-                  placeholder="e.g. Outdated phone number or spam products..."
+                  placeholder={dict.reportPlaceholder}
                   rows={3}
                   className="w-full rounded-xl border border-border bg-secondary/20 p-3 text-xs outline-none focus:border-primary"
                 />

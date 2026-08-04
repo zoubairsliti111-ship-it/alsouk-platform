@@ -78,7 +78,7 @@ export function HomeSearch() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={placeholderText}
-              aria-label="Search"
+              aria-label={t.ui.searchLabel}
               className="w-full bg-transparent py-2.5 text-xs font-semibold text-foreground outline-none placeholder:text-muted-foreground/50 placeholder:font-medium"
             />
           </div>

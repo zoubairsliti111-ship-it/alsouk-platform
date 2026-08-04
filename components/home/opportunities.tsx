@@ -96,7 +96,7 @@ export function Opportunities() {
                     })}
                   >
                     <PackageSearch className="size-3.5" />
-                    <span>Request Quote</span>
+                    <span>{t.ui.requestQuote}</span>
                   </Link>
                 </div>
               </div>

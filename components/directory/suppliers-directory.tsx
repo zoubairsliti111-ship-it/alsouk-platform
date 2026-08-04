@@ -17,7 +17,7 @@ type Status = "loading" | "ready" | "error"
 const PAGE_SIZE = 9
 
 export function SuppliersDirectory() {
-  const { lang, dir } = useLanguage()
+  const { t: ct, lang, dir } = useLanguage()
   const t = directoryT[lang]
 
   const [query, setQuery] = useState("")
@@ -315,7 +315,7 @@ export function SuppliersDirectory() {
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
                 className="rounded-lg p-2 text-foreground hover:bg-secondary"
-                aria-label="Close"
+                aria-label={ct.ui.close}
               >
                 <X className="size-5" />
               </button>

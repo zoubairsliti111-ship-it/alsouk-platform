@@ -52,7 +52,7 @@ const EMPTY_STATS: CompanyStats = { followers: 0, posts: 0, videos: 0, products:
 const EMPTY_VIEWER: ViewerState = { userId: null, isMember: false, isFollowing: false }
 
 export function CompanyProfile({ slug }: { slug: string }) {
-  const { lang, dir } = useLanguage()
+  const { t, lang, dir } = useLanguage()
   const s = socialT[lang]
   const router = useRouter()
   const { user } = useAuth()
@@ -203,7 +203,7 @@ export function CompanyProfile({ slug }: { slug: string }) {
             <div className="min-w-0 flex-1 pb-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="truncate text-xl font-bold tracking-tight text-foreground sm:text-2xl">{c.name}</h1>
-                {c.verified && <CheckCircle2 className="size-5 shrink-0 text-primary" aria-label="Verified" />}
+                {c.verified && <CheckCircle2 className="size-5 shrink-0 text-primary" aria-label={t.ui.verified} />}
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground">
                 {c.businessType && (

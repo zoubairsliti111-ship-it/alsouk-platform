@@ -88,7 +88,7 @@ export function SiteHeader() {
           <button
             className="inline-flex size-9 items-center justify-center rounded-xl border border-border/50 bg-card/50 text-foreground transition-all hover:bg-secondary hover:scale-105 active:scale-95"
             onClick={() => setMobileOpen((v) => !v)}
-            aria-label="Menu"
+            aria-label={t.nav.menu}
           >
             {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
@@ -104,21 +104,21 @@ export function SiteHeader() {
               onClick={() => setMobileOpen(false)}
               className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
             >
-              Home
+              {t.nav.home}
             </Link>
             <Link
               href="/categories"
               onClick={() => setMobileOpen(false)}
               className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
             >
-              Categories
+              {t.nav.categories}
             </Link>
             <Link
               href="/rfq"
               onClick={() => setMobileOpen(false)}
               className="rounded-xl px-4 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary/60"
             >
-              Request Quote
+              {t.nav.rfq}
             </Link>
             <Link
               href="/suppliers"

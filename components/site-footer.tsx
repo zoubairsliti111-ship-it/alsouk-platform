@@ -72,7 +72,7 @@ export function SiteFooter() {
                   key={i}
                   href="#"
                   className="flex size-10 items-center justify-center rounded-xl border border-border bg-card text-foreground/75 shadow-sm transition-all duration-300 hover:scale-105 hover:border-primary hover:text-primary hover:shadow-md"
-                  aria-label="Social Link"
+                  aria-label={t.ui.socialLink}
                 >
                   <Icon className="size-4.5" />
                 </a>

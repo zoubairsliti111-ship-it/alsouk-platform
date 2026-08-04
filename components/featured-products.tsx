@@ -57,7 +57,7 @@ export function FeaturedProducts() {
                 {i < 3 && (
                   <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#EF4444] px-2 py-0.5 text-[9px] font-bold text-white shadow-sm">
                     <Flame className="size-3 text-white" />
-                    <span>HOT</span>
+                    <span>{t.ui.hot}</span>
                   </span>
                 )}
                 <span className="absolute end-3 top-3 rounded-full bg-background/90 px-2 py-0.5 text-[9px] font-bold text-foreground shadow-sm backdrop-blur">

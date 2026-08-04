@@ -35,7 +35,170 @@ interface MerchantPostsProps {
   lang: string
 }
 
+const MT = {
+  en: {
+    loadFailed: "Failed to load posts.",
+    sizeError: "File size exceeds 5MB limit. Please upload a smaller image.",
+    typeError: "Invalid file type. Only PNG, JPEG, JPG, and WEBP formats are supported.",
+    urlError: "Could not retrieve public URL.",
+    uploadFailed: "Failed to upload image. Ensure storage bucket is configured.",
+    contentRequired: "Post content or caption is required.",
+    updateSuccess: "Post updated successfully!",
+    updateFailed: "Failed to update post.",
+    createSuccess: "New post created successfully!",
+    createFailed: "Failed to create post.",
+    saveUnexpected: "An unexpected error occurred while saving.",
+    unpublishSuccess: "Post unpublished successfully.",
+    publishSuccess: "Post published to feed successfully!",
+    statusFailed: "Failed to change post status.",
+    deleteConfirm: "Are you sure you want to delete this post? This action cannot be undone.",
+    deleteSuccess: "Post deleted successfully.",
+    deleteFailed: "Failed to delete post.",
+    feedTitle: "Commercial Feed Posts",
+    feedSubtitle: "Broadcast stock updates, arrivals, promotions, or behind-the-scenes videos to Tunisian and regional B2B buyers.",
+    newPost: "New Update Post",
+    emptyTitle: "No updates published yet",
+    emptyDesc: "Commercial updates keep your business visible on the regional Discover Feed. Start by writing your first update or promotional post today!",
+    createFirst: "Create First Post",
+    published: "Published",
+    draft: "Draft",
+    viewsSuffix: "views",
+    unpublish: "Unpublish",
+    publish: "Publish",
+    editTitle: "Edit Post",
+    editBtn: "Edit",
+    deleteTitle: "Delete Post",
+    deleteBtn: "Delete",
+    editModalTitle: "Edit Commercial Post",
+    createModalTitle: "Create Commercial Post",
+    contentLabel: "Post Update content *",
+    contentPlaceholder: "What's new? Describe your new arrivals, bulk packages, factory updates, or wholesale discounts...",
+    statusLabel: "Status",
+    optDraft: "Save as Draft (Private)",
+    optPublish: "Publish to Public Feed",
+    visibilityLabel: "Visibility",
+    optPublic: "Publicly Discoverable",
+    mediaLabel: "Post Media Attachments",
+    attachedAlt: "Attached file",
+    thumbAlt: "Thumbnail",
+    removeImage: "Remove image",
+    uploading: "Uploading...",
+    uploadPhoto: "Upload Photo",
+    fileHint: "PNG, JPEG or WEBP under 5MB (Max 10 images)",
+    saveChanges: "Save Changes",
+    publishUpdate: "Publish Update",
+    cancel: "Cancel",
+  },
+  fr: {
+    loadFailed: "Échec du chargement des publications.",
+    sizeError: "La taille du fichier dépasse la limite de 5 Mo. Veuillez charger une image plus petite.",
+    typeError: "Type de fichier invalide. Seuls les formats PNG, JPEG, JPG et WEBP sont pris en charge.",
+    urlError: "Impossible de récupérer l'URL publique.",
+    uploadFailed: "Échec du chargement de l'image. Vérifiez la configuration du bucket de stockage.",
+    contentRequired: "Le contenu ou la légende de la publication est requis.",
+    updateSuccess: "Publication mise à jour avec succès !",
+    updateFailed: "Échec de la mise à jour de la publication.",
+    createSuccess: "Nouvelle publication créée avec succès !",
+    createFailed: "Échec de la création de la publication.",
+    saveUnexpected: "Une erreur inattendue s'est produite lors de l'enregistrement.",
+    unpublishSuccess: "Publication dépubliée avec succès.",
+    publishSuccess: "Publication publiée dans le fil avec succès !",
+    statusFailed: "Échec du changement de statut de la publication.",
+    deleteConfirm: "Voulez-vous vraiment supprimer cette publication ? Cette action est irréversible.",
+    deleteSuccess: "Publication supprimée avec succès.",
+    deleteFailed: "Échec de la suppression de la publication.",
+    feedTitle: "Publications du fil commercial",
+    feedSubtitle: "Diffusez des mises à jour de stock, des arrivages, des promotions ou des vidéos coulisses aux acheteurs B2B tunisiens et régionaux.",
+    newPost: "Nouvelle publication",
+    emptyTitle: "Aucune mise à jour publiée pour le moment",
+    emptyDesc: "Les mises à jour commerciales gardent votre entreprise visible sur le fil Découvrir régional. Commencez par rédiger votre première mise à jour ou publication promotionnelle dès aujourd'hui !",
+    createFirst: "Créer la première publication",
+    published: "Publié",
+    draft: "Brouillon",
+    viewsSuffix: "vues",
+    unpublish: "Dépublier",
+    publish: "Publier",
+    editTitle: "Modifier la publication",
+    editBtn: "Modifier",
+    deleteTitle: "Supprimer la publication",
+    deleteBtn: "Supprimer",
+    editModalTitle: "Modifier la publication commerciale",
+    createModalTitle: "Créer une publication commerciale",
+    contentLabel: "Contenu de la publication *",
+    contentPlaceholder: "Quoi de neuf ? Décrivez vos nouveaux arrivages, lots en gros, mises à jour d'usine ou remises de gros...",
+    statusLabel: "Statut",
+    optDraft: "Enregistrer comme brouillon (privé)",
+    optPublish: "Publier sur le fil public",
+    visibilityLabel: "Visibilité",
+    optPublic: "Publiquement visible",
+    mediaLabel: "Pièces jointes multimédias",
+    attachedAlt: "Fichier joint",
+    thumbAlt: "Miniature",
+    removeImage: "Supprimer l'image",
+    uploading: "Chargement...",
+    uploadPhoto: "Charger une photo",
+    fileHint: "PNG, JPEG ou WEBP de moins de 5 Mo (10 images max)",
+    saveChanges: "Enregistrer",
+    publishUpdate: "Publier la mise à jour",
+    cancel: "Annuler",
+  },
+  ar: {
+    loadFailed: "فشل تحميل المنشورات.",
+    sizeError: "حجم الملف يتجاوز الحد 5 ميجابايت. يرجى تحميل صورة أصغر.",
+    typeError: "نوع ملف غير صالح. الصيغ المدعومة فقط: PNG وJPEG وJPG وWEBP.",
+    urlError: "تعذر الحصول على الرابط العام.",
+    uploadFailed: "فشل تحميل الصورة. تأكد من إعداد حاوية التخزين.",
+    contentRequired: "محتوى المنشور أو التعليق مطلوب.",
+    updateSuccess: "تم تحديث المنشور بنجاح!",
+    updateFailed: "فشل تحديث المنشور.",
+    createSuccess: "تم إنشاء منشور جديد بنجاح!",
+    createFailed: "فشل إنشاء المنشور.",
+    saveUnexpected: "حدث خطأ غير متوقع أثناء الحفظ.",
+    unpublishSuccess: "تم إلغاء نشر المنشور بنجاح.",
+    publishSuccess: "تم نشر المنشور في الخلاصة بنجاح!",
+    statusFailed: "فشل تغيير حالة المنشور.",
+    deleteConfirm: "هل أنت متأكد من حذف هذا المنشور؟ لا يمكن التراجع عن هذا الإجراء.",
+    deleteSuccess: "تم حذف المنشور بنجاح.",
+    deleteFailed: "فشل حذف المنشور.",
+    feedTitle: "منشورات الخلاصة التجارية",
+    feedSubtitle: "انشر تحديثات المخزون والوصولات الجديدة والعروض أو فيديوهات من الكواليس لمشتري B2B في تونس والمنطقة.",
+    newPost: "منشور تحديث جديد",
+    emptyTitle: "لم يتم نشر أي تحديثات بعد",
+    emptyDesc: "التحديثات التجارية تبقي نشاطك ظاهراً في خلاصة الاكتشاف الإقليمية. ابدأ بكتابة أول تحديث أو منشور ترويجي اليوم!",
+    createFirst: "إنشاء أول منشور",
+    published: "منشور",
+    draft: "مسودة",
+    viewsSuffix: "مشاهدة",
+    unpublish: "إلغاء النشر",
+    publish: "نشر",
+    editTitle: "تعديل المنشور",
+    editBtn: "تعديل",
+    deleteTitle: "حذف المنشور",
+    deleteBtn: "حذف",
+    editModalTitle: "تعديل المنشور التجاري",
+    createModalTitle: "إنشاء منشور تجاري",
+    contentLabel: "محتوى المنشور *",
+    contentPlaceholder: "ما الجديد؟ صف وصولاتك الجديدة أو عبواتك بالجملة أو تحديثات المصنع أو خصومات الجملة...",
+    statusLabel: "الحالة",
+    optDraft: "حفظ كمسودة (خاص)",
+    optPublish: "النشر في الخلاصة العامة",
+    visibilityLabel: "الظهور",
+    optPublic: "قابل للاكتشاف علناً",
+    mediaLabel: "مرفقات وسائط المنشور",
+    attachedAlt: "ملف مرفق",
+    thumbAlt: "صورة مصغرة",
+    removeImage: "إزالة الصورة",
+    uploading: "جارٍ التحميل...",
+    uploadPhoto: "تحميل صورة",
+    fileHint: "PNG أو JPEG أو WEBP بحجم أقل من 5 ميجابايت (10 صور كحد أقصى)",
+    saveChanges: "حفظ التغييرات",
+    publishUpdate: "نشر التحديث",
+    cancel: "إلغاء",
+  },
+} as const
+
 export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
+  const tr = MT[(lang as "en" | "fr" | "ar")] || MT.en
   const [posts, setPosts] = useState<CommercialPost[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -64,10 +227,10 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
     if (res.success) {
       setPosts(res.data)
     } else {
-      setError(res.error || "Failed to load posts.")
+      setError(res.error || tr.loadFailed)
     }
     setLoading(false)
-  }, [companyId])
+  }, [companyId, tr.loadFailed])
 
   useEffect(() => {
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
@@ -106,14 +269,14 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
     // 1. Validate File Size (< 5MB)
     const MAX_SIZE = 5 * 1024 * 1024
     if (file.size > MAX_SIZE) {
-      setFormError("File size exceeds 5MB limit. Please upload a smaller image.")
+      setFormError(tr.sizeError)
       return
     }
 
     // 2. Validate File Type (must be PNG, JPEG, JPG, WEBP)
     const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"]
     if (!ALLOWED_TYPES.includes(file.type)) {
-      setFormError("Invalid file type. Only PNG, JPEG, JPG, and WEBP formats are supported.")
+      setFormError(tr.typeError)
       return
     }
 
@@ -146,12 +309,12 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
       if (publicUrlData?.publicUrl) {
         setImages((prev) => [...prev, publicUrlData.publicUrl])
       } else {
-        throw new Error("Could not retrieve public URL.")
+        throw new Error(tr.urlError)
       }
 
     } catch (err: any) {
       console.error("Storage upload error:", err)
-      setFormError(err.message || "Failed to upload image. Ensure storage bucket is configured.")
+      setFormError(err.message || tr.uploadFailed)
     } finally {
       setUploading(false)
     }
@@ -168,7 +331,7 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
     setFormError(null)
 
     if (!content.trim()) {
-      setFormError("Post content or caption is required.")
+      setFormError(tr.contentRequired)
       return
     }
 
@@ -184,12 +347,12 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
         })
 
         if (res.success && res.data) {
-          setSuccess("Post updated successfully!")
+          setSuccess(tr.updateSuccess)
           setShowModal(false)
           loadPosts()
           setTimeout(() => setSuccess(null), 3000)
         } else {
-          setFormError(res.error || "Failed to update post.")
+          setFormError(res.error || tr.updateFailed)
         }
       } else {
         const res = await createPost({
@@ -201,16 +364,16 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
         })
 
         if (res.success && res.data) {
-          setSuccess("New post created successfully!")
+          setSuccess(tr.createSuccess)
           setShowModal(false)
           loadPosts()
           setTimeout(() => setSuccess(null), 3000)
         } else {
-          setFormError(res.error || "Failed to create post.")
+          setFormError(res.error || tr.createFailed)
         }
       }
     } catch (err: any) {
-      setFormError(err.message || "An unexpected error occurred while saving.")
+      setFormError(err.message || tr.saveUnexpected)
     } finally {
       setSaving(false)
     }
@@ -224,33 +387,29 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
 
     const res = await toggleFunc(post.id)
     if (res.success) {
-      setSuccess(
-        isCurrentlyPublished
-          ? "Post unpublished successfully."
-          : "Post published to feed successfully!"
-      )
+      setSuccess(isCurrentlyPublished ? tr.unpublishSuccess : tr.publishSuccess)
       loadPosts()
       setTimeout(() => setSuccess(null), 3000)
     } else {
-      setError(res.error || "Failed to change post status.")
+      setError(res.error || tr.statusFailed)
       setTimeout(() => setError(null), 3000)
     }
   }
 
   // Deletes a post with soft-delete
   const handleDeletePost = async (postId: string) => {
-    if (!confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+    if (!confirm(tr.deleteConfirm)) {
       return
     }
 
     setSuccess(null)
     const res = await deletePost(postId)
     if (res.success) {
-      setSuccess("Post deleted successfully.")
+      setSuccess(tr.deleteSuccess)
       loadPosts()
       setTimeout(() => setSuccess(null), 3000)
     } else {
-      setError(res.error || "Failed to delete post.")
+      setError(res.error || tr.deleteFailed)
       setTimeout(() => setError(null), 3000)
     }
   }
@@ -262,10 +421,10 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
         <div>
           <h4 className="text-base font-black text-foreground tracking-tight flex items-center gap-2">
             <FileText className="size-5 text-primary" />
-            <span>Commercial Feed Posts</span>
+            <span>{tr.feedTitle}</span>
           </h4>
           <p className="text-xs text-muted-foreground mt-1 max-w-md">
-            Broadcast stock updates, arrivals, promotions, or behind-the-scenes videos to Tunisian and regional B2B buyers.
+            {tr.feedSubtitle}
           </p>
         </div>
         <button
@@ -273,7 +432,7 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
           className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-primary to-blue-600 px-4 py-2.5 text-xs font-black text-white hover:opacity-95 shadow-md shadow-primary/10 transition-all cursor-pointer active:scale-98"
         >
           <Plus className="size-4" />
-          <span>New Update Post</span>
+          <span>{tr.newPost}</span>
         </button>
       </div>
 
@@ -303,16 +462,16 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
             <FileText className="size-6" />
           </div>
           <div>
-            <h5 className="text-sm font-black text-foreground">No updates published yet</h5>
+            <h5 className="text-sm font-black text-foreground">{tr.emptyTitle}</h5>
             <p className="text-xs text-muted-foreground mt-1 leading-normal">
-              Commercial updates keep your business visible on the regional Discover Feed. Start by writing your first update or promotional post today!
+              {tr.emptyDesc}
             </p>
           </div>
           <button
             onClick={handleOpenCreate}
             className="rounded-xl border border-primary text-primary hover:bg-primary/5 px-4 py-2 text-xs font-bold transition-all cursor-pointer"
           >
-            Create First Post
+            {tr.createFirst}
           </button>
         </div>
       ) : (
@@ -335,12 +494,12 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
                     {post.status === "published" ? (
                       <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase">
                         <Globe className="size-3" />
-                        <span>Published</span>
+                        <span>{tr.published}</span>
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase">
                         <Lock className="size-3" />
-                        <span>Draft</span>
+                        <span>{tr.draft}</span>
                       </span>
                     )}
                     <span className="text-[10px] text-muted-foreground font-semibold">
@@ -364,7 +523,7 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={imgUrl}
-                            alt="Attached file"
+                            alt={tr.attachedAlt}
                             className="size-full object-cover"
                           />
                         </div>
@@ -375,7 +534,7 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
                   {/* View count */}
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-semibold">
                     <Eye className="size-3.5" />
-                    <span>{post.viewCount} views</span>
+                    <span>{post.viewCount} {tr.viewsSuffix}</span>
                   </div>
                 </div>
 
@@ -389,25 +548,25 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
                         : "bg-primary/10 text-primary hover:bg-primary/15 border border-primary/20"
                     }`}
                   >
-                    {post.status === "published" ? "Unpublish" : "Publish"}
+                    {post.status === "published" ? tr.unpublish : tr.publish}
                   </button>
 
                   <div className="flex gap-2 flex-1 sm:flex-initial">
                     <button
                       onClick={() => handleOpenEdit(post)}
                       className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 rounded-lg border border-border bg-card hover:bg-secondary/40 text-[10px] font-bold text-foreground py-2 px-3 transition-all cursor-pointer"
-                      title="Edit Post"
+                      title={tr.editTitle}
                     >
                       <Edit className="size-3 text-muted-foreground" />
-                      <span>Edit</span>
+                      <span>{tr.editBtn}</span>
                     </button>
                     <button
                       onClick={() => handleDeletePost(post.id)}
                       className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1 rounded-lg border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 text-[10px] font-bold text-destructive py-2 px-3 transition-all cursor-pointer"
-                      title="Delete Post"
+                      title={tr.deleteTitle}
                     >
                       <Trash2 className="size-3" />
-                      <span>Delete</span>
+                      <span>{tr.deleteBtn}</span>
                     </button>
                   </div>
                 </div>
@@ -424,7 +583,7 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
             <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
               <h4 className="text-base font-black text-foreground flex items-center gap-2">
                 <FileText className="size-5 text-primary" />
-                <span>{editingPost ? "Edit Commercial Post" : "Create Commercial Post"}</span>
+                <span>{editingPost ? tr.editModalTitle : tr.createModalTitle}</span>
               </h4>
               <button
                 onClick={() => setShowModal(false)}
@@ -444,13 +603,13 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
 
               {/* Rich Text / Content field */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground">Post Update content *</label>
+                <label className="text-xs font-bold text-muted-foreground">{tr.contentLabel}</label>
                 <textarea
                   required
                   rows={5}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="What's new? Describe your new arrivals, bulk packages, factory updates, or wholesale discounts..."
+                  placeholder={tr.contentPlaceholder}
                   className="w-full rounded-xl border border-border bg-secondary/10 px-3.5 py-2.5 text-xs text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/15 resize-none"
                 />
               </div>
@@ -458,25 +617,25 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
               {/* Status Selectors */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground">Status</label>
+                  <label className="text-xs font-bold text-muted-foreground">{tr.statusLabel}</label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
                     className="w-full rounded-xl border border-border bg-secondary/10 px-3 py-2.5 text-xs text-foreground focus:border-primary"
                   >
-                    <option value="draft">Save as Draft (Private)</option>
-                    <option value="published">Publish to Public Feed</option>
+                    <option value="draft">{tr.optDraft}</option>
+                    <option value="published">{tr.optPublish}</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-muted-foreground">Visibility</label>
+                  <label className="text-xs font-bold text-muted-foreground">{tr.visibilityLabel}</label>
                   <select
                     value={visibility}
                     onChange={(e) => setVisibility(e.target.value)}
                     className="w-full rounded-xl border border-border bg-secondary/10 px-3 py-2.5 text-xs text-foreground focus:border-primary"
                   >
-                    <option value="public">Publicly Discoverable</option>
+                    <option value="public">{tr.optPublic}</option>
                   </select>
                 </div>
               </div>
@@ -485,7 +644,7 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
               <div className="space-y-2 pt-2 border-t border-border/50">
                 <label className="text-xs font-bold text-muted-foreground flex items-center gap-1">
                   <ImageIcon className="size-4 text-primary" />
-                  <span>Post Media Attachments</span>
+                  <span>{tr.mediaLabel}</span>
                 </label>
 
                 {/* Thumbnail Previews with delete buttons */}
@@ -499,14 +658,14 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={imgUrl}
-                          alt="Thumbnail"
+                          alt={tr.thumbAlt}
                           className="size-full object-cover"
                         />
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(imgIdx)}
                           className="absolute top-1 end-1 size-5 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
-                          title="Remove image"
+                          title={tr.removeImage}
                         >
                           <X className="size-3" />
                         </button>
@@ -521,12 +680,12 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
                     {uploading ? (
                       <>
                         <Loader2 className="size-4 animate-spin text-primary" />
-                        <span>Uploading...</span>
+                        <span>{tr.uploading}</span>
                       </>
                     ) : (
                       <>
                         <ImageIcon className="size-4 text-muted-foreground" />
-                        <span>Upload Photo</span>
+                        <span>{tr.uploadPhoto}</span>
                       </>
                     )}
                     <input
@@ -538,7 +697,7 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
                     />
                   </label>
                   <span className="text-[10px] text-muted-foreground font-semibold">
-                    PNG, JPEG or WEBP under 5MB (Max 10 images)
+                    {tr.fileHint}
                   </span>
                 </div>
               </div>
@@ -551,14 +710,14 @@ export function MerchantPosts({ companyId, lang }: MerchantPostsProps) {
                   className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-blue-600 py-3.5 text-xs font-black text-white hover:opacity-95 shadow-md shadow-primary/15 transition-all cursor-pointer disabled:opacity-50"
                 >
                   {saving && <Loader2 className="size-4 animate-spin" />}
-                  <span>{editingPost ? "Save Changes" : "Publish Update"}</span>
+                  <span>{editingPost ? tr.saveChanges : tr.publishUpdate}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
                   className="rounded-xl border border-border px-5 py-3.5 hover:bg-secondary/40 text-xs font-bold text-foreground transition-all cursor-pointer"
                 >
-                  Cancel
+                  {tr.cancel}
                 </button>
               </div>
             </form>

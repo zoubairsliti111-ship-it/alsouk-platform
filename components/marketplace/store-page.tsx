@@ -52,7 +52,10 @@ const LOCAL_I18N = {
     visitExternal: "Visit Official Website",
     browseCatalog: "Browse ALSOUK Catalog",
     viewCompany: "View Public Profile",
-    verified: "Verified Supplier"
+    verified: "Verified Supplier",
+    searchCatalogue: "Search Catalogue",
+    storeCategories: "Store Categories",
+    filtersSorting: "Filters & Sorting"
   },
   fr: {
     searchPlaceholder: "Rechercher dans cette boutique...",
@@ -77,7 +80,10 @@ const LOCAL_I18N = {
     visitExternal: "Visiter le site officiel",
     browseCatalog: "Parcourir le catalogue ALSOUK",
     viewCompany: "Voir le profil public",
-    verified: "Fournisseur Vérifié"
+    verified: "Fournisseur Vérifié",
+    searchCatalogue: "Rechercher dans le catalogue",
+    storeCategories: "Catégories de la boutique",
+    filtersSorting: "Filtres et tri"
   },
   ar: {
     searchPlaceholder: "البحث داخل هذا المتجر...",
@@ -102,7 +108,10 @@ const LOCAL_I18N = {
     visitExternal: "زيارة الموقع الرسمي",
     browseCatalog: "تصفح كتالوج ALSOUK",
     viewCompany: "عرض الملف التعريفي",
-    verified: "مورد موثق"
+    verified: "مورد موثق",
+    searchCatalogue: "البحث في الكتالوج",
+    storeCategories: "فئات المتجر",
+    filtersSorting: "الفلاتر والترتيب"
   }
 }
 
@@ -336,7 +345,7 @@ export function StorePage({ slug }: { slug: string }) {
 
             {/* Search inputs inside company store */}
             <div className="bg-card border border-border rounded-[20px] p-5 shadow-xs space-y-3">
-              <label className="text-xs font-black text-foreground block uppercase tracking-wider">Search Catalogue</label>
+              <label className="text-xs font-black text-foreground block uppercase tracking-wider">{dict.searchCatalogue}</label>
               <div className="relative">
                 <input
                   type="text"
@@ -352,7 +361,7 @@ export function StorePage({ slug }: { slug: string }) {
             {/* Categories filter */}
             {s.categories.length > 0 && (
               <div className="bg-card border border-border rounded-[20px] p-5 shadow-xs space-y-3">
-                <label className="text-xs font-black text-foreground block uppercase tracking-wider">Store Categories</label>
+                <label className="text-xs font-black text-foreground block uppercase tracking-wider">{dict.storeCategories}</label>
                 <div className="flex flex-col gap-1.5">
                   <button
                     onClick={() => setSelectedCategory(null)}
@@ -387,7 +396,7 @@ export function StorePage({ slug }: { slug: string }) {
             <div className="bg-card border border-border rounded-[20px] p-5 shadow-xs space-y-4">
               <div className="flex items-center gap-1.5 text-xs font-black text-foreground uppercase tracking-wider">
                 <SlidersHorizontal className="size-4 text-primary" />
-                <span>Filters & Sorting</span>
+                <span>{dict.filtersSorting}</span>
               </div>
 
               {/* Sorting option */}
