@@ -47,6 +47,8 @@ type StoreDetailRow = StoreRow & {
     name: string
     slug: string
     logo_url: string | null
+    website_mode: string | null
+    website_url: string | null
     company_categories?: { categories: CategoryRow | null }[]
   } | null
   products?: ProductRow[]
@@ -86,7 +88,7 @@ export async function getStoreBySlug(slug: string): Promise<StoreDetails | null>
           name: row.companies.name,
           slug: row.companies.slug,
           logoUrl: row.companies.logo_url?.trim() || null,
-          websiteMode: row.companies.website_mode || "alsouk",
+          websiteMode: (row.companies.website_mode as import("@/lib/domains/company/types").CompanyWebsiteMode) || "alsouk",
           websiteUrl: row.companies.website_url?.trim() || null,
         }
       : null,

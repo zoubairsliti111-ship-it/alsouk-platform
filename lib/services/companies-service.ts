@@ -40,6 +40,7 @@ export type CompanyRow = {
   supported_languages: string[] | null
   export_markets: string[] | null
   metadata: Record<string, any> | null
+  profile_level: string | null
   created_at?: string
   updated_at?: string
 }
@@ -92,6 +93,7 @@ export const COMPANY_COLUMNS = [
   "supported_languages",
   "export_markets",
   "metadata",
+  "profile_level",
   "created_at",
   "updated_at"
 ].join(",")
@@ -147,6 +149,7 @@ export function mapCompany(row: CompanyRow): Company | null {
     supportedLanguages: row.supported_languages || [],
     exportMarkets: row.export_markets || [],
     metadata: row.metadata || {},
+    profileLevel: (row.profile_level as import("@/lib/domains/company/types").ProfileLevel) || "starter",
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }

@@ -229,7 +229,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
 
       // Fetch user session and verify if company owner
       const supabase = createClient()
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      supabase.auth.getSession().then(({ data: { session } }: { data: { session: import("@supabase/supabase-js").Session | null } }) => {
         if (!active) return
         if (session?.user) {
           setCurrentUser(session.user)
@@ -239,7 +239,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
             .eq("company_id", company.id)
             .eq("user_id", session.user.id)
             .maybeSingle()
-            .then(({ data }) => {
+            .then(({ data }: { data: { role: string } | null }) => {
               if (data) {
                 setIsOwner(true)
               }

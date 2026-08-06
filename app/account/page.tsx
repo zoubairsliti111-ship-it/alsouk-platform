@@ -576,7 +576,7 @@ function AccountScreen() {
     const supabase = createClient()
 
     // 1. Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: import("@supabase/supabase-js").Session | null } }) => {
       if (!session) {
         router.replace("/login")
       } else {
@@ -595,7 +595,7 @@ function AccountScreen() {
     })
 
     // 2. Listen to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: import("@supabase/supabase-js").Session | null) => {
       if (!session) {
         setUser(null)
         router.replace("/login")
@@ -887,7 +887,7 @@ function AccountScreen() {
   // Dynamic visible tabs based on profileLevel
   const visibleTabs = useMemo(() => {
     const level = company?.profileLevel || "starter"
-    const tabs = [
+    const tabs: { id: "about" | "posts" | "products" | "certificates" | "reviews" | "exhibitions"; label: string; icon: import("lucide-react").LucideIcon }[] = [
       { id: "about" as const, label: "About & Trade", icon: Building2 },
       { id: "posts" as const, label: "Instagram Feed", icon: FileText },
       { id: "products" as const, label: "Featured Products", icon: Box },
