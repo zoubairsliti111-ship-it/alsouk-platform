@@ -504,77 +504,22 @@ function AccountScreen() {
           youtubeUrl: companyData.youtubeUrl || ""
         })
       } else {
-        // Automatically provision a default client-side mock company to support smooth local testing & sandbox verification!
-        const mockComp: Company = {
-          id: "mock-company-123",
-          profileLevel: "starter",
-          supplierId: null,
-          name: "Sfax Olive Export Co.",
-          slug: "sfax-olive-export",
-          tagline: "Premium cold-pressed olive oil exporter",
-          description: "Our olive oil is produced using artisanal cold-pressing methods in the heart of Sfax, Tunisia.",
-          logoUrl: "👤",
-          bannerUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200",
-          facebookUrl: "",
-          instagramUrl: "",
-          tiktokUrl: "",
-          linkedinUrl: "",
-          youtubeUrl: "",
-          websiteUrl: "www.sfaxolive.com",
-          websiteMode: "alsouk",
-          businessEmail: "export@sfaxolive.tn",
-          phoneNumber: "+216 74 123 456",
-          whatsappNumber: "21674123456",
-          country: "tn",
-          city: "sfax",
-          postalCode: "3000",
-          streetAddress: "Route de Gabes Km 2",
-          businessType: "manufacturer",
-          primaryIndustry: "food",
-          yearEstablished: 2012,
-          companySize: "11 - 50",
-          taxIdentifier: "1234567/A/M/000",
-          profileCompletion: 80,
-          verified: true,
-          verificationTier: "premium",
-          verifiedAt: "2026-01-01T00:00:00Z",
-          licenseDocumentUrl: "",
-          supportedLanguages: ["en", "fr"],
-          exportMarkets: ["eu", "gcc"],
-          metadata: {},
-          createdAt: "2026-01-01T00:00:00Z",
-          updatedAt: "2026-01-01T00:00:00Z"
-        }
-        setCompany(mockComp)
-        setCompanyForm({
-          profileLevel: "starter",
-          name: mockComp.name,
-          tagline: mockComp.tagline || "",
-          description: mockComp.description || "",
-          logoUrl: mockComp.logoUrl || "",
-          bannerUrl: mockComp.bannerUrl || "",
-          websiteUrl: mockComp.websiteUrl || "",
-          websiteMode: mockComp.websiteMode,
-          businessEmail: mockComp.businessEmail || "",
-          phoneNumber: mockComp.phoneNumber || "",
-          whatsappNumber: mockComp.whatsappNumber || "",
-          country: mockComp.country,
-          city: mockComp.city || "",
-          postalCode: mockComp.postalCode || "",
-          streetAddress: mockComp.streetAddress || "",
-          businessType: mockComp.businessType || "",
-          primaryIndustry: mockComp.primaryIndustry || "",
-          yearEstablished: mockComp.yearEstablished || "",
-          companySize: mockComp.companySize || "",
-          taxIdentifier: mockComp.taxIdentifier || "",
-          supportedLanguages: mockComp.supportedLanguages || [],
-          exportMarkets: mockComp.exportMarkets || [],
-          facebookUrl: mockComp.facebookUrl || "",
-          instagramUrl: mockComp.instagramUrl || "",
-          tiktokUrl: mockComp.tiktokUrl || "",
-          linkedinUrl: mockComp.linkedinUrl || "",
-          youtubeUrl: mockComp.youtubeUrl || ""
-        })
+        // FIX (was): this branch used to fabricate a fake "mock-company-123"
+        // company with hardcoded demo data ("Sfax Olive Export Co.") and
+        // silently present it to the user as if it were their real company.
+        // This was confirmed in production logs: real users hitting this
+        // path had their post/product/image writes fail (400s) because
+        // "mock-company-123" is not a real row in `companies`, and it is
+        // not even a valid UUID.
+        //
+        // Correct behavior: the user genuinely has no company yet. Show
+        // that real state (company = null) so the UI can render a proper
+        // "create your company" call-to-action instead of fake data.
+        // TODO (separate task, not a migration/backend concern): build the
+        // actual "create company" onboarding form/flow wherever `company
+        // === null` is rendered in this page, calling the real
+        // `createCompany` in lib/supabase/company-service.ts.
+        setCompany(null)
       }
 
       // 2. Query products count
