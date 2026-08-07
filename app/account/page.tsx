@@ -1319,6 +1319,21 @@ function AccountScreen() {
                       <p className="text-[11px] text-muted-foreground">Adjust your trade classifications and regional parameters based on level</p>
                     </div>
 
+                    {/* FIX: these two states existed and were correctly set
+                        by handleUpdateCompanyProfile, but were never
+                        rendered anywhere — meaning save success AND save
+                        failure were both silently invisible to the user. */}
+                    {companyError && (
+                      <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-bold">
+                        {companyError}
+                      </div>
+                    )}
+                    {companySuccess && (
+                      <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+                        {companySuccess}
+                      </div>
+                    )}
+
                     <div className="space-y-4">
                       {/* STARTER FIELDS (Level 1+) */}
                       <div className="space-y-1.5">

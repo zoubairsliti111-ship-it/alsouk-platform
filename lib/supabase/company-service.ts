@@ -179,6 +179,7 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
   const completion = calculateProfileCompletion(companyInput)
 
   const insertData = {
+    owner_id: userId,
     name: companyInput.name || "My Company",
     slug: companyInput.slug || `company-${Math.random().toString(36).substring(2, 9)}`,
     profile_level: companyInput.profileLevel || "starter",
