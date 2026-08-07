@@ -481,6 +481,11 @@ function AccountScreen() {
   const [followersCount, setFollowersCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
   const [updatesPostedCount, setUpdatesPostedCount] = useState(0)
+  // UX FIX (requested): the edit form used to always be visible inline.
+  // Now it's collapsed by default once a company exists, and only opens
+  // via the "Edit Profile" button — closing again automatically after a
+  // successful save.
+  const [isEditingCompany, setIsEditingCompany] = useState(false)
   const [isFollowing, setIsFollowing] = useState(false)
 
   // Likes & Comments Simulator State for posts
@@ -896,6 +901,10 @@ function AccountScreen() {
         setCompany(updatedComp)
         setCompanySuccess(dict.companyUpdated)
         fetchExtraData(user)
+        // UX FIX: collapse the form back after a successful save instead
+        // of leaving it open indefinitely — short delay so the success
+        // message is actually visible first.
+        setTimeout(() => setIsEditingCompany(false), 1800)
       } else {
         setCompanyError("Failed to persist company profile. Please ensure matching fields.")
       }
@@ -1255,11 +1264,11 @@ function AccountScreen() {
             {company ? (
               <>
                 <button
-                  onClick={() => setActiveProfileTab("about")}
+                  onClick={() => { setActiveProfileTab("about"); setIsEditingCompany(true) }}
                   className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary text-xs font-black text-white hover:opacity-95 shadow-md shadow-primary/20 transition-all cursor-pointer"
                 >
                   <Edit2 className="size-3.5" />
-                  <span>Edit Profile</span>
+                  <span>{dict.editProfile}</span>
                 </button>
                 <button
                   onClick={copyProfileLink}
@@ -1438,21 +1447,34 @@ function AccountScreen() {
                 </div>
 
                 {/* Live edit fields inside About Tab.
-                    FIX: this used to be gated behind `{company && (...)}`,
-                    which meant a brand-new user (company === null, the
-                    correct honest state after removing mock-company-123)
-                    could NEVER see this form at all — a real chicken-and-egg
-                    bug: handleUpdateCompanyProfile already branches
-                    correctly (createCompany when !company, updateCompany
-                    otherwise), but the form itself never rendered to let
-                    them reach that code path. Removing the guard so the
-                    form always renders, in "create" mode when company is
-                    null. */}
-                {(
+                    FIX (previous session): was gated behind `{company &&
+                    (...)}`, which meant a brand-new user (company === null)
+                    could never see this form at all. Fixed by rendering
+                    unconditionally.
+                    UX FIX (this session, requested): the form was then
+                    always visible inline even after a company exists,
+                    which is noisy. Now: still shown unconditionally when
+                    there's no company yet (so creation still works exactly
+                    as before), but collapsed by default once a company
+                    exists — only opens via "Edit Profile" / "Complete your
+                    profile" and closes again after a successful save. */}
+                {(isEditingCompany || !company) && (
                   <form onSubmit={handleUpdateCompanyProfile} className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6">
-                    <div className="border-b border-border pb-3">
-                      <h3 className="text-base font-black text-foreground">{dict.editBusinessParams}</h3>
-                      <p className="text-[11px] text-muted-foreground">{dict.editBusinessParamsDesc}</p>
+                    <div className="border-b border-border pb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-black text-foreground">{dict.editBusinessParams}</h3>
+                        <p className="text-[11px] text-muted-foreground">{dict.editBusinessParamsDesc}</p>
+                      </div>
+                      {company && (
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingCompany(false)}
+                          className="shrink-0 size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
+                          title={dict.cancel}
+                        >
+                          <X className="size-4" />
+                        </button>
+                      )}
                     </div>
 
                     {/* FIX: these two states existed and were correctly set
