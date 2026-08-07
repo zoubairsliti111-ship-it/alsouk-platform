@@ -541,6 +541,8 @@ function AccountScreen() {
   // Custom Media Management Input states
   const [photoUrl, setPhotoUrl] = useState("")
   const [photoCaption, setPhotoCaption] = useState("")
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [uploadingVideo, setUploadingVideo] = useState(false)
   const [certUrl, setCertUrl] = useState("")
   const [certCaption, setCertCaption] = useState("")
 
@@ -950,7 +952,7 @@ function AccountScreen() {
   }
 
   // Media Manager Add Asset
-  const handleAddMediaAsset = async (mediaType: "factory_photo" | "certificate", url: string, caption: string) => {
+  const handleAddMediaAsset = async (mediaType: "factory_photo" | "certificate" | "video", url: string, caption: string) => {
     if (!url.trim()) return
     const supabase = createClient()
     if (!company) return
@@ -984,6 +986,44 @@ function AccountScreen() {
       console.error("Error inserting media:", err)
     } finally {
       setUpdating(false)
+    }
+  }
+
+  // Real upload: photo from camera or gallery -> Supabase Storage -> company_media row
+  const handleUploadPhoto = async (file: File) => {
+    if (!company) return
+    setUploadingPhoto(true)
+    try {
+      const supabase = createClient()
+      const ext = file.name.split(".").pop() || "jpg"
+      const path = `${company.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+      const { error: uploadError } = await supabase.storage.from("company-photos").upload(path, file, { cacheControl: "3600", upsert: false })
+      if (uploadError) { console.error("Error uploading photo:", uploadError); return }
+      const { data: urlData } = supabase.storage.from("company-photos").getPublicUrl(path)
+      await handleAddMediaAsset("factory_photo", urlData.publicUrl, file.name)
+    } catch (err) {
+      console.error("Error uploading photo:", err)
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
+
+  // Real upload: short video from camera or gallery -> Supabase Storage -> company_media row
+  const handleUploadVideo = async (file: File) => {
+    if (!company) return
+    setUploadingVideo(true)
+    try {
+      const supabase = createClient()
+      const ext = file.name.split(".").pop() || "mp4"
+      const path = `${company.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+      const { error: uploadError } = await supabase.storage.from("company-videos").upload(path, file, { cacheControl: "3600", upsert: false })
+      if (uploadError) { console.error("Error uploading video:", uploadError); return }
+      const { data: urlData } = supabase.storage.from("company-videos").getPublicUrl(path)
+      await handleAddMediaAsset("video", urlData.publicUrl, file.name)
+    } catch (err) {
+      console.error("Error uploading video:", err)
+    } finally {
+      setUploadingVideo(false)
     }
   }
 
@@ -1993,20 +2033,19 @@ function AccountScreen() {
                   {company && (
                     <div className="flex gap-2">
                       <input
-                        type="text"
-                        placeholder="Paste image link"
-                        value={photoUrl}
-                        onChange={(e) => setPhotoUrl(e.target.value)}
-                        disabled={company.profileLevel === "starter" && companyMedia.filter(x => x.media_type === "factory_photo").length >= 4}
-                        className="px-3.5 py-2 rounded-xl border border-border text-xs font-semibold focus:outline-none disabled:opacity-50"
+                        type="file"
+                        accept="image/*"
+                        id="photo-upload-input"
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadPhoto(f); e.target.value = "" }}
+                        disabled={uploadingPhoto || (company.profileLevel === "starter" && companyMedia.filter(x => x.media_type === "factory_photo").length >= 4)}
+                        className="hidden"
                       />
-                      <button
-                        onClick={() => handleAddMediaAsset("factory_photo", photoUrl, "Showcase Photo")}
-                        disabled={company.profileLevel === "starter" && companyMedia.filter(x => x.media_type === "factory_photo").length >= 4}
-                        className="rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:opacity-95 cursor-pointer shrink-0 disabled:opacity-50"
+                      <label
+                        htmlFor="photo-upload-input"
+                        className={`rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:opacity-95 shrink-0 inline-flex items-center gap-1.5 ${uploadingPhoto || (company.profileLevel === "starter" && companyMedia.filter(x => x.media_type === "factory_photo").length >= 4) ? "opacity-50 pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
                       >
-                        Add Photo
-                      </button>
+                        {uploadingPhoto ? "Uploading..." : "Add Photo"}
+                      </label>
                     </div>
                   )}
                 </div>
@@ -2072,6 +2111,55 @@ function AccountScreen() {
                       <ExternalLink className="size-4" />
                       <span>Download Current Business Catalog PDF</span>
                     </a>
+                  )}
+                </div>
+              )}
+
+              {/* Short Videos: real camera/gallery upload of short clips */}
+              {company && (
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6 animate-in fade-in duration-300">
+                  <div className="flex flex-col sm:flex-row justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-black text-foreground flex items-center gap-1.5">
+                        <span>Short Videos</span>
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">Upload short clips from your phone showing your products or facility</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        accept="video/*"
+                        id="video-upload-input"
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadVideo(f); e.target.value = "" }}
+                        disabled={uploadingVideo}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="video-upload-input"
+                        className={`rounded-xl bg-primary px-4 py-2 text-xs font-black text-white hover:opacity-95 shrink-0 inline-flex items-center gap-1.5 ${uploadingVideo ? "opacity-50 pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
+                      >
+                        {uploadingVideo ? "Uploading..." : "Add Video"}
+                      </label>
+                    </div>
+                  </div>
+
+                  {companyMedia.filter(x => x.media_type === "video").length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {companyMedia.filter(x => x.media_type === "video").map((med) => (
+                        <div key={med.id} className="relative rounded-xl overflow-hidden border border-border bg-black">
+                          <video src={med.url} controls className="w-full aspect-video" />
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMediaAsset(med.id)}
+                            className="absolute top-2 end-2 px-2 py-1 rounded-lg bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground text-center py-6">No videos uploaded yet.</p>
                   )}
                 </div>
               )}
