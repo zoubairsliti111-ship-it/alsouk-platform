@@ -1264,7 +1264,7 @@ function AccountScreen() {
             {company ? (
               <>
                 <button
-                  onClick={() => { alert("CLICK WORKS"); setActiveProfileTab("about"); setIsEditingCompany(true) }}
+                  onClick={() => { setActiveProfileTab("about"); setIsEditingCompany(true); setTimeout(() => document.getElementById("company-edit-form")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100) }}
                   className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary text-xs font-black text-white hover:opacity-95 shadow-md shadow-primary/20 transition-all cursor-pointer"
                 >
                   <Edit2 className="size-3.5" />
@@ -1459,7 +1459,7 @@ function AccountScreen() {
                     exists — only opens via "Edit Profile" / "Complete your
                     profile" and closes again after a successful save. */}
                 {(isEditingCompany || !company) && (
-                  <form onSubmit={handleUpdateCompanyProfile} className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6">
+                  <form id="company-edit-form" onSubmit={handleUpdateCompanyProfile} className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6">
                     <div className="border-b border-border pb-3 flex items-start justify-between gap-3">
                       <div>
                         <h3 className="text-base font-black text-foreground">{dict.editBusinessParams}</h3>
