@@ -1264,7 +1264,7 @@ function AccountScreen() {
             {company ? (
               <>
                 <button
-                  onClick={() => { setActiveProfileTab("about"); setIsEditingCompany(true) }}
+                  onClick={() => { alert("CLICK WORKS"); setActiveProfileTab("about"); setIsEditingCompany(true) }}
                   className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary text-xs font-black text-white hover:opacity-95 shadow-md shadow-primary/20 transition-all cursor-pointer"
                 >
                   <Edit2 className="size-3.5" />
