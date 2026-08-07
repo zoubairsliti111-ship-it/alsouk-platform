@@ -289,6 +289,11 @@ export function SupplierProfile({ id }: { id: string }) {
             </Link>
           </Card>
 
+          <Link href={`/suppliers/${s.id}/feed`} className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-accent px-5 py-3.5 text-sm font-black text-white shadow-lg active:scale-95">
+            <Play className="size-4" />
+            Watch Photos & Videos
+          </Link>
+
           <Card title={p.factory} icon={<Building2 className="size-4" />}>
             {photos.length > 0 ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
