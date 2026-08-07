@@ -128,6 +128,22 @@ const localT = {
     businessEmailLabel: "Business Email",
     whatsappNumberLabel: "WhatsApp Number",
     activateSupplierSpace: "Activate Supplier Space",
+    tabAboutTrade: "About & Trade",
+    tabInstagramFeed: "Instagram Feed",
+    tabFeaturedProducts: "Featured Products",
+    accountStatusLabel: "Account Status",
+    progressiveProfileTitle: "Progressive B2B Profile System",
+    progressiveProfileDesc: "Only show capabilities assigned to your account plan. Starter plans keep your space simple, while Business and Enterprise unlock advanced features.",
+    assignedByAlsouk: "Assigned by ALSOUK",
+    requestPlanUpgrade: "Request Plan Upgrade",
+    boostTrustTitle: "Increase profile completeness to boost buyer trust",
+    boostTrustDescPrefix: "Your profile completion is currently at",
+    boostTrustDescSuffix: "%. Complete the missing fields below to achieve verified status and get highlighted search placements.",
+    companyOverviewTitle: "Company Overview",
+    companyOverviewDefault: "Welcome to our B2B trade profile. Complete your description to tell regional buyers about your factory capacity, organic quality, and direct export options.",
+    tradeInformationTitle: "Trade Information",
+    wholesaleSupplierDefault: "Wholesale B2B Supplier from Tunisia",
+    exporterWholesalerDefault: "Exporter & Wholesaler",
     saveChanges: "Save Changes",
     cancel: "Cancel",
     editProfile: "Edit Profile",
@@ -212,6 +228,22 @@ const localT = {
     businessEmailLabel: "E-mail professionnel",
     whatsappNumberLabel: "Numéro WhatsApp",
     activateSupplierSpace: "Activer l'espace fournisseur",
+    tabAboutTrade: "À propos & Commerce",
+    tabInstagramFeed: "Fil Instagram",
+    tabFeaturedProducts: "Produits en vedette",
+    accountStatusLabel: "Statut du compte",
+    progressiveProfileTitle: "Système de profil B2B progressif",
+    progressiveProfileDesc: "N'affiche que les fonctionnalités attribuées à votre forfait. Les forfaits Starter gardent votre espace simple, tandis que Business et Enterprise débloquent des fonctionnalités avancées.",
+    assignedByAlsouk: "Attribué par ALSOUK",
+    requestPlanUpgrade: "Demander une mise à niveau",
+    boostTrustTitle: "Complétez votre profil pour renforcer la confiance des acheteurs",
+    boostTrustDescPrefix: "Votre profil est actuellement complété à",
+    boostTrustDescSuffix: "%. Complétez les champs manquants ci-dessous pour obtenir le statut vérifié et un meilleur placement dans les recherches.",
+    companyOverviewTitle: "Aperçu de l'entreprise",
+    companyOverviewDefault: "Bienvenue sur notre profil commercial B2B. Complétez votre description pour informer les acheteurs régionaux de votre capacité de production, qualité biologique et options d'exportation directe.",
+    tradeInformationTitle: "Informations commerciales",
+    wholesaleSupplierDefault: "Fournisseur B2B en gros de Tunisie",
+    exporterWholesalerDefault: "Exportateur & Grossiste",
     saveChanges: "Enregistrer",
     cancel: "Annuler",
     editProfile: "Modifier le profil",
@@ -296,6 +328,22 @@ const localT = {
     businessEmailLabel: "البريد الإلكتروني للأعمال",
     whatsappNumberLabel: "رقم واتساب",
     activateSupplierSpace: "فعّل مساحة المورّد",
+    tabAboutTrade: "عن الشركة والتجارة",
+    tabInstagramFeed: "المنشورات",
+    tabFeaturedProducts: "المنتجات المميزة",
+    accountStatusLabel: "حالة الحساب",
+    progressiveProfileTitle: "نظام الملف التعريفي B2B التدريجي",
+    progressiveProfileDesc: "تُعرض فقط الإمكانيات المخصَّصة لخطة حسابك. الخطة الأساسية تُبقي مساحتك بسيطة، بينما خطتا الأعمال والمؤسسات تفتحان ميزات متقدمة.",
+    assignedByAlsouk: "مُخصَّصة من ALSOUK",
+    requestPlanUpgrade: "اطلب ترقية الخطة",
+    boostTrustTitle: "أكمل ملفك التعريفي لزيادة ثقة المشترين",
+    boostTrustDescPrefix: "نسبة اكتمال ملفك حاليًا",
+    boostTrustDescSuffix: "٪. أكمل الحقول الناقصة أدناه للحصول على حالة موثَّقة وترتيب أفضل في نتائج البحث.",
+    companyOverviewTitle: "نظرة عامة على الشركة",
+    companyOverviewDefault: "مرحبًا بك في ملفك التجاري B2B. أكمل الوصف لتُطلع المشترين الإقليميين على قدرتك الإنتاجية وجودة منتجاتك وخيارات التصدير المباشر.",
+    tradeInformationTitle: "المعلومات التجارية",
+    wholesaleSupplierDefault: "مورّد جملة B2B من تونس",
+    exporterWholesalerDefault: "مُصدِّر وتاجر جملة",
     saveChanges: "حفظ التغييرات",
     cancel: "إلغاء",
     editProfile: "تعديل الملف الشخصي",
@@ -961,9 +1009,9 @@ function AccountScreen() {
   const visibleTabs = useMemo(() => {
     const level = company?.profileLevel || "starter"
     const tabs: { id: "about" | "posts" | "products" | "certificates" | "reviews" | "exhibitions"; label: string; icon: import("lucide-react").LucideIcon }[] = [
-      { id: "about" as const, label: "About & Trade", icon: Building2 },
-      { id: "posts" as const, label: "Instagram Feed", icon: FileText },
-      { id: "products" as const, label: "Featured Products", icon: Box },
+      { id: "about" as const, label: dict.tabAboutTrade, icon: Building2 },
+      { id: "posts" as const, label: dict.tabInstagramFeed, icon: FileText },
+      { id: "products" as const, label: dict.tabFeaturedProducts, icon: Box },
     ]
     if (level === "starter") {
       tabs.push(
@@ -983,7 +1031,7 @@ function AccountScreen() {
       )
     }
     return tabs
-  }, [company?.profileLevel])
+  }, [company?.profileLevel, lang])
 
   // Safeguard active tab via safe render derivation
   const activeTabResolved = useMemo(() => {
@@ -1167,7 +1215,7 @@ function AccountScreen() {
               </div>
 
               <p className="text-sm font-bold text-muted-foreground">
-                @{company?.slug || "user"} • {company?.tagline || "Wholesale B2B Supplier from Tunisia"}
+                @{company?.slug || "user"} • {company?.tagline || dict.wholesaleSupplierDefault}
               </p>
 
               <div className="flex flex-wrap items-center gap-3.5 pt-1 text-xs text-muted-foreground font-semibold">
@@ -1181,7 +1229,7 @@ function AccountScreen() {
                 </span>
                 <span className="flex items-center gap-1">
                   <Building2 className="size-3.5 text-primary" />
-                  <span className="capitalize">{company?.businessType?.replace("_", " ") || "Exporter & Wholesaler"}</span>
+                  <span className="capitalize">{company?.businessType?.replace("_", " ") || dict.exporterWholesalerDefault}</span>
                 </span>
               </div>
             </div>
@@ -1287,7 +1335,7 @@ function AccountScreen() {
                   <div className="bg-gradient-to-r from-primary/10 via-blue-500/10 to-purple-500/10 border border-primary/20 rounded-3xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in duration-300">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Account Status</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{dict.accountStatusLabel}</span>
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                           company.profileLevel === "enterprise"
                             ? "bg-purple-600 text-white shadow-xs"
@@ -1298,16 +1346,16 @@ function AccountScreen() {
                           Level {company.profileLevel === "enterprise" ? "3 — Enterprise Plan" : company.profileLevel === "business" ? "2 — Business Plan" : "1 — Starter Plan"}
                         </span>
                       </div>
-                      <h3 className="text-sm font-black text-foreground">Progressive B2B Profile System</h3>
+                      <h3 className="text-sm font-black text-foreground">{dict.progressiveProfileTitle}</h3>
                       <p className="text-[11px] leading-normal text-muted-foreground max-w-xl">
-                        Only show capabilities assigned to your account plan. Starter plans keep your space simple, while Business and Enterprise unlock advanced features.
+                        {dict.progressiveProfileDesc}
                       </p>
                     </div>
 
                     <div className="shrink-0 text-start sm:text-end">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Assigned by ALSOUK</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">{dict.assignedByAlsouk}</span>
                       <a href="mailto:support@alsouk.com" className="inline-block mt-1 text-xs font-black text-primary hover:underline">
-                        Request Plan Upgrade &rarr;
+                        {dict.requestPlanUpgrade} &rarr;
                       </a>
                     </div>
                   </div>
@@ -1318,9 +1366,9 @@ function AccountScreen() {
                   <div className="p-4 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 rounded-2xl flex items-start gap-3">
                     <BadgeAlert className="size-5 shrink-0 mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-xs font-black">Increase profile completeness to boost buyer trust</p>
+                      <p className="text-xs font-black">{dict.boostTrustTitle}</p>
                       <p className="text-[11px] leading-normal opacity-90">
-                        Your profile completion is currently at {company.profileCompletion}%. Complete the missing fields below to achieve verified status and get highlighted search placements.
+                        {dict.boostTrustDescPrefix} {company.profileCompletion}{dict.boostTrustDescSuffix}
                       </p>
                     </div>
                   </div>
@@ -1331,12 +1379,12 @@ function AccountScreen() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-base font-black text-foreground flex items-center gap-2">
                       <Building2 className="size-4.5 text-primary" />
-                      <span>Company Overview</span>
+                      <span>{dict.companyOverviewTitle}</span>
                     </h3>
                   </div>
 
                   <p className="text-xs font-semibold text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {company?.description || "Welcome to our B2B trade profile. Complete your description to tell regional buyers about your factory capacity, organic quality, and direct export options."}
+                    {company?.description || dict.companyOverviewDefault}
                   </p>
                 </div>
 
@@ -1344,12 +1392,12 @@ function AccountScreen() {
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6">
                   <h3 className="text-base font-black text-foreground flex items-center gap-2">
                     <Briefcase className="size-4.5 text-primary" />
-                    <span>Trade Information</span>
+                    <span>{dict.tradeInformationTitle}</span>
                   </h3>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
                     {[
-                      { label: "Year Established", val: company?.yearEstablished || "2005", icon: Calendar, minLevel: "starter" },
+                      { label: dict.yearEstablished, val: company?.yearEstablished || "2005", icon: Calendar, minLevel: "starter" },
                       { label: "Total Employees", val: company?.companySize || "51 - 200", icon: Users, minLevel: "enterprise" },
                       { label: "Factory Size", val: "2,500 square meters", icon: Building2, minLevel: "enterprise" },
                       { label: "Annual Revenue", val: "$1M - $5M USD", icon: Shield, minLevel: "enterprise" },
