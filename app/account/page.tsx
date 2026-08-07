@@ -469,6 +469,11 @@ function AccountScreen() {
 
   // Company Information and Account Summary state
   const [company, setCompany] = useState<Company | null>(null)
+  const [showAddProductModal, setShowAddProductModal] = useState(false)
+  const [productForm, setProductForm] = useState({ name: "", price: "", minOrderQuantity: "1", unit: "" })
+  const [productImageFile, setProductImageFile] = useState<File | null>(null)
+  const [productImagePreview, setProductImagePreview] = useState<string | null>(null)
+  const [savingProduct, setSavingProduct] = useState(false)
   const [companyMedia, setCompanyMedia] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [exhibitions, setExhibitions] = useState<any[]>([])
@@ -1024,6 +1029,50 @@ function AccountScreen() {
       console.error("Error uploading video:", err)
     } finally {
       setUploadingVideo(false)
+    }
+  }
+
+  const handleAddProduct = async () => {
+    if (!company) return
+    if (!productForm.name.trim()) return
+    setSavingProduct(true)
+    try {
+      const supabase = createClient()
+      const { data: storeRow } = await supabase.from("stores").select("id").eq("company_id", company.id).maybeSingle()
+      if (!storeRow) { console.error("No store found for this company"); setSavingProduct(false); return }
+      const slugBase = productForm.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+      const slug = `${slugBase}-${Date.now().toString(36)}`
+      const { data: newProduct, error: insertError } = await supabase.from("products").insert({
+        store_id: storeRow.id,
+        company_id: company.id,
+        name: productForm.name.trim(),
+        slug,
+        price: productForm.price ? Number(productForm.price) : null,
+        currency: "TND",
+        min_order_quantity: productForm.minOrderQuantity ? Number(productForm.minOrderQuantity) : 1,
+        unit: productForm.unit.trim() || null,
+        is_active: true,
+      }).select().single()
+      if (insertError || !newProduct) { console.error("Error creating product:", insertError); setSavingProduct(false); return }
+      if (productImageFile) {
+        const ext = productImageFile.name.split(".").pop() || "jpg"
+        const path = `${company.id}/${newProduct.id}-${Date.now()}.${ext}`
+        const { error: uploadError } = await supabase.storage.from("product-images").upload(path, productImageFile, { cacheControl: "3600", upsert: false })
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(path)
+          await supabase.from("product_images").insert({ product_id: newProduct.id, url: urlData.publicUrl, storage_bucket: "product-images", storage_path: path, is_primary: true, position: 0 })
+        }
+      }
+      const refreshed = await getProducts({ companyId: company.id, limit: 12 })
+      setProducts(refreshed)
+      setShowAddProductModal(false)
+      setProductForm({ name: "", price: "", minOrderQuantity: "1", unit: "" })
+      setProductImageFile(null)
+      setProductImagePreview(null)
+    } catch (err) {
+      console.error("Error adding product:", err)
+    } finally {
+      setSavingProduct(false)
     }
   }
 
@@ -1953,7 +2002,7 @@ function AccountScreen() {
                 </div>
                 {company && (
                   <button
-                    onClick={() => router.push("/account")}
+                    onClick={() => setShowAddProductModal(true)}
                     className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary text-xs font-black text-white hover:opacity-95 shadow-xs cursor-pointer"
                   >
                     <Plus className="size-4" />
@@ -1961,6 +2010,54 @@ function AccountScreen() {
                   </button>
                 )}
               </div>
+
+              {showAddProductModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+                  <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-black text-foreground">Add New Product</h3>
+                      <button type="button" onClick={() => setShowAddProductModal(false)} className="text-muted-foreground text-xl leading-none">&times;</button>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-muted-foreground">Product Name *</label>
+                      <input type="text" value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" placeholder="e.g. Organic Olive Oil 1L" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-muted-foreground">Price (TND)</label>
+                        <input type="number" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" placeholder="0.00" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-muted-foreground">Min Order Qty</label>
+                        <input type="number" value={productForm.minOrderQuantity} onChange={(e) => setProductForm({ ...productForm, minOrderQuantity: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-muted-foreground">Unit (optional)</label>
+                      <input type="text" value={productForm.unit} onChange={(e) => setProductForm({ ...productForm, unit: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" placeholder="e.g. box, kg, piece" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-muted-foreground">Product Photo</label>
+                      <input type="file" accept="image/*" onChange={(e) => {
+                        const f = e.target.files?.[0]
+                        if (f) { setProductImageFile(f); setProductImagePreview(URL.createObjectURL(f)) }
+                      }} className="w-full mt-1 text-xs" />
+                      {productImagePreview && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={productImagePreview} alt="preview" className="mt-2 h-28 w-28 object-cover rounded-xl border border-border" />
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddProduct}
+                      disabled={savingProduct || !productForm.name.trim()}
+                      className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-black text-white disabled:opacity-50"
+                    >
+                      {savingProduct ? "Saving..." : "Save Product"}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {products.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
