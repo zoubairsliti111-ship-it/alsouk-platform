@@ -609,11 +609,16 @@ export function getMockExhibitions(): Exhibition[] {
 export async function getExhibitions(): Promise<Exhibition[]> {
   try {
     const rows = await restGet<ExhibitionRow>("exhibitions?select=*&order=start_date.asc")
-    if (!rows || rows.length === 0) return getMockExhibitions()
+    // FIX: was `if (!rows || rows.length === 0) return getMockExhibitions()`
+    // — this meant every real visitor saw fabricated exhibitions (e.g.
+    // "Tunisia Food Expo 2026") whenever the real table was empty, which
+    // it always is right now (no real exhibitions have been created yet).
+    // Honest empty array lets the UI's existing empty state render instead.
+    if (!rows) return []
     return rows.map(mapExhibition)
   } catch (err) {
-    console.warn("[exhibitions-service] Failed to fetch. Using fallback mock data:", err)
-    return getMockExhibitions()
+    console.warn("[exhibitions-service] Failed to fetch exhibitions:", err)
+    return []
   }
 }
 
@@ -624,12 +629,12 @@ export async function getExhibitionBySlug(slug: string): Promise<Exhibition | nu
   try {
     const rows = await restGet<ExhibitionRow>(`exhibitions?select=*&slug=eq.${encodeURIComponent(slug)}&limit=1`)
     if (!rows || rows.length === 0) {
-      return getMockExhibitions().find((e) => e.slug === slug) || null
+      return null
     }
     return mapExhibition(rows[0])
   } catch (err) {
-    console.warn(`[exhibitions-service] Failed to fetch slug ${slug}. Using fallback mock data:`, err)
-    return getMockExhibitions().find((e) => e.slug === slug) || null
+    console.warn(`[exhibitions-service] Failed to fetch slug ${slug}:`, err)
+    return null
   }
 }
 
@@ -648,12 +653,12 @@ export async function getBoothsByExhibitionSlug(slug: string): Promise<Exhibitio
       `exhibition_booths?select=${select}&exhibition_id=eq.${encodeURIComponent(exh.id)}&is_archived=eq.false`
     )
     if (!rows || rows.length === 0) {
-      return getMockBooths()[slug] || []
+      return []
     }
     return rows.map(mapExhibitionBooth)
   } catch (err) {
-    console.warn(`[exhibitions-service] Failed to fetch booths for ${slug}. Using fallback mock:`, err)
-    return getMockBooths()[slug] || []
+    console.warn(`[exhibitions-service] Failed to fetch booths for ${slug}:`, err)
+    return []
   }
 }
 
@@ -1777,7 +1782,7 @@ export async function getOrganizerDashboardStats(exhibitionId: string) {
     }
   } catch (err) {
     console.warn("Failed to fetch booths for stats:", err)
-    booths = getMockBooths()[slug] || []
+    booths = []
   }
 
   const totalApplications = apps.length
@@ -1956,7 +1961,7 @@ export async function loadStatistics(exhibitionId: string) {
     }
   } catch (err) {
     console.warn("Failed to fetch booths for statistics:", err)
-    booths = getMockBooths()[slug] || []
+    booths = []
   }
 
   // 1. Applications Metrics
