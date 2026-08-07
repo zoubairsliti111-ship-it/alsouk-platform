@@ -368,9 +368,11 @@ function AccountScreen() {
   const [rfqsCount, setRfqsCount] = useState(0)
   const [fetchingCompanyInfo, setFetchingCompanyInfo] = useState(false)
 
-  // Followers & Following Count Simulator State
-  const [followersCount, setFollowersCount] = useState(1240)
-  const [followingCount, setFollowingCount] = useState(180)
+  // Followers & Following — real counts, fetched from company_follows in
+  // fetchExtraData (were hardcoded to 1240/180 before this fix).
+  const [followersCount, setFollowersCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
+  const [updatesPostedCount, setUpdatesPostedCount] = useState(0)
   const [isFollowing, setIsFollowing] = useState(false)
 
   // Likes & Comments Simulator State for posts
@@ -564,6 +566,32 @@ function AccountScreen() {
           setRfqsCount(legacyCount || 0)
         }
       }
+
+      // 4. Real followers count (was hardcoded 1240) + real posts count
+      //    (was hardcoded to literally "3" whenever a company existed).
+      //    company_follows / commercial_posts now have correct table
+      //    grants (fixed this session), so these queries work.
+      if (currentCompanyId) {
+        const { count: followersVal } = await supabase
+          .from("company_follows")
+          .select("*", { count: "exact", head: true })
+          .eq("company_id", currentCompanyId)
+        setFollowersCount(followersVal || 0)
+
+        const { count: postsVal } = await supabase
+          .from("commercial_posts")
+          .select("*", { count: "exact", head: true })
+          .eq("company_id", currentCompanyId)
+          .is("deleted_at", null)
+        setUpdatesPostedCount(postsVal || 0)
+      }
+
+      // 5. Real "following" count for the current user (was hardcoded 180).
+      const { count: followingVal } = await supabase
+        .from("company_follows")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", currentUser.id)
+      setFollowingCount(followingVal || 0)
 
     } catch (err) {
       console.error("Error fetching extra data:", err)
@@ -1169,9 +1197,12 @@ function AccountScreen() {
             { label: "Following", val: followingCount, icon: Users, color: "text-amber-500 bg-amber-500/5" },
             { label: "Products", val: productsCount, icon: Box, color: "text-purple-500 bg-purple-500/5" },
             { label: "RFQs Matching", val: rfqsCount, icon: FileText, color: "text-emerald-500 bg-emerald-500/5" },
-            { label: "Updates Posted", val: company ? 3 : 0, icon: Sparkles, color: "text-indigo-500 bg-indigo-500/5" },
+            { label: "Updates Posted", val: updatesPostedCount, icon: Sparkles, color: "text-indigo-500 bg-indigo-500/5" },
             { label: "Exhibitions", val: exhibitions.length, icon: Briefcase, color: "text-rose-500 bg-rose-500/5" },
-            { label: "Buyer Reviews", val: 12, icon: Award, color: "text-yellow-500 bg-yellow-500/5" }
+            // FIX: was hardcoded `12` — no reviews system exists anywhere
+            // in the database yet, so 0 is the honest value until one is
+            // actually built.
+            { label: "Buyer Reviews", val: 0, icon: Award, color: "text-yellow-500 bg-yellow-500/5" }
           ].map((stat, idx) => (
             <div key={idx} className="bg-card border border-border/80 rounded-2xl p-4 text-center hover:shadow-md transition-all">
               <span className={`inline-flex size-9 items-center justify-center rounded-xl mb-2 ${stat.color}`}>
