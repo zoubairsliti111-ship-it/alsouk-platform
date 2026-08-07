@@ -25,12 +25,20 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { fetchSupplierById } from "@/lib/supabase/suppliers-service"
+import { createClient } from "@/lib/supabase/client"
 import type { Supplier } from "@/lib/directory-data"
 import { RfqDialog } from "@/components/rfq/rfq-dialog"
 
 type Status = "loading" | "loaded" | "notFound" | "error"
 
 const COVER_IMAGE = "/images/supplier-factory.png"
+
+type MediaRow = {
+  id: string
+  media_type: "factory_photo" | "product_gallery" | "video" | "certificate"
+  url: string
+  caption: string | null
+}
 
 export function SupplierProfile({ id }: { id: string }) {
   const { lang } = useLanguage()
@@ -42,6 +50,7 @@ export function SupplierProfile({ id }: { id: string }) {
     status: "loading",
     supplier: null,
   })
+  const [media, setMedia] = useState<MediaRow[]>([])
   const [rfqOpen, setRfqOpen] = useState(false)
   const [following, setFollowing] = useState(false)
   const closeRfq = useCallback(() => setRfqOpen(false), [])
@@ -54,6 +63,25 @@ export function SupplierProfile({ id }: { id: string }) {
       else if (res.notFound || !res.supplier) setState({ id, status: "notFound", supplier: null })
       else setState({ id, status: "loaded", supplier: res.supplier })
     })
+    return () => {
+      active = false
+    }
+  }, [id])
+
+  // Real uploaded photos/videos/certificates for this company. company_media
+  // is publicly readable, so this can be fetched straight from the client.
+  useEffect(() => {
+    let active = true
+    const supabase = createClient()
+    supabase
+      .from("company_media")
+      .select("id,media_type,url,caption")
+      .eq("company_id", id)
+      .then((result: { data: MediaRow[] | null; error: unknown }) => {
+        const { data, error } = result
+        if (!active) return
+        if (!error && data) setMedia(data as MediaRow[])
+      })
     return () => {
       active = false
     }
@@ -106,6 +134,11 @@ export function SupplierProfile({ id }: { id: string }) {
       ? "bg-brand-green text-brand-green-foreground"
       : "bg-brand-blue text-brand-blue-foreground"
 
+  const photos = media.filter((m) => m.media_type === "factory_photo")
+  const videos = media.filter((m) => m.media_type === "video")
+  const certificates = media.filter((m) => m.media_type === "certificate")
+  const coverUrl = photos[0]?.url || COVER_IMAGE
+
   const followButton = (
     <button
       type="button"
@@ -138,7 +171,12 @@ export function SupplierProfile({ id }: { id: string }) {
       {/* Cover */}
       <section className="relative">
         <div className="relative h-40 w-full overflow-hidden sm:h-56">
-          <Image src={COVER_IMAGE} alt={s.name} fill priority sizes="100vw" className="object-cover" />
+          {photos[0]?.url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={coverUrl} alt={s.name} className="absolute inset-0 size-full object-cover" />
+          ) : (
+            <Image src={coverUrl} alt={s.name} fill priority sizes="100vw" className="object-cover" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           <div className="absolute inset-x-0 top-0 p-4">
             <Link
@@ -168,10 +206,12 @@ export function SupplierProfile({ id }: { id: string }) {
             <div className="min-w-0 flex-1 pt-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{s.name}</h1>
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-600">
-                  <Award className="size-3.5" />
-                  {p.storeBadge}
-                </span>
+                {s.verified && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-600">
+                    <Award className="size-3.5" />
+                    {p.storeBadge}
+                  </span>
+                )}
                 {s.verified && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
                     <BadgeCheck className="size-3.5" />
@@ -250,11 +290,33 @@ export function SupplierProfile({ id }: { id: string }) {
           </Card>
 
           <Card title={p.factory} icon={<Building2 className="size-4" />}>
-            <EmptyState icon={<Building2 className="size-5" />} text={p.factoryEmpty} />
+            {photos.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {photos.map((ph) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={ph.id}
+                    src={ph.url}
+                    alt={ph.caption ?? s.name}
+                    className="aspect-square w-full rounded-xl border border-border object-cover"
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon={<Building2 className="size-5" />} text={p.factoryEmpty} />
+            )}
           </Card>
 
           <Card title={p.videos} icon={<Play className="size-4" />}>
-            <EmptyState icon={<Play className="size-5" />} text={p.videosEmpty} />
+            {videos.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {videos.map((v) => (
+                  <video key={v.id} src={v.url} controls className="w-full rounded-xl border border-border aspect-video" />
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon={<Play className="size-5" />} text={p.videosEmpty} />
+            )}
           </Card>
 
           <Card title={p.catalogs} icon={<FileText className="size-4" />}>
@@ -262,7 +324,24 @@ export function SupplierProfile({ id }: { id: string }) {
           </Card>
 
           <Card title={p.certifications} icon={<Award className="size-4" />}>
-            <EmptyState icon={<ShieldCheck className="size-5" />} text={p.certificationsEmpty} />
+            {certificates.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {certificates.map((c) => (
+                  <a
+                    key={c.id}
+                    href={c.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 rounded-xl border border-border bg-secondary/20 p-3 text-sm font-medium text-foreground hover:bg-secondary/40"
+                  >
+                    <ShieldCheck className="size-5 shrink-0 text-primary" />
+                    <span className="truncate">{c.caption || p.certifications}</span>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon={<ShieldCheck className="size-5" />} text={p.certificationsEmpty} />
+            )}
           </Card>
 
           <Card title={p.reviewsTitle} icon={<Star className="size-4" />}>
