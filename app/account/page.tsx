@@ -128,6 +128,11 @@ const localT = {
     businessEmailLabel: "Business Email",
     whatsappNumberLabel: "WhatsApp Number",
     activateSupplierSpace: "Activate Supplier Space",
+    tabBuyerReviews: "Buyer Reviews",
+    verifiedReviewsTitle: "Verified Buyer Reviews",
+    verifiedReviewsDesc: "Authentic comments, ratings, and feedback from regional partners",
+    noReviewsYetTitle: "No reviews yet",
+    noReviewsYetDesc: "Reviews from verified buyers will appear here once available.",
     tabAboutTrade: "About & Trade",
     tabInstagramFeed: "Instagram Feed",
     tabFeaturedProducts: "Featured Products",
@@ -228,6 +233,11 @@ const localT = {
     businessEmailLabel: "E-mail professionnel",
     whatsappNumberLabel: "Numéro WhatsApp",
     activateSupplierSpace: "Activer l'espace fournisseur",
+    tabBuyerReviews: "Avis acheteurs",
+    verifiedReviewsTitle: "Avis vérifiés des acheteurs",
+    verifiedReviewsDesc: "Commentaires, notes et retours authentiques de partenaires régionaux",
+    noReviewsYetTitle: "Aucun avis pour le moment",
+    noReviewsYetDesc: "Les avis des acheteurs vérifiés apparaîtront ici dès qu'ils seront disponibles.",
     tabAboutTrade: "À propos & Commerce",
     tabInstagramFeed: "Fil Instagram",
     tabFeaturedProducts: "Produits en vedette",
@@ -328,6 +338,11 @@ const localT = {
     businessEmailLabel: "البريد الإلكتروني للأعمال",
     whatsappNumberLabel: "رقم واتساب",
     activateSupplierSpace: "فعّل مساحة المورّد",
+    tabBuyerReviews: "تقييمات المشترين",
+    verifiedReviewsTitle: "تقييمات المشترين الموثَّقة",
+    verifiedReviewsDesc: "تعليقات وتقييمات وآراء حقيقية من شركاء إقليميين",
+    noReviewsYetTitle: "لا توجد تقييمات بعد",
+    noReviewsYetDesc: "ستظهر هنا تقييمات المشترين الموثَّقين فور توفرها.",
     tabAboutTrade: "عن الشركة والتجارة",
     tabInstagramFeed: "المنشورات",
     tabFeaturedProducts: "المنتجات المميزة",
@@ -1016,18 +1031,18 @@ function AccountScreen() {
     if (level === "starter") {
       tabs.push(
         { id: "certificates" as const, label: "Simple Gallery", icon: ImageIcon },
-        { id: "reviews" as const, label: "Buyer Reviews (12)", icon: Award }
+        { id: "reviews" as const, label: dict.tabBuyerReviews, icon: Award }
       )
     } else if (level === "business") {
       tabs.push(
         { id: "certificates" as const, label: "Gallery & Catalog", icon: ImageIcon },
-        { id: "reviews" as const, label: "Buyer Reviews (12)", icon: Award }
+        { id: "reviews" as const, label: dict.tabBuyerReviews, icon: Award }
       )
     } else if (level === "enterprise") {
       tabs.push(
         { id: "exhibitions" as const, label: "Trade Exhibitions", icon: Briefcase },
         { id: "certificates" as const, label: "Gallery & Quality", icon: Award },
-        { id: "reviews" as const, label: "Buyer Reviews (12)", icon: Award }
+        { id: "reviews" as const, label: dict.tabBuyerReviews, icon: Award }
       )
     }
     return tabs
@@ -2133,34 +2148,24 @@ function AccountScreen() {
             </div>
           )}
 
-          {/* Tab 6: Buyer Reviews */}
+          {/* Tab 6: Buyer Reviews.
+              FIX: this used to render two fully fabricated testimonials
+              ("Sourcing Agent, Marseilles" / "Bulk Wholesaler, Tripoli")
+              with invented quotes, star ratings, and dates — presented as
+              real buyer feedback. No reviews system exists anywhere in the
+              database. Replaced with an honest empty state, matching the
+              pattern already used for Posts/Products when empty. */}
           {activeTabResolved === "reviews" && (
             <div className="space-y-6 max-w-3xl mx-auto">
               <div className="border-b border-border pb-3">
-                <h3 className="text-base font-black text-foreground">Verified Buyer Reviews</h3>
-                <p className="text-xs text-muted-foreground">Authentic comments, ratings, and feedback from regional partners</p>
+                <h3 className="text-base font-black text-foreground">{dict.verifiedReviewsTitle}</h3>
+                <p className="text-xs text-muted-foreground">{dict.verifiedReviewsDesc}</p>
               </div>
 
-              <div className="space-y-4">
-                {[
-                  { buyer: "Sourcing Agent, Marseilles", rating: 5, text: "Excellent communication and pristine premium cold-pressed olive oil. Delivery was fast and organic documentation was perfectly compliant with French import regulations.", date: "June 2026" },
-                  { buyer: "Bulk Wholesaler, Tripoli", rating: 5, text: "Purchased Sahara dates in pallets. High sugar content and excellent packaging. We have renewed our contract for the upcoming winter season.", date: "May 2026" }
-                ].map((review, rIdx) => (
-                  <div key={rIdx} className="bg-card border border-border p-5 rounded-2xl shadow-xs space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-black text-foreground">{review.buyer}</p>
-                      <p className="text-[10px] text-muted-foreground font-semibold">{review.date}</p>
-                    </div>
-                    <div className="flex gap-1">
-                      {Array.from({ length: review.rating }).map((_, sIdx) => (
-                        <span key={sIdx} className="text-yellow-500 text-sm">★</span>
-                      ))}
-                    </div>
-                    <p className="text-xs font-semibold text-muted-foreground leading-relaxed">
-                      &quot;{review.text}&quot;
-                    </p>
-                  </div>
-                ))}
+              <div className="rounded-2xl border border-dashed border-border p-8 text-center space-y-2">
+                <Award className="size-8 mx-auto text-muted-foreground" />
+                <p className="text-sm font-black text-foreground">{dict.noReviewsYetTitle}</p>
+                <p className="text-xs text-muted-foreground">{dict.noReviewsYetDesc}</p>
               </div>
             </div>
           )}
