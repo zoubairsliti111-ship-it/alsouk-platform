@@ -113,6 +113,21 @@ const PREDEFINED_EMOJIS = ["👤", "💼", "🏭", "📦", "🛒", "🏢", "🧑
 const localT = {
   en: {
     personalInfo: "Personal Information",
+    statFollowers: "Followers",
+    statFollowing: "Following",
+    statProducts: "Products",
+    statRfqsMatching: "RFQs Matching",
+    statUpdatesPosted: "Updates Posted",
+    statExhibitions: "Exhibitions",
+    statBuyerReviews: "Buyer Reviews",
+    editBusinessParams: "Edit Business Parameters",
+    editBusinessParamsDesc: "Adjust your trade classifications and regional parameters based on level",
+    companyNameLabel: "Company Name",
+    sloganLabel: "Slogan / Pitch",
+    descriptionLabel: "Description",
+    businessEmailLabel: "Business Email",
+    whatsappNumberLabel: "WhatsApp Number",
+    activateSupplierSpace: "Activate Supplier Space",
     saveChanges: "Save Changes",
     cancel: "Cancel",
     editProfile: "Edit Profile",
@@ -182,6 +197,21 @@ const localT = {
   },
   fr: {
     personalInfo: "Informations Personnelles",
+    statFollowers: "Abonnés",
+    statFollowing: "Abonnements",
+    statProducts: "Produits",
+    statRfqsMatching: "Demandes correspondantes",
+    statUpdatesPosted: "Publications",
+    statExhibitions: "Expositions",
+    statBuyerReviews: "Avis acheteurs",
+    editBusinessParams: "Modifier les paramètres commerciaux",
+    editBusinessParamsDesc: "Ajustez vos classifications commerciales et paramètres régionaux selon votre niveau",
+    companyNameLabel: "Nom de l'entreprise",
+    sloganLabel: "Slogan / Argument",
+    descriptionLabel: "Description",
+    businessEmailLabel: "E-mail professionnel",
+    whatsappNumberLabel: "Numéro WhatsApp",
+    activateSupplierSpace: "Activer l'espace fournisseur",
     saveChanges: "Enregistrer",
     cancel: "Annuler",
     editProfile: "Modifier le profil",
@@ -251,6 +281,21 @@ const localT = {
   },
   ar: {
     personalInfo: "المعلومات الشخصية",
+    statFollowers: "المتابعون",
+    statFollowing: "المتابَعون",
+    statProducts: "المنتجات",
+    statRfqsMatching: "طلبات مطابقة",
+    statUpdatesPosted: "المنشورات",
+    statExhibitions: "المعارض",
+    statBuyerReviews: "تقييمات المشترين",
+    editBusinessParams: "تعديل بيانات العمل",
+    editBusinessParamsDesc: "اضبط تصنيفاتك التجارية وبياناتك الإقليمية حسب مستوى حسابك",
+    companyNameLabel: "اسم الشركة",
+    sloganLabel: "الشعار / الوصف المختصر",
+    descriptionLabel: "الوصف",
+    businessEmailLabel: "البريد الإلكتروني للأعمال",
+    whatsappNumberLabel: "رقم واتساب",
+    activateSupplierSpace: "فعّل مساحة المورّد",
     saveChanges: "حفظ التغييرات",
     cancel: "إلغاء",
     editProfile: "تعديل الملف الشخصي",
@@ -1184,7 +1229,7 @@ function AccountScreen() {
                 className="w-full md:w-auto flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-blue-600 text-xs font-black text-white hover:opacity-90 shadow-lg shadow-primary/10 transition-all cursor-pointer"
               >
                 <Sparkles className="size-4 text-white animate-spin" />
-                <span>Activate Supplier Space</span>
+                <span>{dict.activateSupplierSpace}</span>
               </button>
             )}
           </div>
@@ -1193,16 +1238,13 @@ function AccountScreen() {
         {/* 3. B2B Profile Statistics Dashboard */}
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 py-6 my-6 border-b border-border/60">
           {[
-            { label: "Followers", val: followersCount + (isFollowing ? 1 : 0), icon: Users, color: "text-blue-500 bg-blue-500/5" },
-            { label: "Following", val: followingCount, icon: Users, color: "text-amber-500 bg-amber-500/5" },
-            { label: "Products", val: productsCount, icon: Box, color: "text-purple-500 bg-purple-500/5" },
-            { label: "RFQs Matching", val: rfqsCount, icon: FileText, color: "text-emerald-500 bg-emerald-500/5" },
-            { label: "Updates Posted", val: updatesPostedCount, icon: Sparkles, color: "text-indigo-500 bg-indigo-500/5" },
-            { label: "Exhibitions", val: exhibitions.length, icon: Briefcase, color: "text-rose-500 bg-rose-500/5" },
-            // FIX: was hardcoded `12` — no reviews system exists anywhere
-            // in the database yet, so 0 is the honest value until one is
-            // actually built.
-            { label: "Buyer Reviews", val: 0, icon: Award, color: "text-yellow-500 bg-yellow-500/5" }
+            { label: dict.statFollowers, val: followersCount + (isFollowing ? 1 : 0), icon: Users, color: "text-blue-500 bg-blue-500/5" },
+            { label: dict.statFollowing, val: followingCount, icon: Users, color: "text-amber-500 bg-amber-500/5" },
+            { label: dict.statProducts, val: productsCount, icon: Box, color: "text-purple-500 bg-purple-500/5" },
+            { label: dict.statRfqsMatching, val: rfqsCount, icon: FileText, color: "text-emerald-500 bg-emerald-500/5" },
+            { label: dict.statUpdatesPosted, val: updatesPostedCount, icon: Sparkles, color: "text-indigo-500 bg-indigo-500/5" },
+            { label: dict.statExhibitions, val: exhibitions.length, icon: Briefcase, color: "text-rose-500 bg-rose-500/5" },
+            { label: dict.statBuyerReviews, val: 0, icon: Award, color: "text-yellow-500 bg-yellow-500/5" }
           ].map((stat, idx) => (
             <div key={idx} className="bg-card border border-border/80 rounded-2xl p-4 text-center hover:shadow-md transition-all">
               <span className={`inline-flex size-9 items-center justify-center rounded-xl mb-2 ${stat.color}`}>
@@ -1346,8 +1388,8 @@ function AccountScreen() {
                 {(
                   <form onSubmit={handleUpdateCompanyProfile} className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6">
                     <div className="border-b border-border pb-3">
-                      <h3 className="text-base font-black text-foreground">Edit Business Parameters</h3>
-                      <p className="text-[11px] text-muted-foreground">Adjust your trade classifications and regional parameters based on level</p>
+                      <h3 className="text-base font-black text-foreground">{dict.editBusinessParams}</h3>
+                      <p className="text-[11px] text-muted-foreground">{dict.editBusinessParamsDesc}</p>
                     </div>
 
                     {/* FIX: these two states existed and were correctly set
@@ -1368,7 +1410,7 @@ function AccountScreen() {
                     <div className="space-y-4">
                       {/* STARTER FIELDS (Level 1+) */}
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">Company Name *</label>
+                        <label className="text-xs font-bold text-muted-foreground">{dict.companyNameLabel} *</label>
                         <input
                           type="text"
                           value={companyForm.name}
@@ -1379,7 +1421,7 @@ function AccountScreen() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">Slogan / Pitch</label>
+                        <label className="text-xs font-bold text-muted-foreground">{dict.sloganLabel}</label>
                         <input
                           type="text"
                           value={companyForm.tagline}
@@ -1389,7 +1431,7 @@ function AccountScreen() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-muted-foreground">Description</label>
+                        <label className="text-xs font-bold text-muted-foreground">{dict.descriptionLabel}</label>
                         <textarea
                           value={companyForm.description}
                           onChange={(e) => setCompanyForm({...companyForm, description: e.target.value})}
@@ -1400,7 +1442,7 @@ function AccountScreen() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-muted-foreground">Business Email</label>
+                          <label className="text-xs font-bold text-muted-foreground">{dict.businessEmailLabel}</label>
                           <input
                             type="email"
                             value={companyForm.businessEmail}
@@ -1409,7 +1451,7 @@ function AccountScreen() {
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-muted-foreground">WhatsApp Number</label>
+                          <label className="text-xs font-bold text-muted-foreground">{dict.whatsappNumberLabel}</label>
                           <input
                             type="text"
                             value={companyForm.whatsappNumber}
