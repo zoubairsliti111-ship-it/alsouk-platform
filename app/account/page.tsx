@@ -1301,8 +1301,18 @@ function AccountScreen() {
                   </div>
                 </div>
 
-                {/* Live edit fields inside About Tab */}
-                {company && (
+                {/* Live edit fields inside About Tab.
+                    FIX: this used to be gated behind `{company && (...)}`,
+                    which meant a brand-new user (company === null, the
+                    correct honest state after removing mock-company-123)
+                    could NEVER see this form at all — a real chicken-and-egg
+                    bug: handleUpdateCompanyProfile already branches
+                    correctly (createCompany when !company, updateCompany
+                    otherwise), but the form itself never rendered to let
+                    them reach that code path. Removing the guard so the
+                    form always renders, in "create" mode when company is
+                    null. */}
+                {(
                   <form onSubmit={handleUpdateCompanyProfile} className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-6">
                     <div className="border-b border-border pb-3">
                       <h3 className="text-base font-black text-foreground">Edit Business Parameters</h3>
