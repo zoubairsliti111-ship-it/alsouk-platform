@@ -181,6 +181,11 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
   const insertData = {
     owner_id: userId,
     name: companyInput.name || "My Company",
+    // FIX: legacy `company_name` column is NOT NULL with no default in
+    // production — every insert was failing this constraint silently
+    // (the app only ever showed a generic "Failed to persist..." error).
+    // Kept in sync with `name` for any code path still reading the old column.
+    company_name: companyInput.name || "My Company",
     slug: companyInput.slug || `company-${Math.random().toString(36).substring(2, 9)}`,
     profile_level: companyInput.profileLevel || "starter",
     tagline: companyInput.tagline || null,
@@ -220,7 +225,12 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
 
   if (compError || !company) {
     console.error("Error creating company:", compError)
-    return null
+    // FIX: was silently returning null, forcing the caller to show a
+    // generic "Failed to persist..." message with no way to diagnose the
+    // real cause (this is exactly how the missing company_name NOT NULL
+    // column went unnoticed). Now the real database error reaches the
+    // user-visible error message.
+    throw new Error(compError?.message || "Failed to create company")
   }
 
   // Link the creator user as the 'owner' in company_members
@@ -267,6 +277,7 @@ export async function updateCompany(companyId: string, companyInput: Partial<Com
 
   const updateData: Record<string, any> = {
     name: companyInput.name,
+    company_name: companyInput.name,
     profile_level: companyInput.profileLevel,
     tagline: companyInput.tagline,
     description: companyInput.description,
@@ -313,7 +324,7 @@ export async function updateCompany(companyId: string, companyInput: Partial<Com
 
   if (error || !company) {
     console.error("Error updating company:", error)
-    return null
+    throw new Error(error?.message || "Failed to update company")
   }
 
   return mapCompanyRow(company as any)
