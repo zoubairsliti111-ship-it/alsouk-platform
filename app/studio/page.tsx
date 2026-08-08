@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { Building2, ImagePlus, Radio, Settings, Video as VideoIcon, X } from "lucide-react"
+import { Building2, Eye, Heart, ImagePlus, MessageCircle, Radio, Send, Settings, Video as VideoIcon, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/components/auth-provider"
 
@@ -18,6 +18,17 @@ type MediaRow = {
   url: string
   caption: string | null
   created_at: string
+  view_count: number
+  like_count: number
+}
+
+type CommentRow = {
+  id: string
+  body: string
+  created_at: string
+  user_id: string
+  authorName: string
+  authorAvatar: string | null
 }
 
 export default function StudioPage() {
@@ -29,6 +40,12 @@ export default function StudioPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [uploadingVideo, setUploadingVideo] = useState(false)
   const [showLiveNote, setShowLiveNote] = useState(false)
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
+  const [openCommentsFor, setOpenCommentsFor] = useState<string | null>(null)
+  const [comments, setComments] = useState<CommentRow[]>([])
+  const [loadingComments, setLoadingComments] = useState(false)
+  const [newComment, setNewComment] = useState("")
+  const [postingComment, setPostingComment] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -77,16 +94,98 @@ export default function StudioPage() {
     const supabase = createClient()
     const { data, error } = await supabase
       .from("company_media")
-      .select("id,media_type,url,caption,created_at")
+      .select("id,media_type,url,caption,created_at,view_count,like_count")
       .eq("company_id", companyId)
       .in("media_type", ["product_gallery", "video", "factory_photo"])
       .order("created_at", { ascending: false })
-    if (!error && data) setMedia(data as MediaRow[])
+    if (!error && data) {
+      setMedia(data as MediaRow[])
+      const ids = (data as MediaRow[]).map((m) => m.id)
+      if (ids.length > 0) {
+        const { data: commentRows } = await supabase
+          .from("company_media_comments")
+          .select("media_id")
+          .in("media_id", ids)
+        if (commentRows) {
+          const counts: Record<string, number> = {}
+          for (const row of commentRows as { media_id: string }[]) {
+            counts[row.media_id] = (counts[row.media_id] ?? 0) + 1
+          }
+          setCommentCounts(counts)
+        }
+      }
+    }
   }, [])
 
   useEffect(() => {
     if (company?.id) loadMedia(company.id)
   }, [company?.id, loadMedia])
+
+  const openComments = async (mediaId: string) => {
+    setOpenCommentsFor(mediaId)
+    setLoadingComments(true)
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from("company_media_comments")
+      .select("id,body,created_at,user_id")
+      .eq("media_id", mediaId)
+      .order("created_at", { ascending: true })
+    if (error || !data) {
+      setComments([])
+      setLoadingComments(false)
+      return
+    }
+    const userIds = Array.from(new Set(data.map((c: { user_id: string }) => c.user_id)))
+    let profileMap: Record<string, { full_name: string | null; avatar_url: string | null }> = {}
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id,full_name,avatar_url")
+        .in("id", userIds)
+      if (profiles) {
+        for (const p of profiles as { id: string; full_name: string | null; avatar_url: string | null }[]) {
+          profileMap[p.id] = { full_name: p.full_name, avatar_url: p.avatar_url }
+        }
+      }
+    }
+    setComments(
+      data.map((c: { id: string; body: string; created_at: string; user_id: string }) => ({
+        id: c.id,
+        body: c.body,
+        created_at: c.created_at,
+        user_id: c.user_id,
+        authorName: c.user_id === user?.id ? "You" : profileMap[c.user_id]?.full_name || "Buyer",
+        authorAvatar: profileMap[c.user_id]?.avatar_url || null,
+      })),
+    )
+    setLoadingComments(false)
+  }
+
+  const closeComments = () => {
+    setOpenCommentsFor(null)
+    setComments([])
+    setNewComment("")
+  }
+
+  const submitReply = async () => {
+    if (!user || !openCommentsFor || !newComment.trim()) return
+    setPostingComment(true)
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from("company_media_comments")
+      .insert({ media_id: openCommentsFor, user_id: user.id, body: newComment.trim() })
+      .select()
+      .single()
+    if (!error && data) {
+      setComments((prev) => [
+        ...prev,
+        { id: data.id, body: data.body, created_at: data.created_at, user_id: user.id, authorName: "You", authorAvatar: null },
+      ])
+      setCommentCounts((prev) => ({ ...prev, [openCommentsFor]: (prev[openCommentsFor] ?? 0) + 1 }))
+      setNewComment("")
+    }
+    setPostingComment(false)
+  }
 
   const handleUploadPhoto = async (file: File) => {
     if (!company) return
@@ -263,7 +362,13 @@ export default function StudioPage() {
       ) : (
         <div className="h-full snap-y snap-mandatory overflow-y-scroll">
           {media.map((m) => (
-            <FeedItem key={m.id} item={m} companyName={company.name} />
+            <FeedItem
+              key={m.id}
+              item={m}
+              companyName={company.name}
+              commentCount={commentCounts[m.id] ?? 0}
+              onOpenComments={() => openComments(m.id)}
+            />
           ))}
         </div>
       )}
@@ -282,11 +387,80 @@ export default function StudioPage() {
           </button>
         </div>
       )}
+
+      {openCommentsFor && (
+        <div className="absolute inset-x-0 bottom-0 z-30 max-h-[70vh] rounded-t-3xl bg-white flex flex-col">
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h3 className="text-sm font-black text-foreground">Comments</h3>
+            <button type="button" onClick={closeComments} className="text-muted-foreground">
+              <X className="size-5" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {loadingComments ? (
+              <p className="text-xs text-muted-foreground text-center py-6">Loading...</p>
+            ) : comments.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-6">No comments yet.</p>
+            ) : (
+              comments.map((c) => (
+                <div key={c.id} className="flex gap-2.5">
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary text-[10px] font-black text-foreground overflow-hidden">
+                    {c.authorAvatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={c.authorAvatar} alt={c.authorName} className="size-full object-cover" />
+                    ) : (
+                      c.authorName.slice(0, 1).toUpperCase()
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-foreground">
+                      {c.authorName}
+                      {c.user_id === user?.id && (
+                        <span className="ms-1.5 text-[9px] font-bold text-primary uppercase">Merchant</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-foreground mt-0.5">{c.body}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <div className="p-3 border-t border-border">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Reply to your customers..."
+                className="flex-1 rounded-full border border-border px-4 py-2.5 text-sm focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={submitReply}
+                disabled={postingComment || !newComment.trim()}
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-white disabled:opacity-50"
+              >
+                <Send className="size-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function FeedItem({ item, companyName }: { item: MediaRow; companyName: string }) {
+function FeedItem({
+  item,
+  companyName,
+  commentCount,
+  onOpenComments,
+}: {
+  item: MediaRow
+  companyName: string
+  commentCount: number
+  onOpenComments: () => void
+}) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
@@ -309,19 +483,33 @@ function FeedItem({ item, companyName }: { item: MediaRow; companyName: string }
   return (
     <div className="relative flex h-screen w-full snap-start items-center justify-center">
       {item.media_type === "video" ? (
-        <video
-          ref={videoRef}
-          src={item.url}
-          muted
-          loop
-          playsInline
-          controls
-          className="h-full w-full object-contain"
-        />
+        <video ref={videoRef} src={item.url} muted loop playsInline controls className="h-full w-full object-contain" />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.url} alt={item.caption ?? companyName} className="h-full w-full object-contain" />
       )}
+
+      <div className="absolute end-3 bottom-24 z-10 flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-1">
+          <span className="flex size-11 items-center justify-center rounded-full bg-white/15 backdrop-blur">
+            <Heart className="size-5 text-white" />
+          </span>
+          <span className="text-[11px] font-bold text-white">{item.like_count}</span>
+        </div>
+        <button type="button" onClick={onOpenComments} className="flex flex-col items-center gap-1">
+          <span className="flex size-11 items-center justify-center rounded-full bg-white/15 backdrop-blur">
+            <MessageCircle className="size-5 text-white" />
+          </span>
+          <span className="text-[11px] font-bold text-white">{commentCount}</span>
+        </button>
+        <div className="flex flex-col items-center gap-1">
+          <span className="flex size-11 items-center justify-center rounded-full bg-white/15 backdrop-blur">
+            <Eye className="size-5 text-white" />
+          </span>
+          <span className="text-[11px] font-bold text-white">{item.view_count}</span>
+        </div>
+      </div>
+
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-5 pb-10">
         <p className="text-sm font-bold text-white">{companyName}</p>
         {item.caption && <p className="mt-1 text-xs text-white/85">{item.caption}</p>}
