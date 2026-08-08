@@ -58,7 +58,21 @@ export function Opportunities() {
     }
   }, [])
 
-  if (!loading && items.length === 0) return null
+  if (!loading && items.length === 0) {
+    return (
+      <section id="opportunities" className="py-6 bg-background">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="rounded-[24px] border border-dashed border-primary/30 bg-primary/5 px-6 py-10 text-center">
+            <p className="text-base font-black text-foreground">🚀 Be the first to list a business opportunity</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">Real suppliers, real products — this space is reserved for you.</p>
+            <Link href="/studio" className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-xs font-black text-white hover:opacity-90">
+              Add Your Product
+            </Link>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section id="opportunities" className="py-6 bg-background">
