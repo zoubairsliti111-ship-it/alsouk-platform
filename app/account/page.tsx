@@ -589,7 +589,27 @@ function AccountScreen() {
         }
 
         // Fetch catalog products
-        const productsList = await getProducts({ companyId: companyData.id, limit: 12 })
+        const { data: rows } = await supabase
+          .from("products")
+          .select("id,name,slug,price,currency,min_order_quantity,unit,product_images(id,url,storage_bucket,storage_path,alt,is_primary,position)")
+          .eq("company_id", companyData.id)
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .limit(12)
+        const productsList = (rows ?? []).map((r: any) => {
+          const images = (r.product_images ?? []).slice().sort((a: any, b: any) => Number(b.is_primary) - Number(a.is_primary) || (a.position ?? 0) - (b.position ?? 0))
+          const img = images[0]
+          return {
+            id: r.id,
+            name: r.name,
+            slug: r.slug,
+            price: r.price === null ? null : Number(r.price),
+            currency: r.currency || "USD",
+            minOrderQuantity: Number(r.min_order_quantity) || 1,
+            unit: r.unit || null,
+            primaryImage: img ? { id: img.id, url: img.url, storageBucket: img.storage_bucket || "product-images", storagePath: img.storage_path, alt: img.alt, isPrimary: Boolean(img.is_primary), position: Number(img.position) || 0 } : null,
+          }
+        })
         setProducts(productsList)
 
         // Fetch trade exhibitions list
