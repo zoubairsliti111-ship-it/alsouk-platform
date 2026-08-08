@@ -474,6 +474,7 @@ function AccountScreen() {
   const [productImageFile, setProductImageFile] = useState<File | null>(null)
   const [productImagePreview, setProductImagePreview] = useState<string | null>(null)
   const [savingProduct, setSavingProduct] = useState(false)
+  const [productSavedNote, setProductSavedNote] = useState(false)
   const [companyMedia, setCompanyMedia] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [exhibitions, setExhibitions] = useState<any[]>([])
@@ -1064,6 +1065,9 @@ function AccountScreen() {
         }
       }
       const refreshed = await getProducts({ companyId: company.id, limit: 12 })
+      setProductSavedNote(true)
+      setTimeout(() => setProductSavedNote(false), 3000)
+      setTimeout(() => document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth", block: "start" }), 150)
       setProducts(refreshed)
       setShowAddProductModal(false)
       setProductForm({ name: "", price: "", minOrderQuantity: "1", unit: "" })
@@ -1997,7 +2001,7 @@ function AccountScreen() {
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-black text-foreground">Showcased Products</h3>
+                  <h3 id="products-section" className="text-base font-black text-foreground">Showcased Products</h3>
                   <p className="text-xs text-muted-foreground">Premium selected catalog available for regional B2B quotes</p>
                 </div>
                 {company && (
@@ -2056,6 +2060,12 @@ function AccountScreen() {
                       {savingProduct ? "Saving..." : "Save Product"}
                     </button>
                   </div>
+                </div>
+              )}
+
+              {productSavedNote && (
+                <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-xs font-bold text-emerald-700 flex items-center gap-2">
+                  ✓ Product added successfully
                 </div>
               )}
 
