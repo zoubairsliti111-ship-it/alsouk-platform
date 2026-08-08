@@ -1828,17 +1828,26 @@ function AccountScreen() {
                   </div>
                 )}
 
+                {/* Photos & Videos link */}
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-3">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Photos & Videos</h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">Manage your product photos and short videos in Studio.</p>
+                  <a href="/studio" className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-black text-white hover:opacity-95">
+                    Open Studio
+                  </a>
+                </div>
+
                 {/* Direct Contact Card */}
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-4">
                   <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Instant Contacts</h4>
                   <div className="space-y-3.5">
                     <a href={`mailto:${company?.businessEmail || "contact@alsouk.com"}`} className="flex items-center gap-3 p-3.5 bg-secondary/15 rounded-xl border border-border/40 text-xs font-bold text-foreground hover:bg-secondary/30 transition-all">
                       <Mail className="size-4 text-primary shrink-0" />
-                      <span className="truncate">{company?.businessEmail || "contact@alsouk.com"}</span>
+                      <span className="truncate">{company?.businessEmail || "Not added yet"}</span>
                     </a>
                     <a href={`tel:${company?.phoneNumber || "+216 71 123 456"}`} className="flex items-center gap-3 p-3.5 bg-secondary/15 rounded-xl border border-border/40 text-xs font-bold text-foreground hover:bg-secondary/30 transition-all">
                       <Phone className="size-4 text-primary shrink-0" />
-                      <span>{company?.phoneNumber || "+216 71 123 456"}</span>
+                      <span>{company?.phoneNumber || "Not added yet"}</span>
                     </a>
                     {company?.whatsappNumber && (
                       <a href={`https://wa.me/${company.whatsappNumber}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15 transition-all">
