@@ -112,7 +112,7 @@ export function FeaturedSuppliers() {
                       href={`/suppliers/${s.id}`}
                       className={buttonVariants({
                         size: "sm",
-                        className: "mt-4 w-full rounded-xl bg-secondary hover:bg-muted text-[11px] font-semibold text-foreground flex items-center justify-center border border-border/60",
+                        className: "mt-4 w-full rounded-xl bg-primary hover:opacity-90 text-[11px] font-black text-white flex items-center justify-center",
                       })}
                     >
                       Visit Store
