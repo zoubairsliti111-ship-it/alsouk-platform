@@ -35,10 +35,9 @@ export default function StudioPage() {
   const { user, isLoading: authLoading } = useAuth()
 
   const [company, setCompany] = useState<Company | null>(null)
+  const [storeId, setStoreId] = useState<string | null>(null)
   const [loadingCompany, setLoadingCompany] = useState(true)
   const [media, setMedia] = useState<MediaRow[]>([])
-  const [uploadingPhoto, setUploadingPhoto] = useState(false)
-  const [uploadingVideo, setUploadingVideo] = useState(false)
   const [showLiveNote, setShowLiveNote] = useState(false)
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
   const [openCommentsFor, setOpenCommentsFor] = useState<string | null>(null)
@@ -46,6 +45,15 @@ export default function StudioPage() {
   const [loadingComments, setLoadingComments] = useState(false)
   const [newComment, setNewComment] = useState("")
   const [postingComment, setPostingComment] = useState(false)
+
+  // Compose flow: pick a photo/video, then attach a name + optional price,
+  // and post it as both a media item AND a real product in one step.
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(null)
+  const [pendingType, setPendingType] = useState<"photo" | "video" | null>(null)
+  const [postName, setPostName] = useState("")
+  const [postPrice, setPostPrice] = useState("")
+  const [posting, setPosting] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -61,26 +69,34 @@ export default function StudioPage() {
         .select("id,name,logo_url")
         .eq("owner_id", user!.id)
         .maybeSingle()
-      if (!active) return
+      let resolvedCompany: Company | null = null
       if (owned) {
-        setCompany(owned as Company)
-        setLoadingCompany(false)
-        return
-      }
-      const { data: membership } = await supabase
-        .from("company_members")
-        .select("company_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .maybeSingle()
-      if (!active) return
-      if (membership?.company_id) {
-        const { data: viaMembership } = await supabase
-          .from("companies")
-          .select("id,name,logo_url")
-          .eq("id", membership.company_id)
+        resolvedCompany = owned as Company
+      } else {
+        const { data: membership } = await supabase
+          .from("company_members")
+          .select("company_id")
+          .eq("user_id", user!.id)
+          .limit(1)
           .maybeSingle()
-        if (active) setCompany((viaMembership as Company) ?? null)
+        if (membership?.company_id) {
+          const { data: viaMembership } = await supabase
+            .from("companies")
+            .select("id,name,logo_url")
+            .eq("id", membership.company_id)
+            .maybeSingle()
+          resolvedCompany = (viaMembership as Company) ?? null
+        }
+      }
+      if (!active) return
+      setCompany(resolvedCompany)
+      if (resolvedCompany) {
+        const { data: store } = await supabase
+          .from("stores")
+          .select("id")
+          .eq("company_id", resolvedCompany.id)
+          .maybeSingle()
+        if (active) setStoreId(store?.id ?? null)
       }
       if (active) setLoadingCompany(false)
     }
@@ -187,67 +203,88 @@ export default function StudioPage() {
     setPostingComment(false)
   }
 
-  const handleUploadPhoto = async (file: File) => {
-    if (!company) return
-    setUploadingPhoto(true)
-    try {
-      const supabase = createClient()
-      const ext = file.name.split(".").pop() || "jpg"
-      const path = `${company.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
-      const { error: uploadError } = await supabase.storage
-        .from("company-photos")
-        .upload(path, file, { cacheControl: "3600", upsert: false })
-      if (uploadError) {
-        console.error("Error uploading photo:", uploadError)
-        return
-      }
-      const { data: urlData } = supabase.storage.from("company-photos").getPublicUrl(path)
-      const { error: insertError } = await supabase.from("company_media").insert({
-        company_id: company.id,
-        media_type: "product_gallery",
-        storage_bucket: "company-photos",
-        storage_path: path,
-        url: urlData.publicUrl,
-        caption: null,
-        position: media.length,
-      })
-      if (!insertError) await loadMedia(company.id)
-    } catch (err) {
-      console.error("Error uploading photo:", err)
-    } finally {
-      setUploadingPhoto(false)
-    }
+  const pickFile = (file: File, type: "photo" | "video") => {
+    setPendingFile(file)
+    setPendingPreviewUrl(URL.createObjectURL(file))
+    setPendingType(type)
+    setPostName("")
+    setPostPrice("")
   }
 
-  const handleUploadVideo = async (file: File) => {
-    if (!company) return
-    setUploadingVideo(true)
+  const cancelCompose = () => {
+    setPendingFile(null)
+    setPendingPreviewUrl(null)
+    setPendingType(null)
+    setPostName("")
+    setPostPrice("")
+  }
+
+  const submitPost = async () => {
+    if (!company || !pendingFile || !pendingType) return
+    setPosting(true)
     try {
       const supabase = createClient()
-      const ext = file.name.split(".").pop() || "mp4"
+      const bucket = pendingType === "photo" ? "company-photos" : "company-videos"
+      const ext = pendingFile.name.split(".").pop() || (pendingType === "photo" ? "jpg" : "mp4")
       const path = `${company.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
       const { error: uploadError } = await supabase.storage
-        .from("company-videos")
-        .upload(path, file, { cacheControl: "3600", upsert: false })
+        .from(bucket)
+        .upload(path, pendingFile, { cacheControl: "3600", upsert: false })
       if (uploadError) {
-        console.error("Error uploading video:", uploadError)
+        console.error("Error uploading:", uploadError)
         return
       }
-      const { data: urlData } = supabase.storage.from("company-videos").getPublicUrl(path)
-      const { error: insertError } = await supabase.from("company_media").insert({
+      const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path)
+      const mediaType = pendingType === "photo" ? "product_gallery" : "video"
+      const caption = postName.trim() || null
+
+      await supabase.from("company_media").insert({
         company_id: company.id,
-        media_type: "video",
-        storage_bucket: "company-videos",
+        media_type: mediaType,
+        storage_bucket: bucket,
         storage_path: path,
         url: urlData.publicUrl,
-        caption: null,
+        caption,
         position: media.length,
       })
-      if (!insertError) await loadMedia(company.id)
+
+      // Also list it as a real product when the merchant gave it a name,
+      // so the same post shows up in Featured Products / search too.
+      if (postName.trim() && storeId) {
+        const slugBase = postName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+        const slug = `${slugBase}-${Date.now().toString(36)}`
+        const { data: newProduct } = await supabase
+          .from("products")
+          .insert({
+            store_id: storeId,
+            company_id: company.id,
+            name: postName.trim(),
+            slug,
+            price: postPrice ? Number(postPrice) : null,
+            currency: "TND",
+            min_order_quantity: 1,
+            is_active: true,
+          })
+          .select()
+          .single()
+        if (newProduct && pendingType === "photo") {
+          await supabase.from("product_images").insert({
+            product_id: newProduct.id,
+            url: urlData.publicUrl,
+            storage_bucket: bucket,
+            storage_path: path,
+            is_primary: true,
+            position: 0,
+          })
+        }
+      }
+
+      await loadMedia(company.id)
+      cancelCompose()
     } catch (err) {
-      console.error("Error uploading video:", err)
+      console.error("Error posting:", err)
     } finally {
-      setUploadingVideo(false)
+      setPosting(false)
     }
   }
 
@@ -305,21 +342,18 @@ export default function StudioPage() {
           accept="image/*"
           id="studio-photo-input"
           className="hidden"
-          disabled={uploadingPhoto}
           onChange={(e) => {
             const f = e.target.files?.[0]
-            if (f) handleUploadPhoto(f)
+            if (f) pickFile(f, "photo")
             e.target.value = ""
           }}
         />
         <label
           htmlFor="studio-photo-input"
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white/15 px-3 py-2.5 text-xs font-bold text-white backdrop-blur ${
-            uploadingPhoto ? "opacity-50" : "cursor-pointer active:scale-95"
-          }`}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white/15 px-3 py-2.5 text-xs font-bold text-white backdrop-blur cursor-pointer active:scale-95"
         >
           <ImagePlus className="size-4" />
-          {uploadingPhoto ? "..." : "Photo"}
+          Photo
         </label>
 
         <input
@@ -327,21 +361,18 @@ export default function StudioPage() {
           accept="video/*"
           id="studio-video-input"
           className="hidden"
-          disabled={uploadingVideo}
           onChange={(e) => {
             const f = e.target.files?.[0]
-            if (f) handleUploadVideo(f)
+            if (f) pickFile(f, "video")
             e.target.value = ""
           }}
         />
         <label
           htmlFor="studio-video-input"
-          className={`flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white/15 px-3 py-2.5 text-xs font-bold text-white backdrop-blur ${
-            uploadingVideo ? "opacity-50" : "cursor-pointer active:scale-95"
-          }`}
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-white/15 px-3 py-2.5 text-xs font-bold text-white backdrop-blur cursor-pointer active:scale-95"
         >
           <VideoIcon className="size-4" />
-          {uploadingVideo ? "..." : "Video"}
+          Video
         </label>
 
         <button
@@ -357,7 +388,7 @@ export default function StudioPage() {
       {media.length === 0 ? (
         <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
           <ImagePlus className="size-10 text-white/40" />
-          <p className="text-sm text-white/70">No photos or videos yet — tap Photo or Video above to add your first one.</p>
+          <p className="text-sm text-white/70">No posts yet — tap Photo or Video above to add your first one.</p>
         </div>
       ) : (
         <div className="h-full snap-y snap-mandatory overflow-y-scroll">
@@ -385,6 +416,61 @@ export default function StudioPage() {
           >
             <X className="size-4 text-foreground" />
           </button>
+        </div>
+      )}
+
+      {/* Compose sheet: shown right after picking a photo/video */}
+      {pendingFile && (
+        <div className="absolute inset-0 z-40 flex flex-col bg-black">
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <button type="button" onClick={cancelCompose} className="text-white text-sm font-bold">
+              Cancel
+            </button>
+            <p className="text-sm font-black text-white">New Post</p>
+            <button
+              type="button"
+              onClick={submitPost}
+              disabled={posting}
+              className="text-sm font-black text-primary disabled:opacity-50"
+            >
+              {posting ? "Posting..." : "Post"}
+            </button>
+          </div>
+          <div className="flex-1 flex items-center justify-center overflow-hidden bg-neutral-900">
+            {pendingType === "photo" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={pendingPreviewUrl ?? ""} alt="preview" className="max-h-full max-w-full object-contain" />
+            ) : (
+              <video src={pendingPreviewUrl ?? ""} controls className="max-h-full max-w-full object-contain" />
+            )}
+          </div>
+          <div className="bg-white p-4 space-y-3">
+            <div>
+              <label className="text-xs font-bold text-muted-foreground">Product name (optional)</label>
+              <input
+                type="text"
+                value={postName}
+                onChange={(e) => setPostName(e.target.value)}
+                placeholder="e.g. Organic Olive Oil 1L"
+                className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-border text-sm"
+              />
+            </div>
+            {postName.trim() && (
+              <div>
+                <label className="text-xs font-bold text-muted-foreground">Price in TND (optional)</label>
+                <input
+                  type="number"
+                  value={postPrice}
+                  onChange={(e) => setPostPrice(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full mt-1 px-3.5 py-2.5 rounded-xl border border-border text-sm"
+                />
+              </div>
+            )}
+            <p className="text-[10px] text-muted-foreground">
+              Add a name to also list this as a product buyers can request a quote for.
+            </p>
+          </div>
         </div>
       )}
 
@@ -489,7 +575,6 @@ function FeedItem({
         <img src={item.url} alt={item.caption ?? companyName} className="h-full w-full object-contain" />
       )}
 
-      {/* Read-only engagement stats + comments (reply) button */}
       <div className="absolute end-3 bottom-24 z-10 flex flex-col items-center gap-4">
         <div className="flex flex-col items-center gap-1">
           <span className="flex size-11 items-center justify-center rounded-full bg-white/15 backdrop-blur">
