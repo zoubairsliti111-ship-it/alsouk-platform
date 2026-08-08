@@ -354,6 +354,13 @@ export default function StudioPage() {
         </button>
       </div>
 
+      <Link
+        href="/account?openAddProduct=1"
+        className="absolute inset-x-4 top-36 z-20 flex items-center justify-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-xs font-black text-black shadow-lg active:scale-95"
+      >
+        + Add Product (name, price, MOQ)
+      </Link>
+
       {media.length === 0 ? (
         <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
           <ImagePlus className="size-10 text-white/40" />
