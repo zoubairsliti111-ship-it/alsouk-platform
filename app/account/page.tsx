@@ -1261,7 +1261,7 @@ function AccountScreen() {
     { month: "short", year: "numeric" }
   )
 
-  const coverImage = company?.bannerUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200"
+  const coverImage = companyMedia.find(m => m.media_type === "product_gallery" || m.media_type === "factory_photo")?.url || company?.bannerUrl || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200"
 
   return (
     <div className="w-full bg-secondary/5 min-h-screen pb-24" dir={dir}>
