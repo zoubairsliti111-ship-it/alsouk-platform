@@ -63,9 +63,7 @@ export function FeaturedProducts() {
           <div className="rounded-[24px] border border-dashed border-primary/30 bg-primary/5 px-6 py-10 text-center">
             <p className="text-base font-black text-foreground">🚀 Be the first to showcase your products here</p>
             <p className="mt-1.5 text-xs text-muted-foreground">Real suppliers, real products — this space is reserved for you.</p>
-            <Link href="/studio" className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2.5 text-xs font-black text-white hover:opacity-90">
-              Add Your Product
-            </Link>
+            <p className="mt-4 text-[11px] font-semibold text-primary/70">Real suppliers, real products coming soon.</p>
           </div>
         </div>
       </section>
