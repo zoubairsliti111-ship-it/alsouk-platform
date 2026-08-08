@@ -46,7 +46,7 @@ export default function SupplierFeedPage({ params }: { params: Promise<{ id: str
       setLoading(false)
 
       // Count this as a profile visit (once per page load).
-      supabase.rpc("increment_profile_view", { target_company_id: id })
+      supabase.rpc("increment_profile_view", { target_company_id: id }).then(({ error }: { error: unknown }) => { if (error) console.error("increment_profile_view failed:", error) })
     }
     load()
     return () => {
@@ -58,7 +58,7 @@ export default function SupplierFeedPage({ params }: { params: Promise<{ id: str
     if (viewedIds.current.has(mediaId)) return
     viewedIds.current.add(mediaId)
     const supabase = createClient()
-    supabase.rpc("increment_media_view", { media_id: mediaId })
+    supabase.rpc("increment_media_view", { media_id: mediaId }).then(({ error }: { error: unknown }) => { if (error) console.error("increment_media_view failed:", error) })
     setMedia((prev) => prev.map((m) => (m.id === mediaId ? { ...m, view_count: m.view_count + 1 } : m)))
   }
 
@@ -67,7 +67,7 @@ export default function SupplierFeedPage({ params }: { params: Promise<{ id: str
     setLikedIds((prev) => new Set(prev).add(mediaId))
     setMedia((prev) => prev.map((m) => (m.id === mediaId ? { ...m, like_count: m.like_count + 1 } : m)))
     const supabase = createClient()
-    supabase.rpc("increment_media_like", { media_id: mediaId })
+    supabase.rpc("increment_media_like", { media_id: mediaId }).then(({ error }: { error: unknown }) => { if (error) console.error("increment_media_like failed:", error) })
   }
 
   if (loading) {

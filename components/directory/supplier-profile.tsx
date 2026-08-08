@@ -72,7 +72,7 @@ export function SupplierProfile({ id }: { id: string }) {
   // Count this as a profile visit.
   useEffect(() => {
     const supabase = createClient()
-    supabase.rpc("increment_profile_view", { target_company_id: id })
+    supabase.rpc("increment_profile_view", { target_company_id: id }).then(({ error }: { error: unknown }) => { if (error) console.error("increment_profile_view failed:", error) })
   }, [id])
 
   // Real uploaded photos/videos/certificates for this company. company_media
