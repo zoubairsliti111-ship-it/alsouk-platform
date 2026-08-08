@@ -1124,29 +1124,10 @@ function AccountScreen() {
 
   // Dynamic visible tabs based on profileLevel
   const visibleTabs = useMemo(() => {
-    const level = company?.profileLevel || "starter"
     const tabs: { id: "about" | "posts" | "products" | "certificates" | "reviews" | "exhibitions"; label: string; icon: import("lucide-react").LucideIcon }[] = [
       { id: "about" as const, label: dict.tabAboutTrade, icon: Building2 },
-      { id: "posts" as const, label: dict.tabInstagramFeed, icon: FileText },
       { id: "products" as const, label: dict.tabFeaturedProducts, icon: Box },
     ]
-    if (level === "starter") {
-      tabs.push(
-        { id: "certificates" as const, label: "Simple Gallery", icon: ImageIcon },
-        { id: "reviews" as const, label: dict.tabBuyerReviews, icon: Award }
-      )
-    } else if (level === "business") {
-      tabs.push(
-        { id: "certificates" as const, label: "Gallery & Catalog", icon: ImageIcon },
-        { id: "reviews" as const, label: dict.tabBuyerReviews, icon: Award }
-      )
-    } else if (level === "enterprise") {
-      tabs.push(
-        { id: "exhibitions" as const, label: "Trade Exhibitions", icon: Briefcase },
-        { id: "certificates" as const, label: "Gallery & Quality", icon: Award },
-        { id: "reviews" as const, label: dict.tabBuyerReviews, icon: Award }
-      )
-    }
     return tabs
   }, [company?.profileLevel, lang])
 
