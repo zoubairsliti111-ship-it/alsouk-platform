@@ -8,6 +8,7 @@ import {
   Award,
   BadgeCheck,
   Boxes,
+  Eye,
   Building2,
   CalendarClock,
   FileText,
@@ -97,7 +98,7 @@ export function SupplierProfile({ id }: { id: string }) {
         <div className="mx-auto max-w-6xl px-4">
           <div className="-mt-10 size-24 animate-pulse rounded-2xl bg-muted" />
           <div className="mt-4 h-6 w-56 animate-pulse rounded bg-muted" />
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-20 animate-pulse rounded-xl bg-muted" />
             ))}
@@ -251,11 +252,12 @@ export function SupplierProfile({ id }: { id: string }) {
           </div>
 
           {/* Quick stats */}
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
             <Stat icon={<Package className="size-4 text-primary" />} value={String(s.products)} label={p.products} />
             <Stat icon={<TrendingUp className="size-4 text-accent" />} value={`${s.responseRate}%`} label={p.responseRate} />
             <Stat icon={<CalendarClock className="size-4 text-primary" />} value={String(s.years)} label={p.yearsInBusiness} />
             <Stat icon={<Boxes className="size-4 text-accent" />} value={s.minMoq.toLocaleString()} label={p.moq} />
+            <Stat icon={<Eye className="size-4 text-primary" />} value={String(s.profileViews)} label="Views" />
           </div>
         </div>
       </section>

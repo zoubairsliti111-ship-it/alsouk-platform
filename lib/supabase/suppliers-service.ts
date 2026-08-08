@@ -59,11 +59,12 @@ export type SupplierRow = {
   description: string | null
   tagline: string | null
   created_at: string
+  profile_views: number | null
   products_count?: number
 }
 
 export const SUPPLIER_COLUMNS =
-  "id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at"
+  "id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views"
 
 export const SORT_COLUMNS: Record<SupplierSort, string> = {
   rating: "created_at",
@@ -110,6 +111,7 @@ export function mapRow(row: SupplierRow): Supplier | null {
     categories: (row.primary_industry ? [row.primary_industry] : []) as CategoryKey[],
     description: row.description?.trim() || row.tagline?.trim() || null,
     logoUrl: row.logo_url?.trim() || null,
+    profileViews: Number(row.profile_views) || 0,
   }
 }
 

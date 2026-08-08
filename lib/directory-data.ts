@@ -111,6 +111,7 @@ export type Supplier = {
   description: string | null
   /** Optional hero/logo image URL; falls back to the monogram when absent. */
   logoUrl: string | null
+  profileViews: number
 }
 
 /**
