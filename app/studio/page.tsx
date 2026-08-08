@@ -40,6 +40,7 @@ export default function StudioPage() {
   const [media, setMedia] = useState<MediaRow[]>([])
   const [showLiveNote, setShowLiveNote] = useState(false)
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
+  const [productByUrl, setProductByUrl] = useState<Record<string, { name: string; price: number | null }>>({})
   const [openCommentsFor, setOpenCommentsFor] = useState<string | null>(null)
   const [comments, setComments] = useState<CommentRow[]>([])
   const [loadingComments, setLoadingComments] = useState(false)
@@ -116,6 +117,20 @@ export default function StudioPage() {
       .order("created_at", { ascending: false })
     if (!error && data) {
       setMedia(data as MediaRow[])
+      const { data: prodRows } = await supabase
+        .from("products")
+        .select("name,price,product_images(url)")
+        .eq("company_id", companyId)
+      if (prodRows) {
+        const map: Record<string, { name: string; price: number | null }> = {}
+        for (const p of prodRows as any[]) {
+          const imgs = p.product_images ?? []
+          for (const img of imgs) {
+            if (img.url) map[img.url] = { name: p.name, price: p.price === null ? null : Number(p.price) }
+          }
+        }
+        setProductByUrl(map)
+      }
       const ids = (data as MediaRow[]).map((m) => m.id)
       if (ids.length > 0) {
         const { data: commentRows } = await supabase
@@ -399,6 +414,7 @@ export default function StudioPage() {
               companyName={company.name}
               commentCount={commentCounts[m.id] ?? 0}
               onOpenComments={() => openComments(m.id)}
+              product={productByUrl[m.url]}
             />
           ))}
         </div>
@@ -541,11 +557,13 @@ function FeedItem({
   companyName,
   commentCount,
   onOpenComments,
+  product,
 }: {
   item: MediaRow
   companyName: string
   commentCount: number
   onOpenComments: () => void
+  product?: { name: string; price: number | null }
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -573,6 +591,15 @@ function FeedItem({
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.url} alt={item.caption ?? companyName} className="h-full w-full object-contain" />
+      )}
+
+      {product && (
+        <div className="absolute top-4 start-4 z-10 flex items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-lg max-w-[75%]">
+          <span className="text-xs font-black text-foreground truncate">{product.name}</span>
+          {product.price !== null && (
+            <span className="text-xs font-black text-primary shrink-0">{product.price} TND</span>
+          )}
+        </div>
       )}
 
       <div className="absolute end-3 bottom-24 z-10 flex flex-col items-center gap-4">
