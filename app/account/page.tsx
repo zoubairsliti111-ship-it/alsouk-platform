@@ -3,6 +3,8 @@
 import { useEffect, useState, useTransition, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { StudioPanel } from "@/components/studio/studio-panel"
+import { ImagePlus } from "lucide-react"
 import { MarketplaceShell } from "@/components/marketplace/shell"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
@@ -444,7 +446,7 @@ function AccountScreen() {
   const [selectedRole, setSelectedRole] = useState<"buyer" | "supplier" | null>(null)
 
   // New premium profile layout tabs: posts, products, about, exhibitions, reviews, certificates
-  const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "products" | "about" | "exhibitions" | "reviews" | "certificates">("about")
+  const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "products" | "about" | "exhibitions" | "reviews" | "certificates" | "studio">("about")
 
   // Sidebar controls
   const [showEditSettingsModal, setShowEditSettingsModal] = useState(false)
@@ -1144,8 +1146,9 @@ function AccountScreen() {
 
   // Dynamic visible tabs based on profileLevel
   const visibleTabs = useMemo(() => {
-    const tabs: { id: "about" | "posts" | "products" | "certificates" | "reviews" | "exhibitions"; label: string; icon: import("lucide-react").LucideIcon }[] = [
+    const tabs: { id: "about" | "posts" | "products" | "certificates" | "reviews" | "exhibitions" | "studio"; label: string; icon: import("lucide-react").LucideIcon }[] = [
       { id: "about" as const, label: dict.tabAboutTrade, icon: Building2 },
+      { id: "studio" as const, label: "Studio", icon: ImagePlus },
       { id: "products" as const, label: dict.tabFeaturedProducts, icon: Box },
     ]
     return tabs
@@ -1852,9 +1855,9 @@ function AccountScreen() {
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-3">
                   <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Photos & Videos</h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">Manage your product photos and short videos in Studio.</p>
-                  <a href="/studio" className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-black text-white hover:opacity-95">
+                  <button type="button" onClick={() => setActiveProfileTab("studio")} className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-black text-white hover:opacity-95 w-full">
                     Open Studio
-                  </a>
+                  </button>
                 </div>
 
                 {/* Direct Contact Card */}
@@ -2007,6 +2010,12 @@ function AccountScreen() {
           )}
 
           {/* Tab 3: Featured Products catalog */}
+          {activeTabResolved === "studio" && (
+            <div className="space-y-6">
+              {company && <StudioPanel company={{ id: company.id, name: company.name, logo_url: company.logoUrl }} />}
+            </div>
+          )}
+
           {activeTabResolved === "products" && (
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

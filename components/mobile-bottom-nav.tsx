@@ -25,7 +25,6 @@ export function MobileBottomNav() {
     { href: "/categories", label: categoriesLabels[lang] || categoriesLabels["en"], icon: LayoutGrid },
     { href: "/rfq", label: rfqLabels[lang] || rfqLabels["en"], icon: FileText },
     { href: "/messages", label: messagesLabels[lang] || messagesLabels["en"], icon: MessageSquare },
-    { href: "/studio", label: lang === "ar" ? "استوديو" : lang === "fr" ? "Studio" : "Studio", icon: Video },
     { href: "/account", label: accountLabels[lang] || accountLabels["en"], icon: User },
   ]
 
