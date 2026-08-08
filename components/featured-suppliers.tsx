@@ -68,7 +68,7 @@ export function FeaturedSuppliers() {
                   {/* Supplier Logo/Thumbnail with factory background */}
                   <div className="relative h-28 overflow-hidden rounded-[16px] mb-3 bg-secondary">
                     <Image
-                      src="/images/supplier-factory.png"
+                      src={s.coverPhotoUrl || "/images/supplier-factory.png"}
                       alt={`${s.name} facility`}
                       fill
                       sizes="(max-width: 640px) 280px, 20vw"

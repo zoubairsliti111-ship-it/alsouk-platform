@@ -110,6 +110,20 @@ export async function GET(request: Request) {
         if (countsRes.ok) {
           const productRows = (await countsRes.json()) as { company_id: string }[]
           const counts = new Map<string, number>()
+          const mediaRes = await fetch(
+            `${url}/rest/v1/company_media?select=company_id,url,created_at&company_id=in.(${idsParam})&media_type=in.(product_gallery,factory_photo)&order=created_at.asc`,
+            { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: "no-store" },
+          )
+          if (mediaRes.ok) {
+            const mediaRows = (await mediaRes.json()) as { company_id: string; url: string }[]
+            const firstPhoto = new Map<string, string>()
+            for (const m of mediaRows) {
+              if (!firstPhoto.has(m.company_id)) firstPhoto.set(m.company_id, m.url)
+            }
+            for (const row of rows) {
+              row.cover_photo_url = firstPhoto.get(row.id) ?? null
+            }
+          }
           for (const p of productRows) {
             counts.set(p.company_id, (counts.get(p.company_id) ?? 0) + 1)
           }

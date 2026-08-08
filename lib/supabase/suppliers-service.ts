@@ -61,6 +61,7 @@ export type SupplierRow = {
   created_at: string
   profile_views: number | null
   products_count?: number
+  cover_photo_url?: string | null
 }
 
 export const SUPPLIER_COLUMNS =
@@ -112,6 +113,7 @@ export function mapRow(row: SupplierRow): Supplier | null {
     description: row.description?.trim() || row.tagline?.trim() || null,
     logoUrl: row.logo_url?.trim() || null,
     profileViews: Number(row.profile_views) || 0,
+    coverPhotoUrl: row.cover_photo_url?.trim() || null,
   }
 }
 
