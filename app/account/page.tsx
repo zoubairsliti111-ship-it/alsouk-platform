@@ -1417,7 +1417,7 @@ function AccountScreen() {
         </div>
 
         {/* 3. B2B Profile Statistics Dashboard */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 py-6 my-6 border-b border-border/60">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 py-4 my-4 border-b border-border/60">
           {[
             { label: dict.statFollowers, val: followersCount + (isFollowing ? 1 : 0), icon: Users, color: "text-blue-500 bg-blue-500/5" },
             { label: dict.statFollowing, val: followingCount, icon: Users, color: "text-amber-500 bg-amber-500/5" },
@@ -1427,11 +1427,11 @@ function AccountScreen() {
             { label: dict.statExhibitions, val: exhibitions.length, icon: Briefcase, color: "text-rose-500 bg-rose-500/5" },
             { label: dict.statBuyerReviews, val: 0, icon: Award, color: "text-yellow-500 bg-yellow-500/5" }
           ].map((stat, idx) => (
-            <div key={idx} className="bg-card border border-border/80 rounded-2xl p-4 text-center hover:shadow-md transition-all">
-              <span className={`inline-flex size-9 items-center justify-center rounded-xl mb-2 ${stat.color}`}>
-                <stat.icon className="size-4.5" />
+            <div key={idx} className="bg-card border border-border/80 rounded-xl p-2.5 text-center hover:shadow-md transition-all">
+              <span className={`inline-flex size-7 items-center justify-center rounded-lg mb-1.5 ${stat.color}`}>
+                <stat.icon className="size-3.5" />
               </span>
-              <div className="text-xl font-black text-foreground">{stat.val}</div>
+              <div className="text-base font-black text-foreground">{stat.val}</div>
               <div className="text-[10px] font-bold text-muted-foreground mt-0.5 uppercase tracking-wide line-clamp-1">{stat.label}</div>
             </div>
           ))}
