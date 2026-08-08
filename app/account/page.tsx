@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { StudioPanel } from "@/components/studio/studio-panel"
+import { useAuth } from "@/components/auth-provider"
 import { ImagePlus } from "lucide-react"
 import { MarketplaceShell } from "@/components/marketplace/shell"
 import { useLanguage } from "@/components/language-provider"
@@ -495,6 +496,7 @@ function AccountScreen() {
   // successful save.
   const [isEditingCompany, setIsEditingCompany] = useState(false)
   const [isFollowing, setIsFollowing] = useState(false)
+  const { user: authUser } = useAuth()
 
   // Likes & Comments Simulator State for posts
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({})
@@ -1382,7 +1384,17 @@ function AccountScreen() {
                   <QrCode className="size-4" />
                 </button>
                 <button
-                  onClick={() => setIsFollowing(!isFollowing)}
+                  onClick={async () => {
+                    if (!authUser || !company) return
+                    const supabase = createClient()
+                    if (isFollowing) {
+                      await supabase.from("company_follows").delete().eq("company_id", company.id).eq("user_id", authUser.id)
+                      setIsFollowing(false)
+                    } else {
+                      await supabase.from("company_follows").insert({ company_id: company.id, user_id: authUser.id })
+                      setIsFollowing(true)
+                    }
+                  }}
                   className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
                     isFollowing
                       ? "bg-secondary text-foreground hover:bg-secondary/80"

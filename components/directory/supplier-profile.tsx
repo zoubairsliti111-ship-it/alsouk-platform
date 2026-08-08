@@ -26,9 +26,10 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
 import { fetchSupplierById } from "@/lib/supabase/suppliers-service"
-import { createClient } from "@/lib/supabase/client"
 import type { Supplier } from "@/lib/directory-data"
 import { RfqDialog } from "@/components/rfq/rfq-dialog"
+import { useAuth } from "@/components/auth-provider"
+import { createClient } from "@/lib/supabase/client"
 
 type Status = "loading" | "loaded" | "notFound" | "error"
 
@@ -54,6 +55,7 @@ export function SupplierProfile({ id }: { id: string }) {
   const [media, setMedia] = useState<MediaRow[]>([])
   const [rfqOpen, setRfqOpen] = useState(false)
   const [following, setFollowing] = useState(false)
+  const { user: authUser } = useAuth()
   const closeRfq = useCallback(() => setRfqOpen(false), [])
 
   useEffect(() => {
@@ -149,7 +151,17 @@ export function SupplierProfile({ id }: { id: string }) {
   const followButton = (
     <button
       type="button"
-      onClick={() => setFollowing((f) => !f)}
+      onClick={async () => {
+        if (!authUser) return
+        const supabase = createClient()
+        if (following) {
+          await supabase.from("company_follows").delete().eq("company_id", s.id).eq("user_id", authUser.id)
+          setFollowing(false)
+        } else {
+          await supabase.from("company_follows").insert({ company_id: s.id, user_id: authUser.id })
+          setFollowing(true)
+        }
+      }}
       aria-pressed={following}
       className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold transition-colors active:scale-95 ${
         following
