@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, use } from "react"
 import Link from "next/link"
-import { ArrowLeft, Building2, ImagePlus } from "lucide-react"
+import { ArrowLeft, Building2, Heart, ImagePlus, Eye } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { fetchSupplierById } from "@/lib/supabase/suppliers-service"
 
@@ -12,6 +12,8 @@ type MediaRow = {
   url: string
   caption: string | null
   created_at: string
+  view_count: number
+  like_count: number
 }
 
 export default function SupplierFeedPage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,6 +22,8 @@ export default function SupplierFeedPage({ params }: { params: Promise<{ id: str
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [media, setMedia] = useState<MediaRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
+  const viewedIds = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     let active = true
@@ -33,19 +37,38 @@ export default function SupplierFeedPage({ params }: { params: Promise<{ id: str
       const supabase = createClient()
       const { data, error } = await supabase
         .from("company_media")
-        .select("id,media_type,url,caption,created_at")
+        .select("id,media_type,url,caption,created_at,view_count,like_count")
         .eq("company_id", id)
         .in("media_type", ["product_gallery", "video", "factory_photo"])
         .order("created_at", { ascending: false })
       if (!active) return
       if (!error && data) setMedia(data as MediaRow[])
       setLoading(false)
+
+      // Count this as a profile visit (once per page load).
+      supabase.rpc("increment_profile_view", { target_company_id: id })
     }
     load()
     return () => {
       active = false
     }
   }, [id])
+
+  const registerView = (mediaId: string) => {
+    if (viewedIds.current.has(mediaId)) return
+    viewedIds.current.add(mediaId)
+    const supabase = createClient()
+    supabase.rpc("increment_media_view", { media_id: mediaId })
+    setMedia((prev) => prev.map((m) => (m.id === mediaId ? { ...m, view_count: m.view_count + 1 } : m)))
+  }
+
+  const handleLike = (mediaId: string) => {
+    if (likedIds.has(mediaId)) return
+    setLikedIds((prev) => new Set(prev).add(mediaId))
+    setMedia((prev) => prev.map((m) => (m.id === mediaId ? { ...m, like_count: m.like_count + 1 } : m)))
+    const supabase = createClient()
+    supabase.rpc("increment_media_like", { media_id: mediaId })
+  }
 
   if (loading) {
     return (
@@ -85,7 +108,14 @@ export default function SupplierFeedPage({ params }: { params: Promise<{ id: str
       ) : (
         <div className="h-full snap-y snap-mandatory overflow-y-scroll">
           {media.map((m) => (
-            <FeedItem key={m.id} item={m} companyName={companyName} />
+            <FeedItem
+              key={m.id}
+              item={m}
+              companyName={companyName}
+              liked={likedIds.has(m.id)}
+              onLike={() => handleLike(m.id)}
+              onView={() => registerView(m.id)}
+            />
           ))}
         </div>
       )}
@@ -93,28 +123,43 @@ export default function SupplierFeedPage({ params }: { params: Promise<{ id: str
   )
 }
 
-function FeedItem({ item, companyName }: { item: MediaRow; companyName: string }) {
+function FeedItem({
+  item,
+  companyName,
+  liked,
+  onLike,
+  onView,
+}: {
+  item: MediaRow
+  companyName: string
+  liked: boolean
+  onLike: () => void
+  onView: () => void
+}) {
   const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const el = videoRef.current
+    const el = containerRef.current
     if (!el) return
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          el.play().catch(() => {})
+          onView()
+          if (item.media_type === "video") videoRef.current?.play().catch(() => {})
         } else {
-          el.pause()
+          if (item.media_type === "video") videoRef.current?.pause()
         }
       },
       { threshold: 0.6 },
     )
     observer.observe(el)
     return () => observer.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    <div className="relative flex h-screen w-full snap-start items-center justify-center">
+    <div ref={containerRef} className="relative flex h-screen w-full snap-start items-center justify-center">
       {item.media_type === "video" ? (
         <video
           ref={videoRef}
@@ -129,6 +174,23 @@ function FeedItem({ item, companyName }: { item: MediaRow; companyName: string }
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.url} alt={item.caption ?? companyName} className="h-full w-full object-contain" />
       )}
+
+      {/* Right-side action rail */}
+      <div className="absolute end-3 bottom-24 z-10 flex flex-col items-center gap-4">
+        <button type="button" onClick={onLike} className="flex flex-col items-center gap-1">
+          <span className={`flex size-11 items-center justify-center rounded-full backdrop-blur ${liked ? "bg-red-500" : "bg-white/15"}`}>
+            <Heart className={`size-5 text-white ${liked ? "fill-white" : ""}`} />
+          </span>
+          <span className="text-[11px] font-bold text-white">{item.like_count}</span>
+        </button>
+        <div className="flex flex-col items-center gap-1">
+          <span className="flex size-11 items-center justify-center rounded-full bg-white/15 backdrop-blur">
+            <Eye className="size-5 text-white" />
+          </span>
+          <span className="text-[11px] font-bold text-white">{item.view_count}</span>
+        </div>
+      </div>
+
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-5 pb-10">
         <p className="text-sm font-bold text-white">{companyName}</p>
         {item.caption && <p className="mt-1 text-xs text-white/85">{item.caption}</p>}
