@@ -141,7 +141,7 @@ export function SupplierProfile({ id }: { id: string }) {
       ? "bg-brand-green text-brand-green-foreground"
       : "bg-brand-blue text-brand-blue-foreground"
 
-  const photos = media.filter((m) => m.media_type === "factory_photo")
+  const photos = media.filter((m) => m.media_type === "factory_photo" || m.media_type === "product_gallery")
   const videos = media.filter((m) => m.media_type === "video")
   const certificates = media.filter((m) => m.media_type === "certificate")
   const coverUrl = photos[0]?.url || COVER_IMAGE
