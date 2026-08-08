@@ -1147,8 +1147,8 @@ function AccountScreen() {
   // Dynamic visible tabs based on profileLevel
   const visibleTabs = useMemo(() => {
     const tabs: { id: "about" | "posts" | "products" | "certificates" | "reviews" | "exhibitions" | "studio"; label: string; icon: import("lucide-react").LucideIcon }[] = [
-      { id: "about" as const, label: dict.tabAboutTrade, icon: Building2 },
       { id: "studio" as const, label: "Studio", icon: ImagePlus },
+      { id: "about" as const, label: dict.tabAboutTrade, icon: Building2 },
       { id: "products" as const, label: dict.tabFeaturedProducts, icon: Box },
     ]
     return tabs
