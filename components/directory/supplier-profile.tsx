@@ -69,6 +69,12 @@ export function SupplierProfile({ id }: { id: string }) {
     }
   }, [id])
 
+  // Count this as a profile visit.
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.rpc("increment_profile_view", { target_company_id: id })
+  }, [id])
+
   // Real uploaded photos/videos/certificates for this company. company_media
   // is publicly readable, so this can be fetched straight from the client.
   useEffect(() => {
