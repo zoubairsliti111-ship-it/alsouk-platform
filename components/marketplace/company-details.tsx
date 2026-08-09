@@ -304,7 +304,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
 
       // Fetch user session and verify if company owner
       const supabase = createClient()
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      supabase.auth.getSession().then(({ data: { session } }: { data: { session: import("@supabase/supabase-js").Session | null } }) => {
         if (!active) return
         if (session?.user) {
           setCurrentUser(session.user)
@@ -314,7 +314,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
             .eq("company_id", company.id)
             .eq("user_id", session.user.id)
             .maybeSingle()
-            .then(({ data }) => {
+            .then(({ data }: { data: { role: string } | null }) => {
               if (data) {
                 setIsOwner(true)
               }
@@ -457,11 +457,23 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                 <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
                   {company.name}
                 </h1>
-                {company.verified && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                    <BadgeCheck className="size-4 shrink-0 text-emerald-500" />
-                    {m.verified}
+                {company.profileLevel === "enterprise" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 border border-purple-500/25 px-2.5 py-1 text-xs font-black text-purple-600 dark:text-purple-400 animate-pulse">
+                    <Shield className="size-4 shrink-0 text-purple-500" />
+                    <span>Gold Enterprise Factory</span>
                   </span>
+                ) : company.profileLevel === "business" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 border border-blue-500/25 px-2.5 py-1 text-xs font-black text-blue-600 dark:text-blue-400">
+                    <Sparkles className="size-4 shrink-0 text-blue-500" />
+                    <span>Verified Business Partner</span>
+                  </span>
+                ) : (
+                  company.verified && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                      <BadgeCheck className="size-4 shrink-0 text-emerald-500" />
+                      {m.verified}
+                    </span>
+                  )
                 )}
               </div>
 
@@ -478,13 +490,13 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                     {location}
                   </span>
                 )}
-                {company.yearEstablished && (
+                {(company.profileLevel === "business" || company.profileLevel === "enterprise") && company.yearEstablished && (
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar className="size-4 text-primary shrink-0" />
                     {dict.established}: {company.yearEstablished}
                   </span>
                 )}
-                {company.websiteUrl && (
+                {(company.profileLevel === "business" || company.profileLevel === "enterprise") && company.websiteUrl && (
                   <a
                     href={company.websiteUrl.startsWith("http") ? company.websiteUrl : `https://${company.websiteUrl}`}
                     target="_blank"
@@ -585,19 +597,21 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
             <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm">
               <h2 className="text-base font-black text-foreground tracking-tight mb-4 flex items-center gap-2">
                 <Layers className="size-5 text-primary" />
-                <span>{dict.gallery}</span>
+                <span>{company.profileLevel === "starter" ? "Showcase Gallery" : dict.gallery}</span>
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {company.media.filter(m => m.mediaType !== "certificate").map((med) => (
-                  <div key={med.id} className="relative group rounded-xl overflow-hidden border border-border bg-secondary aspect-video">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={med.url} alt={med.caption || "Factory photo"} className="size-full object-cover transition-all group-hover:scale-105" />
-                    {med.caption && (
-                      <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-xs p-2 text-[10px] text-white font-semibold truncate">
-                        {med.caption}
-                      </div>
-                    )}
-                  </div>
+                {company.media.filter(m => m.mediaType !== "certificate")
+                  .slice(0, company.profileLevel === "starter" ? 4 : company.profileLevel === "business" ? 12 : undefined)
+                  .map((med) => (
+                    <div key={med.id} className="relative group rounded-xl overflow-hidden border border-border bg-secondary aspect-video">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={med.url} alt={med.caption || "Showcase photo"} className="size-full object-cover transition-all group-hover:scale-105" />
+                      {med.caption && (
+                        <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-xs p-2 text-[10px] text-white font-semibold truncate">
+                          {med.caption}
+                        </div>
+                      )}
+                    </div>
                 ))}
               </div>
             </section>
@@ -611,40 +625,62 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
             </section>
           )}
 
-          {/* Certificates */}
-          {company.media && company.media.filter(m => m.mediaType === "certificate").length > 0 ? (
-            <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm">
-              <h2 className="text-base font-black text-foreground tracking-tight mb-4 flex items-center gap-2">
+          {/* Catalog PDFs & Brochures (Business & Enterprise Only) */}
+          {(company.profileLevel === "business" || company.profileLevel === "enterprise") && company.metadata?.catalog_url && (
+            <section className="bg-card border border-primary/20 bg-primary/5 rounded-[20px] p-6 shadow-sm space-y-3">
+              <h2 className="text-base font-black text-foreground tracking-tight flex items-center gap-2">
                 <FileCheck className="size-5 text-primary" />
-                <span>{dict.certificates}</span>
+                <span>Official B2B Marketing Catalog</span>
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {company.media.filter(m => m.mediaType === "certificate").map((cert) => (
-                  <div key={cert.id} className="relative group rounded-xl overflow-hidden border border-border bg-secondary aspect-[3/4] p-3 flex flex-col justify-between items-center text-center">
-                    <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2">
-                      <FileCheck className="size-6" />
+              <p className="text-xs text-muted-foreground">Download our comprehensive, premium catalogue to view certified bulk offers, MOQ, and standard trade parameters.</p>
+              <a
+                href={company.metadata.catalog_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary text-white text-xs font-black py-2.5 px-4 shadow-sm hover:opacity-95"
+              >
+                <ExternalLink className="size-4" />
+                <span>Download Catalogue PDF</span>
+              </a>
+            </section>
+          )}
+
+          {/* Certificates (Enterprise Only) */}
+          {company.profileLevel === "enterprise" && (
+            company.media && company.media.filter(m => m.mediaType === "certificate").length > 0 ? (
+              <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm">
+                <h2 className="text-base font-black text-foreground tracking-tight mb-4 flex items-center gap-2">
+                  <FileCheck className="size-5 text-primary" />
+                  <span>{dict.certificates}</span>
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {company.media.filter(m => m.mediaType === "certificate").map((cert) => (
+                    <div key={cert.id} className="relative group rounded-xl overflow-hidden border border-border bg-secondary aspect-[3/4] p-3 flex flex-col justify-between items-center text-center">
+                      <div className="size-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2">
+                        <FileCheck className="size-6" />
+                      </div>
+                      <span className="text-xs font-bold text-foreground line-clamp-2 mb-1">{cert.caption || "Quality standard"}</span>
+                      <a
+                        href={cert.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-black text-primary hover:underline uppercase tracking-wider"
+                      >
+                        View doc
+                      </a>
                     </div>
-                    <span className="text-xs font-bold text-foreground line-clamp-2 mb-1">{cert.caption || "Quality standard"}</span>
-                    <a
-                      href={cert.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-[10px] font-black text-primary hover:underline uppercase tracking-wider"
-                    >
-                      View doc
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : (
-            <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm">
-              <h2 className="text-base font-black text-foreground tracking-tight mb-4 flex items-center gap-2">
-                <FileCheck className="size-5 text-primary" />
-                <span>{dict.certificates}</span>
-              </h2>
-              <p className="text-xs text-muted-foreground italic">{dict.noCertificates}</p>
-            </section>
+                  ))}
+                </div>
+              </section>
+            ) : (
+              <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm">
+                <h2 className="text-base font-black text-foreground tracking-tight mb-4 flex items-center gap-2">
+                  <FileCheck className="size-5 text-primary" />
+                  <span>{dict.certificates}</span>
+                </h2>
+                <p className="text-xs text-muted-foreground italic">{dict.noCertificates}</p>
+              </section>
+            )
           )}
 
           {/* Daily Updates Feed */}
@@ -710,74 +746,76 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
         <div className="space-y-8">
 
           {/* Structured Details Info Card */}
-          <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-4">
-            <h2 className="text-base font-black text-foreground tracking-tight border-b border-border/60 pb-3 flex items-center gap-2">
-              <Layers className="size-5 text-primary" />
-              <span>{dict.businessDetails}</span>
-            </h2>
+          {(company.profileLevel === "business" || company.profileLevel === "enterprise") && (
+            <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-4">
+              <h2 className="text-base font-black text-foreground tracking-tight border-b border-border/60 pb-3 flex items-center gap-2">
+                <Layers className="size-5 text-primary" />
+                <span>{dict.businessDetails}</span>
+              </h2>
 
-            <div className="space-y-4 text-xs font-semibold">
-              {company.businessType && (
-                <div className="flex justify-between items-center border-b border-border/50 pb-3">
-                  <span className="text-muted-foreground">{dict.classification}</span>
-                  <span className="text-foreground font-black capitalize">
-                    {BUSINESS_TYPE_LABELS[lang]?.[company.businessType] || company.businessType.replace("_", " ")}
-                  </span>
-                </div>
-              )}
-
-              {company.primaryIndustry && (
-                <div className="flex justify-between items-center border-b border-border/50 pb-3">
-                  <span className="text-muted-foreground">{dict.industry}</span>
-                  <span className="text-foreground font-black capitalize">
-                    {INDUSTRY_LABELS[lang]?.[company.primaryIndustry] || company.primaryIndustry}
-                  </span>
-                </div>
-              )}
-
-              {company.companySize && (
-                <div className="flex justify-between items-center border-b border-border/50 pb-3">
-                  <span className="text-muted-foreground">{dict.companySize}</span>
-                  <span className="text-foreground font-black">{company.companySize} {dict.employeesSuffix}</span>
-                </div>
-              )}
-
-              {company.websiteMode && (
-                <div className="flex justify-between items-center border-b border-border/50 pb-3">
-                  <span className="text-muted-foreground">{dict.websiteModeLabel}</span>
-                  <span className="text-foreground font-bold uppercase text-[10px] bg-secondary px-2 py-0.5 rounded-md border border-border">
-                    {company.websiteMode}
-                  </span>
-                </div>
-              )}
-
-              {company.taxIdentifier && (
-                <div className="flex justify-between items-center border-b border-border/50 pb-3">
-                  <span className="text-muted-foreground">{dict.mfRne}</span>
-                  <span className="text-foreground font-mono">{company.taxIdentifier}</span>
-                </div>
-              )}
-
-              {/* Stores & Websites links inside company */}
-              {company.websiteMode !== "external" && company.stores && company.stores.length > 0 && (
-                <div className="pt-2">
-                  <Link
-                    href={`/stores/${company.stores[0].slug}`}
-                    className="w-full flex items-center justify-between p-3.5 bg-primary/10 border border-primary/20 hover:bg-primary/15 rounded-xl text-primary font-bold transition-all text-xs"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Store className="size-4 shrink-0" />
-                      <span>{dict.storeLink}</span>
+              <div className="space-y-4 text-xs font-semibold">
+                {company.businessType && (
+                  <div className="flex justify-between items-center border-b border-border/50 pb-3">
+                    <span className="text-muted-foreground">{dict.classification}</span>
+                    <span className="text-foreground font-black capitalize">
+                      {BUSINESS_TYPE_LABELS[lang]?.[company.businessType] || company.businessType.replace("_", " ")}
                     </span>
-                    <ChevronRight className="size-4 rtl:rotate-180" />
-                  </Link>
-                </div>
-              )}
-            </div>
-          </section>
+                  </div>
+                )}
+
+                {company.primaryIndustry && (
+                  <div className="flex justify-between items-center border-b border-border/50 pb-3">
+                    <span className="text-muted-foreground">{dict.industry}</span>
+                    <span className="text-foreground font-black capitalize">
+                      {INDUSTRY_LABELS[lang]?.[company.primaryIndustry] || company.primaryIndustry}
+                    </span>
+                  </div>
+                )}
+
+                {company.profileLevel === "enterprise" && company.companySize && (
+                  <div className="flex justify-between items-center border-b border-border/50 pb-3">
+                    <span className="text-muted-foreground">{dict.companySize}</span>
+                    <span className="text-foreground font-black">{company.companySize} {dict.employeesSuffix}</span>
+                  </div>
+                )}
+
+                {company.websiteMode && (
+                  <div className="flex justify-between items-center border-b border-border/50 pb-3">
+                    <span className="text-muted-foreground">{dict.websiteModeLabel}</span>
+                    <span className="text-foreground font-bold uppercase text-[10px] bg-secondary px-2 py-0.5 rounded-md border border-border">
+                      {company.websiteMode}
+                    </span>
+                  </div>
+                )}
+
+                {company.profileLevel === "enterprise" && company.taxIdentifier && (
+                  <div className="flex justify-between items-center border-b border-border/50 pb-3">
+                    <span className="text-muted-foreground">{dict.mfRne}</span>
+                    <span className="text-foreground font-mono">{company.taxIdentifier}</span>
+                  </div>
+                )}
+
+                {/* Stores & Websites links inside company */}
+                {company.websiteMode !== "external" && company.stores && company.stores.length > 0 && (
+                  <div className="pt-2">
+                    <Link
+                      href={`/stores/${company.stores[0].slug}`}
+                      className="w-full flex items-center justify-between p-3.5 bg-primary/10 border border-primary/20 hover:bg-primary/15 rounded-xl text-primary font-bold transition-all text-xs"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Store className="size-4 shrink-0" />
+                        <span>{dict.storeLink}</span>
+                      </span>
+                      <ChevronRight className="size-4 rtl:rotate-180" />
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
 
           {/* Social Presence card */}
-          {(company.facebookUrl || company.instagramUrl || company.tiktokUrl || company.linkedinUrl || company.youtubeUrl) && (
+          {(company.profileLevel === "business" || company.profileLevel === "enterprise") && (company.facebookUrl || company.instagramUrl || company.tiktokUrl || company.linkedinUrl || company.youtubeUrl) && (
             <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-4">
               <h2 className="text-xs font-black uppercase tracking-wider text-muted-foreground">{dict.digitalPresence}</h2>
               <div className="flex flex-wrap gap-2.5">
@@ -811,33 +849,35 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
           )}
 
           {/* Languages & Export tags */}
-          <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-4">
-            {company.exportMarkets && company.exportMarkets.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">{dict.exportMarkets}</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {company.exportMarkets.map(m => (
-                    <span key={m} className="bg-secondary border border-border px-2.5 py-1 rounded-lg text-xs font-bold text-foreground">
-                      {MARKET_OPTS[m] || m}
-                    </span>
-                  ))}
+          {company.profileLevel === "enterprise" && (
+            <section className="bg-card border border-border rounded-[20px] p-6 shadow-sm space-y-4">
+              {company.exportMarkets && company.exportMarkets.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">{dict.exportMarkets}</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {company.exportMarkets.map(m => (
+                      <span key={m} className="bg-secondary border border-border px-2.5 py-1 rounded-lg text-xs font-bold text-foreground">
+                        {MARKET_OPTS[m] || m}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {company.supportedLanguages && company.supportedLanguages.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-border/50">
-                <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">{dict.languages}</h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {company.supportedLanguages.map(l => (
-                    <span key={l} className="bg-secondary border border-border px-2.5 py-1 rounded-lg text-xs font-bold text-foreground">
-                      {LANG_OPTS[l] || l}
-                    </span>
-                  ))}
+              {company.supportedLanguages && company.supportedLanguages.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-muted-foreground">{dict.languages}</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {company.supportedLanguages.map(l => (
+                      <span key={l} className="bg-secondary border border-border px-2.5 py-1 rounded-lg text-xs font-bold text-foreground">
+                        {LANG_OPTS[l] || l}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </section>
+              )}
+            </section>
+          )}
 
         </div>
 

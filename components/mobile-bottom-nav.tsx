@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, LayoutGrid, FileText, MessageSquare, User } from "lucide-react"
+import { Home, LayoutGrid, FileText, MessageSquare, User, Video } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 
 /**

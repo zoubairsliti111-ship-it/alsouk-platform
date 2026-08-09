@@ -12,88 +12,6 @@ import type { Supplier } from "@/lib/directory-data"
 
 const FEATURED_LIMIT = 4
 
-const FALLBACK_SUPPLIERS: Supplier[] = [
-  {
-    id: "atlas-ceramics",
-    name: "Atlas Ceramics",
-    monogram: "AC",
-    logoColor: "green",
-    country: "tn",
-    cityKey: "nabeul",
-    region: "capital",
-    verified: true,
-    rating: 4.7,
-    reviews: 154,
-    products: 96,
-    years: 6,
-    responseRate: 94,
-    minMoq: 200,
-    businessTypes: ["manufacturer"],
-    categories: ["construction"],
-    description: "Ceramic products manufacturer",
-    logoUrl: null,
-  },
-  {
-    id: "carthage-textiles",
-    name: "Carthage Textiles",
-    monogram: "CT",
-    logoColor: "blue",
-    country: "tn",
-    cityKey: "monastir",
-    region: "coastal",
-    verified: true,
-    rating: 4.8,
-    reviews: 268,
-    products: 512,
-    years: 12,
-    responseRate: 96,
-    minMoq: 1000,
-    businessTypes: ["manufacturer"],
-    categories: ["textiles"],
-    description: "Textile manufacturer and exporter",
-    logoUrl: null,
-  },
-  {
-    id: "kairouan-leather",
-    name: "Kairouan Leather",
-    monogram: "KL",
-    logoColor: "blue",
-    country: "tn",
-    cityKey: "kairouan",
-    region: "central",
-    verified: true,
-    rating: 4.6,
-    reviews: 189,
-    products: 233,
-    years: 15,
-    responseRate: 92,
-    minMoq: 100,
-    businessTypes: ["manufacturer"],
-    categories: ["leather"],
-    description: "Leather products",
-    logoUrl: null,
-  },
-  {
-    id: "medina-olive",
-    name: "Medina Olive Co.",
-    monogram: "MO",
-    logoColor: "green",
-    country: "tn",
-    cityKey: "sfax",
-    region: "coastal",
-    verified: true,
-    rating: 4.9,
-    reviews: 312,
-    products: 148,
-    years: 8,
-    responseRate: 98,
-    minMoq: 500,
-    businessTypes: ["manufacturer"],
-    categories: ["food"],
-    description: "Premium olive oil manufacturer",
-    logoUrl: null,
-  }
-]
 
 export function FeaturedSuppliers() {
   const { t, lang } = useLanguage()
@@ -106,11 +24,7 @@ export function FeaturedSuppliers() {
     let active = true
     fetchSuppliers({ sort: "rating", limit: FEATURED_LIMIT }).then((res) => {
       if (!active) return
-      if (res.suppliers && res.suppliers.length > 0) {
-        setItems(res.suppliers)
-      } else {
-        setItems(FALLBACK_SUPPLIERS)
-      }
+      setItems(res.suppliers ?? [])
       setLoading(false)
     })
     return () => {
@@ -154,7 +68,7 @@ export function FeaturedSuppliers() {
                   {/* Supplier Logo/Thumbnail with factory background */}
                   <div className="relative h-28 overflow-hidden rounded-[16px] mb-3 bg-secondary">
                     <Image
-                      src="/images/supplier-factory.png"
+                      src={s.coverPhotoUrl || "/images/supplier-factory.png"}
                       alt={`${s.name} facility`}
                       fill
                       sizes="(max-width: 640px) 280px, 20vw"
@@ -198,7 +112,7 @@ export function FeaturedSuppliers() {
                       href={`/suppliers/${s.id}`}
                       className={buttonVariants({
                         size: "sm",
-                        className: "mt-4 w-full rounded-xl bg-secondary hover:bg-muted text-[11px] font-semibold text-foreground flex items-center justify-center border border-border/60",
+                        className: "mt-4 w-full rounded-xl bg-primary hover:opacity-90 text-[11px] font-black text-white flex items-center justify-center",
                       })}
                     >
                       Visit Store

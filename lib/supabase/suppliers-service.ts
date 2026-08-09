@@ -11,13 +11,11 @@ import {
 } from "@/lib/directory-data"
 import { directoryT } from "@/lib/directory-i18n"
 import { SITE_URL } from "@/lib/site"
+import { safeExternalStoreUrl } from "@/lib/external-store"
 
 export type SupplierSort = "rating" | "products" | "years"
 export const SUPPLIER_SORTS: SupplierSort[] = ["rating", "products", "years"]
 
-// Production stores country/city as English display names (e.g. "Tunisia",
-// "Sfax") while the UI keys off short codes. Build reverse lookups from the
-// English dictionary so we can resolve either a display name or a raw key.
 const EN = directoryT.en
 function buildReverse(map: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {}
@@ -42,50 +40,41 @@ function resolveCityKey(value: string | null): string {
   return CITY_NAME_TO_KEY[v] ?? v
 }
 
-/** Result of a suppliers query, including a coarse error flag for the UI. */
 export type SuppliersResult = {
   suppliers: Supplier[]
-  /** True when the request could not be completed (unconfigured or failed). */
   error: boolean
 }
 
-/** Name of the Supabase table backing the supplier directory. */
-export const SUPPLIERS_TABLE = "suppliers"
+export const SUPPLIERS_TABLE = "companies"
 
-/** Shape of a row as stored in the Supabase `suppliers` table (snake_case). */
 export type SupplierRow = {
   id: string
-  company_name: string
-  monogram: string | null
-  logo_color: string | null
-  country: string
-  city: string
-  region: string
-  verified: boolean
-  rating: number
-  reviews: number
-  products: number
-  years_in_business: number
-  response_rate: number
-  min_moq: number
+  name: string
   business_type: string | null
-  category: string | null
-  description: string | null
+  primary_industry: string | null
+  country: string | null
+  city: string | null
+  verified: boolean
+  year_established: number | null
   logo_url: string | null
+  description: string | null
+  tagline: string | null
+  created_at: string
+  profile_views: number | null
+  external_store_url: string | null
+  products_count?: number
+  cover_photo_url?: string | null
 }
 
-/** Columns selected from the table (no spaces, safe for a PostgREST URL). */
 export const SUPPLIER_COLUMNS =
-  "id,company_name,monogram,logo_color,country,city,region,verified,rating,reviews,products,years_in_business,response_rate,min_moq,business_type,category,description,logo_url"
+  "id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views,external_store_url"
 
-/** Maps a {@link SupplierSort} onto its physical Supabase column. */
 export const SORT_COLUMNS: Record<SupplierSort, string> = {
-  rating: "rating",
-  products: "products",
-  years: "years_in_business",
+  rating: "created_at",
+  products: "created_at",
+  years: "year_established",
 }
 
-/** Two-letter fallback monogram derived from the company name. */
 function deriveMonogram(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
   const letters = (parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")
@@ -96,62 +85,41 @@ function isOneOf<T extends string>(value: string, allowed: readonly T[]): value 
   return (allowed as readonly string[]).includes(value)
 }
 
-/**
- * Converts a raw Supabase row into a strongly-typed {@link Supplier}, returning
- * `null` when required fields are missing or enum-like columns hold unexpected
- * values. Invalid rows are skipped rather than crashing the directory.
- */
 export function mapRow(row: SupplierRow): Supplier | null {
-  if (!row?.id || !row.company_name) return null
+  if (!row?.id || !row.name?.trim()) return null
 
-  const country = resolveCountry(row.country)
-  if (!country) return null
-  if (!isOneOf<RegionKey>(row.region, REGION_KEYS)) return null
-
-  const businessTypes =
-    row.business_type && isOneOf<BusinessTypeKey>(row.business_type, BUSINESS_TYPE_KEYS)
-      ? [row.business_type]
-      : []
-  const categories =
-    row.category && isOneOf<CategoryKey>(row.category, CATEGORY_KEYS) ? [row.category] : []
-  if (businessTypes.length === 0 || categories.length === 0) return null
+  const country = resolveCountry(row.country) ?? "tn"
+  const currentYear = new Date().getFullYear()
+  const years =
+    row.year_established && row.year_established > 1800
+      ? Math.max(0, currentYear - row.year_established)
+      : 0
 
   return {
     id: row.id,
-    name: row.company_name,
-    monogram: row.monogram?.trim() || deriveMonogram(row.company_name),
-    logoColor: row.logo_color === "green" ? "green" : "blue",
+    name: row.name.trim(),
+    monogram: deriveMonogram(row.name),
+    logoColor: "blue",
     country,
     cityKey: resolveCityKey(row.city),
-    region: row.region,
+    region: "capital" as RegionKey,
     verified: Boolean(row.verified),
-    rating: Number(row.rating),
-    reviews: Number(row.reviews),
-    products: Number(row.products),
-    years: Number(row.years_in_business),
-    responseRate: Number(row.response_rate),
-    minMoq: Number(row.min_moq),
-    businessTypes,
-    categories,
-    description: row.description?.trim() || null,
+    rating: 0,
+    reviews: 0,
+    products: row.products_count ?? 0,
+    years,
+    responseRate: 0,
+    minMoq: 0,
+    businessTypes: (row.business_type ? [row.business_type] : []) as BusinessTypeKey[],
+    categories: (row.primary_industry ? [row.primary_industry] : []) as CategoryKey[],
+    description: row.description?.trim() || row.tagline?.trim() || null,
     logoUrl: row.logo_url?.trim() || null,
+    profileViews: Number(row.profile_views) || 0,
+    coverPhotoUrl: row.cover_photo_url?.trim() || null,
+    externalStoreUrl: safeExternalStoreUrl(row.external_store_url),
   }
 }
 
-/**
- * Loads suppliers via the internal `/api/suppliers` route.
- *
- * The query runs on the server (see app/api/suppliers/route.ts), which reads the
- * Supabase credentials from the environment at request time. This avoids relying
- * on `NEXT_PUBLIC_*` values being inlined into the client bundle at build time,
- * and keeps the key off the browser.
- *
- * Returns `{ suppliers: [], error: true }` when the request fails, so the UI can
- * show an explicit error/empty state rather than silently rendering nothing.
- *
- * @param options.sort  optional ordering (defaults to rating desc)
- * @param options.limit optional row cap (e.g. for the home "Featured" section)
- */
 export async function fetchSuppliers(options?: {
   sort?: SupplierSort
   limit?: number
@@ -177,22 +145,12 @@ export async function fetchSuppliers(options?: {
   }
 }
 
-/** Result of a single-supplier lookup, distinguishing "not found" from errors. */
 export type SupplierResult = {
   supplier: Supplier | null
-  /** True when the request could not be completed (unconfigured or failed). */
   error: boolean
-  /** True when the request succeeded but no supplier matched the id. */
   notFound: boolean
 }
 
-/**
- * Loads a single supplier by id via the internal `/api/suppliers/[id]` route.
- *
- * Mirrors {@link fetchSuppliers}: the query runs on the server so credentials
- * stay off the browser. A 404 resolves to `{ supplier: null, notFound: true }`
- * so the profile page can render a not-found state instead of an error.
- */
 export async function fetchSupplierById(id: string): Promise<SupplierResult> {
   try {
     const res = await fetch(`/api/suppliers/${encodeURIComponent(id)}`, { cache: "no-store" })

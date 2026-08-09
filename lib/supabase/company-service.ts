@@ -3,6 +3,7 @@ import { type Company, type CompanyMember, type CompanyMedia } from "@/lib/direc
 
 export type DBCompanyRow = {
   id: string
+  profile_level?: any
   supplier_id: string | null
   name: string
   slug: string
@@ -17,6 +18,7 @@ export type DBCompanyRow = {
   youtube_url: string | null
   website_url: string | null
   website_mode: any
+  external_store_url: string | null
   business_email: string | null
   phone_number: string | null
   whatsapp_number: string | null
@@ -44,6 +46,7 @@ export type DBCompanyRow = {
 export function mapCompanyRow(row: DBCompanyRow): Company {
   return {
     id: row.id,
+    profileLevel: row.profile_level || row.metadata?.profile_level || "starter",
     supplierId: row.supplier_id,
     name: row.name,
     slug: row.slug,
@@ -58,6 +61,7 @@ export function mapCompanyRow(row: DBCompanyRow): Company {
     youtubeUrl: row.youtube_url,
     websiteUrl: row.website_url,
     websiteMode: row.website_mode || "alsouk",
+    externalStoreUrl: row.external_store_url ?? null,
     businessEmail: row.business_email,
     phoneNumber: row.phone_number,
     whatsappNumber: row.whatsapp_number,
@@ -177,8 +181,15 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
   const completion = calculateProfileCompletion(companyInput)
 
   const insertData = {
+    owner_id: userId,
     name: companyInput.name || "My Company",
+    // FIX: legacy `company_name` column is NOT NULL with no default in
+    // production — every insert was failing this constraint silently
+    // (the app only ever showed a generic "Failed to persist..." error).
+    // Kept in sync with `name` for any code path still reading the old column.
+    company_name: companyInput.name || "My Company",
     slug: companyInput.slug || `company-${Math.random().toString(36).substring(2, 9)}`,
+    profile_level: companyInput.profileLevel || "starter",
     tagline: companyInput.tagline || null,
     description: companyInput.description || null,
     logo_url: companyInput.logoUrl || null,
@@ -190,6 +201,7 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
     youtube_url: companyInput.youtubeUrl || null,
     website_url: companyInput.websiteUrl || null,
     website_mode: companyInput.websiteMode || "alsouk",
+    external_store_url: companyInput.externalStoreUrl || null,
     business_email: companyInput.businessEmail || null,
     phone_number: companyInput.phoneNumber || null,
     whatsapp_number: companyInput.whatsappNumber || null,
@@ -216,7 +228,12 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
 
   if (compError || !company) {
     console.error("Error creating company:", compError)
-    return null
+    // FIX: was silently returning null, forcing the caller to show a
+    // generic "Failed to persist..." message with no way to diagnose the
+    // real cause (this is exactly how the missing company_name NOT NULL
+    // column went unnoticed). Now the real database error reaches the
+    // user-visible error message.
+    throw new Error(compError?.message || "Failed to create company")
   }
 
   // Link the creator user as the 'owner' in company_members
@@ -263,6 +280,8 @@ export async function updateCompany(companyId: string, companyInput: Partial<Com
 
   const updateData: Record<string, any> = {
     name: companyInput.name,
+    company_name: companyInput.name,
+    profile_level: companyInput.profileLevel,
     tagline: companyInput.tagline,
     description: companyInput.description,
     logo_url: companyInput.logoUrl,
@@ -274,6 +293,7 @@ export async function updateCompany(companyId: string, companyInput: Partial<Com
     youtube_url: companyInput.youtubeUrl,
     website_url: companyInput.websiteUrl,
     website_mode: companyInput.websiteMode,
+    external_store_url: companyInput.externalStoreUrl,
     business_email: companyInput.businessEmail,
     phone_number: companyInput.phoneNumber,
     whatsapp_number: companyInput.whatsappNumber,
@@ -308,7 +328,7 @@ export async function updateCompany(companyId: string, companyInput: Partial<Com
 
   if (error || !company) {
     console.error("Error updating company:", error)
-    return null
+    throw new Error(error?.message || "Failed to update company")
   }
 
   return mapCompanyRow(company as any)

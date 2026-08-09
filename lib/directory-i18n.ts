@@ -128,6 +128,8 @@ type DirectoryDict = {
     videosEmpty: string
     catalogs: string
     catalogsEmpty: string
+    externalStore: string
+    visitExternalStore: string
     reviewsTitle: string
     reviewsEmpty: string
     reviewsSummary: (n: number) => string
@@ -421,6 +423,8 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       videosEmpty: "This supplier hasn't published any videos yet.",
       catalogs: "Catalogs & documents",
       catalogsEmpty: "No downloadable catalogs have been shared yet — request a quote to receive them.",
+      externalStore: "Online store",
+      visitExternalStore: "Visit External Store",
       reviewsTitle: "Buyer reviews",
       reviewsEmpty: "No written reviews yet. Be the first to work with this supplier.",
       reviewsSummary: (n) => `Based on ${n} buyer rating${n === 1 ? "" : "s"}`,
@@ -709,6 +713,8 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       videosEmpty: "Ce fournisseur n'a pas encore publié de vidéos.",
       catalogs: "Catalogues et documents",
       catalogsEmpty: "Aucun catalogue téléchargeable n'a encore été partagé — demandez un devis pour les recevoir.",
+      externalStore: "Boutique en ligne",
+      visitExternalStore: "Visiter la boutique externe",
       reviewsTitle: "Avis des acheteurs",
       reviewsEmpty: "Aucun avis écrit pour le moment. Soyez le premier à travailler avec ce fournisseur.",
       reviewsSummary: (n) => `Basé sur ${n} évaluation${n === 1 ? "" : "s"} d'acheteurs`,
@@ -1000,6 +1006,8 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       videosEmpty: "لم ينشر هذا المورّد أي فيديوهات بعد.",
       catalogs: "الكتالوجات والمستندات",
       catalogsEmpty: "لم تتم مشاركة أي كتالوجات قابلة للتنزيل بعد — اطلب عرض سعر لاستلامها.",
+      externalStore: "المتجر الإلكتروني",
+      visitExternalStore: "زيارة المتجر الخارجي",
       reviewsTitle: "تقييمات المشترين",
       reviewsEmpty: "لا توجد مراجعات مكتوبة بعد. كن أول من يتعامل مع هذا المورّد.",
       reviewsSummary: (n) => `بناءً على ${n} تقييم من المشترين`,

@@ -151,19 +151,6 @@ export function SuppliersDirectory() {
             </Button>
           </form>
 
-          {/* Hero stats */}
-          <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
-            {[
-              [t.hero.stat1, t.hero.stat1label],
-              [t.hero.stat2, t.hero.stat2label],
-              [t.hero.stat3, t.hero.stat3label],
-            ].map(([value, label]) => (
-              <div key={label}>
-                <dt className="text-2xl font-bold text-foreground">{value}</dt>
-                <dd className="text-xs text-muted-foreground">{label}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
       </section>
 

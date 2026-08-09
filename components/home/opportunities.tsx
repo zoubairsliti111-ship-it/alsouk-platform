@@ -1,43 +1,80 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowRight, PackageSearch } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
+import { createClient } from "@/lib/supabase/client"
 
-const BADGES = [
-  "LIVE",
-  "35% OFF",
-  "READY TO SHIP",
-  "TOP DEAL",
-  "LIMITED STOCK",
-  "EXPORT READY",
-  "NEW",
-]
-
-const OP_IMAGES = [
-  "/images/product-oliveoil.png",
-  "/images/product-textiles.png",
-  "/images/product-ceramics.png",
-  "/images/product-dates.png",
-]
+type RealProduct = {
+  id: string
+  name: string
+  price: number | null
+  currency: string | null
+  minOrderQuantity: number | null
+  unit: string | null
+  imageUrl: string | null
+  isNew: boolean
+}
 
 export function Opportunities() {
   const { t } = useLanguage()
+  const [items, setItems] = useState<RealProduct[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const opportunities = t.products.items.slice(0, 4).map((p, i) => ({
-    name: p.name,
-    moq: p.moq,
-    price: p.price,
-    badge: BADGES[i % BADGES.length],
-    image: OP_IMAGES[i % OP_IMAGES.length],
-  }))
+  useEffect(() => {
+    let active = true
+    const supabase = createClient()
+    supabase
+      .from("products")
+      .select("id,name,price,currency,min_order_quantity,unit,created_at,product_images(url,is_primary,position)")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(4)
+      .then(({ data }: { data: any[] | null }) => {
+        if (!active) return
+        const now = Date.now()
+        const mapped = (data ?? []).map((r: any) => {
+          const images = (r.product_images ?? []).slice().sort((a: any, b: any) => Number(b.is_primary) - Number(a.is_primary) || (a.position ?? 0) - (b.position ?? 0))
+          const ageMs = now - new Date(r.created_at).getTime()
+          return {
+            id: r.id,
+            name: r.name,
+            price: r.price === null ? null : Number(r.price),
+            currency: r.currency,
+            minOrderQuantity: r.min_order_quantity,
+            unit: r.unit,
+            imageUrl: images[0]?.url || null,
+            isNew: ageMs < 7 * 24 * 60 * 60 * 1000,
+          }
+        })
+        setItems(mapped)
+        setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  if (!loading && items.length === 0) {
+    return (
+      <section id="opportunities" className="py-6 bg-background">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="rounded-[24px] border border-dashed border-primary/30 bg-primary/5 px-6 py-10 text-center">
+            <p className="text-base font-black text-foreground">🚀 Be the first to list a business opportunity</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">Real suppliers, real products — this space is reserved for you.</p>
+            <p className="mt-4 text-[11px] font-semibold text-primary/70">Real suppliers, real products coming soon.</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section id="opportunities" className="py-6 bg-background">
       <div className="mx-auto max-w-7xl px-6">
-        {/* Section Heading */}
         <div className="flex items-end justify-between gap-4 border-b border-border/60 pb-3">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -54,54 +91,53 @@ export function Opportunities() {
           </Link>
         </div>
 
-        {/* Horizontal rail on mobile viewports */}
         <div className="no-scrollbar -mx-6 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-4 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:overflow-visible sm:px-0 sm:mx-0">
-          {opportunities.map((o, i) => (
-            <div
-              key={i}
-              className="group flex w-[280px] shrink-0 snap-start flex-col rounded-[20px] border border-border bg-card p-4 transition-all duration-300 hover:border-primary/20 hover:shadow-md sm:w-auto"
-            >
-              {/* Product Image & Badge */}
-              <div className="relative aspect-[4/3.5] w-full overflow-hidden rounded-[16px] bg-secondary mb-3">
-                <Image
-                  src={o.image}
-                  alt={o.name}
-                  fill
-                  sizes="(max-width: 640px) 280px, 20vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-102"
-                />
-                <span className="absolute start-3 top-3 inline-flex items-center rounded-full bg-[#16A34A] px-2 py-0.5 text-[9px] font-bold text-white shadow-sm">
-                  {o.badge}
-                </span>
-              </div>
-
-              {/* Card Body */}
-              <div className="flex flex-1 flex-col">
-                <h3 className="line-clamp-1 text-sm font-bold text-foreground leading-snug transition-colors group-hover:text-primary">
-                  {o.name}
-                </h3>
-                <p className="mt-1 text-[11px] text-muted-foreground font-semibold">
-                  {t.products.moq}: {o.moq}
-                </p>
-                <p className="mt-2 text-sm font-extrabold text-[#2563EB]">
-                  {o.price}
-                </p>
-
-                <div className="mt-4 pt-3 border-t border-border/40">
-                  <Link
-                    href="/rfq"
-                    className={buttonVariants({
-                      size: "sm",
-                      className: "w-full rounded-xl bg-[#2563EB] hover:bg-blue-700 text-[11px] font-semibold text-white shadow-sm flex items-center justify-center gap-1",
-                    })}
-                  >
-                    <PackageSearch className="size-3.5" />
-                    <span>{t.ui.requestQuote}</span>
-                  </Link>
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="h-72 w-[280px] shrink-0 animate-pulse rounded-[20px] border border-border bg-card sm:w-auto" />
+              ))
+            : items.map((o) => (
+                <div
+                  key={o.id}
+                  className="group flex w-[280px] shrink-0 snap-start flex-col rounded-[20px] border border-border bg-card p-4 transition-all duration-300 hover:border-primary/20 hover:shadow-md sm:w-auto"
+                >
+                  <div className="relative aspect-[4/3.5] w-full overflow-hidden rounded-[16px] bg-secondary mb-3">
+                    {o.imageUrl ? (
+                      <Image src={o.imageUrl} alt={o.name} fill sizes="(max-width: 640px) 280px, 20vw" className="object-cover transition-transform duration-500 group-hover:scale-102" />
+                    ) : (
+                      <div className="flex size-full items-center justify-center text-xs text-muted-foreground">{t.ui.noImage}</div>
+                    )}
+                    {o.isNew && (
+                      <span className="absolute start-3 top-3 inline-flex items-center rounded-full bg-[#16A34A] px-2 py-0.5 text-[9px] font-bold text-white shadow-sm">
+                        {t.ui.newBadge}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col">
+                    <h3 className="line-clamp-1 text-sm font-bold text-foreground leading-snug transition-colors group-hover:text-primary">{o.name}</h3>
+                    {o.minOrderQuantity && (
+                      <p className="mt-1 text-[11px] text-muted-foreground font-semibold">
+                        {t.products.moq}: {o.minOrderQuantity}{o.unit ? ` ${o.unit}` : ""}
+                      </p>
+                    )}
+                    {o.price !== null && (
+                      <p className="mt-2 text-sm font-extrabold text-[#2563EB]">{o.price.toLocaleString()} {o.currency}</p>
+                    )}
+                    <div className="mt-4 pt-3 border-t border-border/40">
+                      <Link
+                        href="/rfq"
+                        className={buttonVariants({
+                          size: "sm",
+                          className: "w-full rounded-xl bg-[#2563EB] hover:bg-blue-700 text-[11px] font-semibold text-white shadow-sm flex items-center justify-center gap-1",
+                        })}
+                      >
+                        <PackageSearch className="size-3.5" />
+                        <span>{t.ui.requestQuote}</span>
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              ))}
         </div>
       </div>
     </section>

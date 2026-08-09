@@ -461,6 +461,8 @@ type Dict = {
     close: string
     verified: string
     virtualTradeShows: string
+    noImage: string
+    newBadge: string
   }
 }
 
@@ -626,11 +628,7 @@ export const translations: Record<Lang, Dict> = {
     testimonials: {
       title: "Trusted by businesses like yours",
       subtitle: "Hear from buyers and suppliers growing with ALSOUK",
-      items: [
-        { quote: "ALSOUK helped us find reliable olive oil exporters in days, not months. The quality verification is a game changer.", name: "Sonia Ben Ali", role: "Procurement Manager, EuroFoods" },
-        { quote: "As a manufacturer, we tripled our export inquiries within the first quarter of joining the platform.", name: "Karim Trabelsi", role: "CEO, Carthage Textiles" },
-        { quote: "The RFQ system is incredibly efficient. We received five competitive quotes overnight.", name: "Leïla Mansour", role: "Buyer, Atlas Distribution" },
-      ],
+      items: [],
     },
     footer: {
       tagline: "The premium B2B marketplace connecting Tunisia and North Africa.",
@@ -997,6 +995,8 @@ export const translations: Record<Lang, Dict> = {
       close: "Close",
       verified: "Verified",
       virtualTradeShows: "Virtual Trade Shows",
+      noImage: "No image",
+      newBadge: "NEW",
     },
   },
   fr: {
@@ -1160,11 +1160,7 @@ export const translations: Record<Lang, Dict> = {
     testimonials: {
       title: "Approuvé par des entreprises comme la vôtre",
       subtitle: "Découvrez les acheteurs et fournisseurs qui grandissent avec ALSOUK",
-      items: [
-        { quote: "ALSOUK nous a aidés à trouver des exportateurs d'huile d'olive fiables en quelques jours. La vérification qualité change tout.", name: "Sonia Ben Ali", role: "Responsable achats, EuroFoods" },
-        { quote: "En tant que fabricant, nous avons triplé nos demandes d'export dès le premier trimestre sur la plateforme.", name: "Karim Trabelsi", role: "PDG, Carthage Textiles" },
-        { quote: "Le système de devis est incroyablement efficace. Nous avons reçu cinq devis compétitifs en une nuit.", name: "Leïla Mansour", role: "Acheteuse, Atlas Distribution" },
-      ],
+      items: [],
     },
     footer: {
       tagline: "La place de marché B2B premium qui relie la Tunisie et l'Afrique du Nord.",
@@ -1531,6 +1527,8 @@ export const translations: Record<Lang, Dict> = {
       close: "Fermer",
       verified: "Vérifié",
       virtualTradeShows: "Salons professionnels virtuels",
+      noImage: "Pas d'image",
+      newBadge: "NOUVEAU",
     },
   },
   ar: {
@@ -1694,11 +1692,7 @@ export const translations: Record<Lang, Dict> = {
     testimonials: {
       title: "موثوق من شركات مثل شركتك",
       subtitle: "استمع إلى المشترين والموردين الذين ينمون مع ألسوق",
-      items: [
-        { quote: "ساعدتنا ألسوق في العثور على مصدّري زيت زيتون موثوقين في أيام لا أشهر. التحقق من الجودة نقلة نوعية.", name: "سونيا بن علي", role: "مديرة المشتريات، يوروفودز" },
-        { quote: "كمصنّع، ضاعفنا استفسارات التصدير ثلاث مرات خلال الربع الأول من انضمامنا للمنصة.", name: "كريم الطرابلسي", role: "الرئيس التنفيذي، قرطاج للمنسوجات" },
-        { quote: "نظام طلب العروض فعّال للغاية. استلمنا خمسة عروض تنافسية بين ليلة وضحاها.", name: "ليلى منصور", role: "مشترية، أطلس للتوزيع" },
-      ],
+      items: [],
     },
     footer: {
       tagline: "السوق الفاخر B2B الذي يربط تونس بشمال إفريقيا.",
@@ -2065,6 +2059,8 @@ export const translations: Record<Lang, Dict> = {
       close: "إغلاق",
       verified: "موثق",
       virtualTradeShows: "المعارض التجارية الافتراضية",
+      noImage: "لا توجد صورة",
+      newBadge: "جديد",
     },
   },
 }

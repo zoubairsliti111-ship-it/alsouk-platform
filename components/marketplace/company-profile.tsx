@@ -28,11 +28,17 @@ import { ProductCard } from "@/components/marketplace/product-card"
 import { RfqDialog } from "@/components/rfq/rfq-dialog"
 import { useLanguage } from "@/components/language-provider"
 import { useAuth } from "@/components/auth-provider"
-import { isSupabaseConfigured } from "@/lib/supabase/browser"
+import { isSupabaseConfigured } from "@/lib/supabase/client"
 import { socialT } from "@/lib/social-i18n"
 import { fetchCompanyBySlug } from "@/lib/services/companies-client"
 import { fetchProducts } from "@/lib/services/products-client"
 import * as social from "@/lib/services/social-service"
+// TECH-DEBT FIX: posts specifically now come from commercial_posts (the
+// table the merchant dashboard actually writes to) instead of social's
+// public.posts — see lib/services/posts-service.ts header comment. Stats,
+// viewer state, follow, video media, and live sessions are unrelated to
+// that conflict and correctly remain on social-service.ts.
+import { listCompanyPosts, getLikedCommercialPostIds } from "@/lib/services/posts-service"
 import type { CompanyDetails } from "@/lib/domains/company/types"
 import type { ProductSummary } from "@/lib/domains/product/types"
 import type {
@@ -103,8 +109,8 @@ export function CompanyProfile({ slug }: { slug: string }) {
         await Promise.allSettled([
           social.getCompanyStats(c.id),
           configured ? social.getViewerState(c.id) : Promise.resolve(EMPTY_VIEWER),
-          social.listPosts(c.id),
-          configured ? social.getLikedPostIds(c.id) : Promise.resolve(new Set<string>()),
+          listCompanyPosts(c.id),
+          configured ? getLikedCommercialPostIds(c.id) : Promise.resolve(new Set<string>()),
           fetchProducts({ companyId: c.id, limit: 48 }),
           social.listVideoMedia(c.id),
           social.listLiveSessions(c.id),

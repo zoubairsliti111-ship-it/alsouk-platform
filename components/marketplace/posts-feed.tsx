@@ -21,7 +21,25 @@ import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { socialT } from "@/lib/social-i18n"
 import type { Post, PostComment, ViewerState } from "@/lib/domains/social/types"
-import * as social from "@/lib/services/social-service"
+// TECH-DEBT FIX: was `import * as social from "@/lib/services/social-service"`
+// (public.posts table). Now uses commercial_posts — the same table the
+// merchant "create post" dashboard already writes to — so a post created
+// from /account now actually appears here instead of silently going to a
+// different table. See lib/services/posts-service.ts header comment.
+import {
+  listCompanyPosts,
+  getLikedCommercialPostIds,
+  listPostComments,
+  likeCommercialPost,
+  unlikeCommercialPost,
+  addPostComment,
+  deletePostComment,
+  createSimplePost,
+  updateSimplePost,
+  deleteSimplePost,
+  setSimplePostPinned,
+  uploadSimplePostMedia,
+} from "@/lib/services/posts-service"
 
 type View = "grid" | "list"
 
@@ -173,14 +191,14 @@ function Composer({
     setBusy(true)
     setError(null)
     try {
-      const post = await social.createPost(companyId, body)
+      const post = await createSimplePost(companyId, body)
       let position = 0
       const media = [...post.media]
       for (const file of images) {
-        media.push(await social.uploadPostMedia(companyId, post.id, file, "image", position++))
+        media.push(await uploadSimplePostMedia(companyId, post.id, file, "image", position++))
       }
       for (const file of videos) {
-        media.push(await social.uploadPostMedia(companyId, post.id, file, "video", position++))
+        media.push(await uploadSimplePostMedia(companyId, post.id, file, "video", position++))
       }
       onCreated({ ...post, media })
       setBody("")
@@ -269,8 +287,8 @@ function PostCard({
     const next = !liked
     onLikeToggle(next)
     try {
-      if (next) await social.likePost(post.id)
-      else await social.unlikePost(post.id)
+      if (next) await likeCommercialPost(post.id)
+      else await unlikeCommercialPost(post.id)
     } catch {
       onLikeToggle(!next)
     }
@@ -281,7 +299,7 @@ function PostCard({
     setCommentsOpen(willOpen)
     if (willOpen && comments === null) {
       try {
-        setComments(await social.listComments(post.id))
+        setComments(await listPostComments(post.id))
       } catch {
         setComments([])
       }
@@ -294,7 +312,7 @@ function PostCard({
     if (!text) return
     setBusy(true)
     try {
-      const c = await social.addComment(post.id, text)
+      const c = await addPostComment(post.id, text)
       setComments((prev) => [...(prev ?? []), c])
       setCommentText("")
       onChange({ ...post, commentCount: post.commentCount + 1 })
@@ -304,7 +322,7 @@ function PostCard({
   }
 
   async function removeComment(id: string) {
-    await social.deleteComment(id)
+    await deletePostComment(id)
     setComments((prev) => (prev ?? []).filter((c) => c.id !== id))
     onChange({ ...post, commentCount: Math.max(0, post.commentCount - 1) })
   }
@@ -312,7 +330,7 @@ function PostCard({
   async function saveEdit() {
     setBusy(true)
     try {
-      await social.updatePost(post.id, draft)
+      await updateSimplePost(post.id, draft)
       onChange({ ...post, body: draft.trim() })
       setEditing(false)
     } finally {
@@ -322,13 +340,13 @@ function PostCard({
 
   async function togglePin() {
     const next = !post.pinned
-    await social.setPostPinned(post.id, next)
+    await setSimplePostPinned(post.id, next)
     onChange({ ...post, pinned: next })
   }
 
   async function del() {
     if (!window.confirm(s.confirmDelete)) return
-    await social.deletePost(post.id)
+    await deleteSimplePost(post.id)
     onDeleted()
   }
 

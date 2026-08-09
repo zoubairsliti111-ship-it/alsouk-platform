@@ -317,6 +317,7 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
         description: "Premium Olive Oil Mill in Sfax.",
         logoUrl: "https://images.unsplash.com/photo-1471193945509-9ad0617afabf?auto=format&fit=crop&q=80&w=150",
         bannerUrl: "",
+        profileLevel: "starter",
         tagline: "Golden oils from ancestral sands",
         facebookUrl: "https://facebook.com",
         instagramUrl: "https://instagram.com",
@@ -325,6 +326,7 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
         youtubeUrl: null,
         website: "https://medinaolive.com",
         websiteUrl: "https://medinaolive.com",
+        externalStoreUrl: null,
         websiteMode: "alsouk",
         businessEmail: "exhibition@medinaolive.com",
         phoneNumber: "+216 74 123 456",
@@ -365,6 +367,7 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
         description: "Superior palm fruits from Tozeur.",
         logoUrl: "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?auto=format&fit=crop&q=80&w=150",
         bannerUrl: "",
+        profileLevel: "starter",
         tagline: "The gold standard of desert delicacies",
         facebookUrl: "https://facebook.com",
         instagramUrl: null,
@@ -373,6 +376,7 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
         youtubeUrl: null,
         website: "https://saharadates.com",
         websiteUrl: "https://saharadates.com",
+        externalStoreUrl: null,
         websiteMode: "both",
         businessEmail: "expo@saharadates.tn",
         phoneNumber: "+216 76 987 654",
@@ -415,6 +419,7 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
         description: "Industrial weaving and spinning factory in Monastir.",
         logoUrl: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=150",
         bannerUrl: "",
+        profileLevel: "starter",
         tagline: "Weaving premium sustainability into threads",
         facebookUrl: "https://facebook.com",
         instagramUrl: "https://instagram.com",
@@ -423,6 +428,7 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
         youtubeUrl: null,
         website: "https://carthagetextiles.com",
         websiteUrl: "https://carthagetextiles.com",
+        externalStoreUrl: null,
         websiteMode: "alsouk",
         businessEmail: "trade@carthagetextiles.com",
         phoneNumber: "+216 73 321 654",
@@ -606,11 +612,16 @@ export function getMockExhibitions(): Exhibition[] {
 export async function getExhibitions(): Promise<Exhibition[]> {
   try {
     const rows = await restGet<ExhibitionRow>("exhibitions?select=*&order=start_date.asc")
-    if (!rows || rows.length === 0) return getMockExhibitions()
+    // FIX: was `if (!rows || rows.length === 0) return getMockExhibitions()`
+    // — this meant every real visitor saw fabricated exhibitions (e.g.
+    // "Tunisia Food Expo 2026") whenever the real table was empty, which
+    // it always is right now (no real exhibitions have been created yet).
+    // Honest empty array lets the UI's existing empty state render instead.
+    if (!rows) return []
     return rows.map(mapExhibition)
   } catch (err) {
-    console.warn("[exhibitions-service] Failed to fetch. Using fallback mock data:", err)
-    return getMockExhibitions()
+    console.warn("[exhibitions-service] Failed to fetch exhibitions:", err)
+    return []
   }
 }
 
@@ -621,12 +632,12 @@ export async function getExhibitionBySlug(slug: string): Promise<Exhibition | nu
   try {
     const rows = await restGet<ExhibitionRow>(`exhibitions?select=*&slug=eq.${encodeURIComponent(slug)}&limit=1`)
     if (!rows || rows.length === 0) {
-      return getMockExhibitions().find((e) => e.slug === slug) || null
+      return null
     }
     return mapExhibition(rows[0])
   } catch (err) {
-    console.warn(`[exhibitions-service] Failed to fetch slug ${slug}. Using fallback mock data:`, err)
-    return getMockExhibitions().find((e) => e.slug === slug) || null
+    console.warn(`[exhibitions-service] Failed to fetch slug ${slug}:`, err)
+    return null
   }
 }
 
@@ -645,12 +656,12 @@ export async function getBoothsByExhibitionSlug(slug: string): Promise<Exhibitio
       `exhibition_booths?select=${select}&exhibition_id=eq.${encodeURIComponent(exh.id)}&is_archived=eq.false`
     )
     if (!rows || rows.length === 0) {
-      return getMockBooths()[slug] || []
+      return []
     }
     return rows.map(mapExhibitionBooth)
   } catch (err) {
-    console.warn(`[exhibitions-service] Failed to fetch booths for ${slug}. Using fallback mock:`, err)
-    return getMockBooths()[slug] || []
+    console.warn(`[exhibitions-service] Failed to fetch booths for ${slug}:`, err)
+    return []
   }
 }
 
@@ -1414,14 +1425,34 @@ export async function approveApplication(
       bannerUrl: null,
       company: {
         id: companyId,
+        profileLevel: "starter",
         name: app.companyName,
         slug: app.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         description: app.shortDescription,
+        logoUrl: null,
+        bannerUrl: null,
+        tagline: null,
+        facebookUrl: null,
+        instagramUrl: null,
+        tiktokUrl: null,
+        linkedinUrl: null,
+        youtubeUrl: null,
+        website: null,
+        websiteUrl: null,
+        externalStoreUrl: null,
+        websiteMode: "alsouk",
+        businessEmail: app.email,
+        phoneNumber: app.phone,
+        whatsappNumber: null,
         primaryIndustry: app.businessCategory.toLowerCase().includes("food") ? "food" : "textiles",
         city: "tunis",
         country: "TN",
+        postalCode: null,
+        streetAddress: null,
         verified: false,
-        verificationTier: "none",
+        verificationTier: "basic",
+        verifiedAt: null,
+        licenseDocumentUrl: null,
         profileCompletion: 20,
         taxIdentifier: "",
         businessType: "manufacturer",
@@ -1755,7 +1786,7 @@ export async function getOrganizerDashboardStats(exhibitionId: string) {
     }
   } catch (err) {
     console.warn("Failed to fetch booths for stats:", err)
-    booths = getMockBooths()[slug] || []
+    booths = []
   }
 
   const totalApplications = apps.length
@@ -1934,7 +1965,7 @@ export async function loadStatistics(exhibitionId: string) {
     }
   } catch (err) {
     console.warn("Failed to fetch booths for statistics:", err)
-    booths = getMockBooths()[slug] || []
+    booths = []
   }
 
   // 1. Applications Metrics

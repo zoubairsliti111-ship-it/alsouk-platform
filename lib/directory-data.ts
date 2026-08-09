@@ -13,9 +13,11 @@ export type BusinessTypeKey = "manufacturer" | "supplier" | "exporter" | "wholes
 
 export type CompanyWebsiteMode = "external" | "alsouk" | "both"
 export type CompanyVerificationTier = "basic" | "verified" | "premium"
+export type ProfileLevel = "starter" | "business" | "enterprise"
 
 export type Company = {
   id: string
+  profileLevel: ProfileLevel
   supplierId: string | null
   name: string
   slug: string
@@ -34,6 +36,8 @@ export type Company = {
   // Website strategy
   websiteUrl: string | null
   websiteMode: CompanyWebsiteMode
+  /** The merchant's own online store hosted outside ALSOUK. */
+  externalStoreUrl: string | null
 
   // Contact & Location
   businessEmail: string | null
@@ -109,6 +113,10 @@ export type Supplier = {
   description: string | null
   /** Optional hero/logo image URL; falls back to the monogram when absent. */
   logoUrl: string | null
+  profileViews: number
+  coverPhotoUrl: string | null
+  /** The merchant's own online store hosted outside ALSOUK, when set. */
+  externalStoreUrl: string | null
 }
 
 /**

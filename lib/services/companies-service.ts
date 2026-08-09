@@ -2,6 +2,7 @@ import { restGet } from "@/lib/supabase/rest"
 import type { Company, CompanyDetails, CompanySummary, CompanyMedia, CompanyWebsiteMode, CompanyVerificationTier } from "@/lib/domains/company/types"
 import type { StoreSummary } from "@/lib/domains/store/types"
 import { CATEGORY_COLUMNS, mapCategory, type CategoryRow } from "@/lib/services/categories-service"
+import { safeExternalStoreUrl } from "@/lib/external-store"
 
 /** Shape of a row in the Supabase `companies` table (snake_case). */
 export type CompanyRow = {
@@ -19,6 +20,7 @@ export type CompanyRow = {
   youtube_url: string | null
   website: string | null
   website_url: string | null
+  external_store_url: string | null
   website_mode: CompanyWebsiteMode | null
   business_email: string | null
   phone_number: string | null
@@ -40,6 +42,7 @@ export type CompanyRow = {
   supported_languages: string[] | null
   export_markets: string[] | null
   metadata: Record<string, any> | null
+  profile_level: string | null
   created_at?: string
   updated_at?: string
 }
@@ -72,6 +75,7 @@ export const COMPANY_COLUMNS = [
   "website",
   "website_url",
   "website_mode",
+  "external_store_url",
   "business_email",
   "phone_number",
   "whatsapp_number",
@@ -92,6 +96,7 @@ export const COMPANY_COLUMNS = [
   "supported_languages",
   "export_markets",
   "metadata",
+  "profile_level",
   "created_at",
   "updated_at"
 ].join(",")
@@ -127,6 +132,7 @@ export function mapCompany(row: CompanyRow): Company | null {
     website: row.website?.trim() || null,
     websiteUrl: row.website_url?.trim() || null,
     websiteMode: row.website_mode || "alsouk",
+    externalStoreUrl: safeExternalStoreUrl(row.external_store_url),
     businessEmail: row.business_email?.trim() || null,
     phoneNumber: row.phone_number?.trim() || null,
     whatsappNumber: row.whatsapp_number?.trim() || null,
@@ -147,6 +153,7 @@ export function mapCompany(row: CompanyRow): Company | null {
     supportedLanguages: row.supported_languages || [],
     exportMarkets: row.export_markets || [],
     metadata: row.metadata || {},
+    profileLevel: (row.profile_level as import("@/lib/domains/company/types").ProfileLevel) || "starter",
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }

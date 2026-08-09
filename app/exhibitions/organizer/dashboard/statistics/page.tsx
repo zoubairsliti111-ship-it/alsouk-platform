@@ -43,6 +43,7 @@ const dict = {
     archived: "Archived Booths",
     emptyStats: "No participation statistics recorded yet.",
     rank: "Rank",
+    company: "Company",
     boothNo: "Booth"
   },
   fr: {
@@ -67,6 +68,7 @@ const dict = {
     archived: "Stands Archivés",
     emptyStats: "Aucune donnée statistique enregistrée.",
     rank: "Rang",
+    company: "Entreprise",
     boothNo: "Stand"
   },
   ar: {
@@ -91,6 +93,7 @@ const dict = {
     archived: "الأجنحة المؤرشفة",
     emptyStats: "لا توجد أي بيانات إحصائية مسجلة حتى الآن.",
     rank: "المرتبة",
+    company: "الشركة",
     boothNo: "الجناح"
   }
 }

@@ -8,6 +8,8 @@ import {
   Award,
   BadgeCheck,
   Boxes,
+  Eye,
+  ExternalLink,
   Building2,
   CalendarClock,
   FileText,
@@ -19,6 +21,7 @@ import {
   Play,
   ShieldCheck,
   Star,
+  Store,
   TrendingUp,
 } from "lucide-react"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -27,10 +30,20 @@ import { directoryT } from "@/lib/directory-i18n"
 import { fetchSupplierById } from "@/lib/supabase/suppliers-service"
 import type { Supplier } from "@/lib/directory-data"
 import { RfqDialog } from "@/components/rfq/rfq-dialog"
+import { useAuth } from "@/components/auth-provider"
+import { createClient } from "@/lib/supabase/client"
+import { externalStoreLabel } from "@/lib/external-store"
 
 type Status = "loading" | "loaded" | "notFound" | "error"
 
 const COVER_IMAGE = "/images/supplier-factory.png"
+
+type MediaRow = {
+  id: string
+  media_type: "factory_photo" | "product_gallery" | "video" | "certificate"
+  url: string
+  caption: string | null
+}
 
 export function SupplierProfile({ id }: { id: string }) {
   const { lang } = useLanguage()
@@ -42,8 +55,10 @@ export function SupplierProfile({ id }: { id: string }) {
     status: "loading",
     supplier: null,
   })
+  const [media, setMedia] = useState<MediaRow[]>([])
   const [rfqOpen, setRfqOpen] = useState(false)
   const [following, setFollowing] = useState(false)
+  const { user: authUser } = useAuth()
   const closeRfq = useCallback(() => setRfqOpen(false), [])
 
   useEffect(() => {
@@ -59,6 +74,31 @@ export function SupplierProfile({ id }: { id: string }) {
     }
   }, [id])
 
+  // Count this as a profile visit.
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.rpc("increment_profile_view", { target_company_id: id }).then(({ error }: { error: unknown }) => { if (error) console.error("increment_profile_view failed:", error) })
+  }, [id])
+
+  // Real uploaded photos/videos/certificates for this company. company_media
+  // is publicly readable, so this can be fetched straight from the client.
+  useEffect(() => {
+    let active = true
+    const supabase = createClient()
+    supabase
+      .from("company_media")
+      .select("id,media_type,url,caption")
+      .eq("company_id", id)
+      .then((result: { data: MediaRow[] | null; error: unknown }) => {
+        const { data, error } = result
+        if (!active) return
+        if (!error && data) setMedia(data as MediaRow[])
+      })
+    return () => {
+      active = false
+    }
+  }, [id])
+
   const status: Status = state.id === id ? state.status : "loading"
   const supplier = state.id === id ? state.supplier : null
 
@@ -69,7 +109,7 @@ export function SupplierProfile({ id }: { id: string }) {
         <div className="mx-auto max-w-6xl px-4">
           <div className="-mt-10 size-24 animate-pulse rounded-2xl bg-muted" />
           <div className="mt-4 h-6 w-56 animate-pulse rounded bg-muted" />
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="h-20 animate-pulse rounded-xl bg-muted" />
             ))}
@@ -106,10 +146,25 @@ export function SupplierProfile({ id }: { id: string }) {
       ? "bg-brand-green text-brand-green-foreground"
       : "bg-brand-blue text-brand-blue-foreground"
 
+  const photos = media.filter((m) => m.media_type === "factory_photo" || m.media_type === "product_gallery")
+  const videos = media.filter((m) => m.media_type === "video")
+  const certificates = media.filter((m) => m.media_type === "certificate")
+  const coverUrl = photos[0]?.url || COVER_IMAGE
+
   const followButton = (
     <button
       type="button"
-      onClick={() => setFollowing((f) => !f)}
+      onClick={async () => {
+        if (!authUser) return
+        const supabase = createClient()
+        if (following) {
+          await supabase.from("company_follows").delete().eq("company_id", s.id).eq("user_id", authUser.id)
+          setFollowing(false)
+        } else {
+          await supabase.from("company_follows").insert({ company_id: s.id, user_id: authUser.id })
+          setFollowing(true)
+        }
+      }}
       aria-pressed={following}
       className={`inline-flex items-center justify-center gap-2 rounded-full border px-5 py-2.5 text-sm font-semibold transition-colors active:scale-95 ${
         following
@@ -138,7 +193,12 @@ export function SupplierProfile({ id }: { id: string }) {
       {/* Cover */}
       <section className="relative">
         <div className="relative h-40 w-full overflow-hidden sm:h-56">
-          <Image src={COVER_IMAGE} alt={s.name} fill priority sizes="100vw" className="object-cover" />
+          {photos[0]?.url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={coverUrl} alt={s.name} className="absolute inset-0 size-full object-cover" />
+          ) : (
+            <Image src={coverUrl} alt={s.name} fill priority sizes="100vw" className="object-cover" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           <div className="absolute inset-x-0 top-0 p-4">
             <Link
@@ -168,10 +228,12 @@ export function SupplierProfile({ id }: { id: string }) {
             <div className="min-w-0 flex-1 pt-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{s.name}</h1>
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-600">
-                  <Award className="size-3.5" />
-                  {p.storeBadge}
-                </span>
+                {s.verified && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-600">
+                    <Award className="size-3.5" />
+                    {p.storeBadge}
+                  </span>
+                )}
                 {s.verified && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent">
                     <BadgeCheck className="size-3.5" />
@@ -211,11 +273,12 @@ export function SupplierProfile({ id }: { id: string }) {
           </div>
 
           {/* Quick stats */}
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
             <Stat icon={<Package className="size-4 text-primary" />} value={String(s.products)} label={p.products} />
             <Stat icon={<TrendingUp className="size-4 text-accent" />} value={`${s.responseRate}%`} label={p.responseRate} />
             <Stat icon={<CalendarClock className="size-4 text-primary" />} value={String(s.years)} label={p.yearsInBusiness} />
             <Stat icon={<Boxes className="size-4 text-accent" />} value={s.minMoq.toLocaleString()} label={p.moq} />
+            <Stat icon={<Eye className="size-4 text-primary" />} value={String(s.profileViews)} label="Views" />
           </div>
         </div>
       </section>
@@ -249,20 +312,86 @@ export function SupplierProfile({ id }: { id: string }) {
             </Link>
           </Card>
 
+          <Link href={`/suppliers/${s.id}/feed`} className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-accent px-5 py-3.5 text-sm font-black text-white shadow-lg active:scale-95">
+            <Play className="size-4" />
+            Watch Photos & Videos
+          </Link>
+
           <Card title={p.factory} icon={<Building2 className="size-4" />}>
-            <EmptyState icon={<Building2 className="size-5" />} text={p.factoryEmpty} />
+            {photos.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {photos.map((ph) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={ph.id}
+                    src={ph.url}
+                    alt={ph.caption ?? s.name}
+                    className="aspect-square w-full rounded-xl border border-border object-cover"
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon={<Building2 className="size-5" />} text={p.factoryEmpty} />
+            )}
           </Card>
 
           <Card title={p.videos} icon={<Play className="size-4" />}>
-            <EmptyState icon={<Play className="size-5" />} text={p.videosEmpty} />
+            {videos.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {videos.map((v) => (
+                  <video key={v.id} src={v.url} controls className="w-full rounded-xl border border-border aspect-video" />
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon={<Play className="size-5" />} text={p.videosEmpty} />
+            )}
           </Card>
 
           <Card title={p.catalogs} icon={<FileText className="size-4" />}>
             <EmptyState icon={<FileText className="size-5" />} text={p.catalogsEmpty} />
           </Card>
 
+          {s.externalStoreUrl && (
+            <Card title={p.externalStore} icon={<Store className="size-4" />}>
+              <a
+                href={s.externalStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-secondary/20 p-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary/40"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <Store className="size-5 shrink-0 text-primary" />
+                  <span className="min-w-0">
+                    <span className="block">{p.visitExternalStore}</span>
+                    <span className="block truncate text-xs font-normal text-muted-foreground">
+                      {externalStoreLabel(s.externalStoreUrl)}
+                    </span>
+                  </span>
+                </span>
+                <ExternalLink className="size-4 shrink-0 text-muted-foreground" />
+              </a>
+            </Card>
+          )}
+
           <Card title={p.certifications} icon={<Award className="size-4" />}>
-            <EmptyState icon={<ShieldCheck className="size-5" />} text={p.certificationsEmpty} />
+            {certificates.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {certificates.map((c) => (
+                  <a
+                    key={c.id}
+                    href={c.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 rounded-xl border border-border bg-secondary/20 p-3 text-sm font-medium text-foreground hover:bg-secondary/40"
+                  >
+                    <ShieldCheck className="size-5 shrink-0 text-primary" />
+                    <span className="truncate">{c.caption || p.certifications}</span>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <EmptyState icon={<ShieldCheck className="size-5" />} text={p.certificationsEmpty} />
+            )}
           </Card>
 
           <Card title={p.reviewsTitle} icon={<Star className="size-4" />}>

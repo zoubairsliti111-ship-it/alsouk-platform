@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import type { Supplier } from "@/lib/directory-data"
+
 import {
   SORT_COLUMNS,
   SUPPLIER_COLUMNS,
@@ -11,19 +12,8 @@ import {
 } from "@/lib/supabase/suppliers-service"
 import { KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
 
-// Read fresh on every request (no static caching) so the response always
-// reflects the current database and environment.
 export const dynamic = "force-dynamic"
 
-// The Supabase URL + browser-safe key are read from the environment on the
-// server at request time, so this works regardless of whether the
-// `NEXT_PUBLIC_*` values were inlined into the client bundle at build time.
-
-/**
- * Per-variable presence/length report (names + lengths only, never values).
- * Makes it unambiguous whether a configured var is simply empty at runtime
- * vs. missing entirely — without exposing any secret.
- */
 function reportVars(names: readonly string[]) {
   return names.map((name) => {
     const raw = process.env[name]
@@ -36,10 +26,6 @@ function reportVars(names: readonly string[]) {
   })
 }
 
-/**
- * Builds a diagnostic object that is safe to expose: it reports only which env
- * var names are present and the *shape* of their values — never a secret value.
- */
 function buildDiag(): Record<string, unknown> {
   const url = firstDefined(URL_VARS)
   const key = firstDefined(KEY_VARS)
@@ -49,7 +35,6 @@ function buildDiag(): Record<string, unknown> {
     urlLooksLikeHttpUrl: url.value ? /^https?:\/\//.test(url.value) : false,
     keyVarPresent: Boolean(key.value),
     keyVarName: key.name ?? null,
-    // Non-sensitive key shape hints (kind + length only, never the value).
     keyKind: key.value
       ? key.value.startsWith("sb_publishable_")
         ? "publishable"
@@ -62,19 +47,11 @@ function buildDiag(): Record<string, unknown> {
     keyLength: key.value ? key.value.length : 0,
     checkedUrlVars: URL_VARS,
     checkedKeyVars: KEY_VARS,
-    // Vercel-provided, non-secret context: confirms which deployment/env is
-    // actually serving this response (helps catch a stale alias or a build
-    // created before an env var was added).
     vercelEnv: process.env.VERCEL_ENV ?? null,
     commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
-    // Names only (never values) of every Supabase-related / NEXT_PUBLIC_ env
-    // var visible to the function, to surface a mis-named or mis-scoped key.
     presentEnvNames: Object.keys(process.env)
       .filter((name) => /supabase/i.test(name) || name.startsWith("NEXT_PUBLIC_"))
       .sort(),
-    // Definitive per-variable proof: shows each checked key var's presence and
-    // value length. A row with inEnv:true but trimmedLength:0 is a configured
-    // but *empty* value — not a detection bug.
     keyVarReport: reportVars(KEY_VARS),
     urlVarReport: reportVars(URL_VARS),
   }
@@ -91,7 +68,7 @@ export async function GET(request: Request) {
   if (!url || !key) {
     console.error(
       "[api/suppliers] Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and " +
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).",
     )
     return withDiag({ suppliers: [], error: true, reason: "unconfigured" })
   }
@@ -107,9 +84,7 @@ export async function GET(request: Request) {
   const limitParam = Number.parseInt(searchParams.get("limit") ?? "", 10)
   const limit = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : undefined
 
-  // Query PostgREST directly (no supabase-js) to avoid the realtime client's
-  // hard dependency on a native WebSocket in some Node runtimes.
-  let endpoint = `${url}/rest/v1/${SUPPLIERS_TABLE}?select=${SUPPLIER_COLUMNS}&order=${SORT_COLUMNS[sort]}.desc`
+  let endpoint = `${url}/rest/v1/${SUPPLIERS_TABLE}?select=${SUPPLIER_COLUMNS}&active=eq.true&order=${SORT_COLUMNS[sort]}.desc`
   if (limit) endpoint += `&limit=${limit}`
 
   try {
@@ -123,6 +98,44 @@ export async function GET(request: Request) {
       return withDiag({ suppliers: [], error: true, reason: `upstream_${res.status}` })
     }
     const rows = (await res.json()) as SupplierRow[]
+
+    const ids = rows.map((r) => r.id).filter(Boolean)
+    if (ids.length > 0) {
+      try {
+        const idsParam = ids.map((id) => `"${id}"`).join(",")
+        const countsRes = await fetch(
+          `${url}/rest/v1/products?select=company_id&company_id=in.(${idsParam})&is_active=eq.true`,
+          { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: "no-store" },
+        )
+        if (countsRes.ok) {
+          const productRows = (await countsRes.json()) as { company_id: string }[]
+          const counts = new Map<string, number>()
+          const mediaRes = await fetch(
+            `${url}/rest/v1/company_media?select=company_id,url,created_at&company_id=in.(${idsParam})&media_type=in.(product_gallery,factory_photo)&order=created_at.asc`,
+            { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: "no-store" },
+          )
+          if (mediaRes.ok) {
+            const mediaRows = (await mediaRes.json()) as { company_id: string; url: string }[]
+            const firstPhoto = new Map<string, string>()
+            for (const m of mediaRows) {
+              if (!firstPhoto.has(m.company_id)) firstPhoto.set(m.company_id, m.url)
+            }
+            for (const row of rows) {
+              row.cover_photo_url = firstPhoto.get(row.id) ?? null
+            }
+          }
+          for (const p of productRows) {
+            counts.set(p.company_id, (counts.get(p.company_id) ?? 0) + 1)
+          }
+          for (const row of rows) {
+            row.products_count = counts.get(row.id) ?? 0
+          }
+        }
+      } catch (err) {
+        console.error("[api/suppliers] Failed to load product counts:", err)
+      }
+    }
+
     const suppliers = rows.map(mapRow).filter((s): s is Supplier => s !== null)
     return withDiag({ suppliers, error: false })
   } catch (err) {

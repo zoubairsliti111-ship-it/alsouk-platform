@@ -3,9 +3,11 @@ import type { Category } from "@/lib/domains/category/types"
 
 export type CompanyWebsiteMode = "external" | "alsouk" | "both"
 export type CompanyVerificationTier = "basic" | "verified" | "premium"
+export type ProfileLevel = "starter" | "business" | "enterprise"
 
 export interface Company {
   id: string
+  profileLevel: ProfileLevel
   name: string
   slug: string
   description: string | null
@@ -24,6 +26,8 @@ export interface Company {
   website: string | null // Keep 'website' for backwards compatibility
   websiteUrl: string | null
   websiteMode: CompanyWebsiteMode
+  /** The merchant's own online store hosted outside ALSOUK. */
+  externalStoreUrl: string | null
 
   // Contact & Location
   businessEmail: string | null
