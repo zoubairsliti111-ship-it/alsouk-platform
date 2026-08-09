@@ -1910,15 +1910,6 @@ function AccountScreen() {
                   </div>
                 )}
 
-                {/* Photos & Videos link */}
-                <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-3">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Photos & Videos</h4>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">Manage your product photos and short videos in Studio.</p>
-                  <button type="button" onClick={() => setActiveProfileTab("studio")} className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-black text-white hover:opacity-95 w-full">
-                    Open Studio
-                  </button>
-                </div>
-
                 {/* Direct Contact Card */}
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-4">
                   <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Instant Contacts</h4>
