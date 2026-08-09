@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Building2, MessageSquare, Store } from "lucide-react"
+import { Building2, LogOut, MessageSquare, Store } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 type FollowedStore = {
@@ -20,6 +21,7 @@ export function BuyerAccountView({
   avatarUrl: string | null
   userId: string
 }) {
+  const router = useRouter()
   const [stores, setStores] = useState<FollowedStore[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -59,6 +61,19 @@ export function BuyerAccountView({
           )}
           <h1 className="text-xl font-black text-foreground">{name}</h1>
         </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            const supabase = createClient()
+            await supabase.auth.signOut()
+            router.replace("/login")
+          }}
+          className="mt-4 mx-auto flex items-center justify-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-secondary"
+        >
+          <LogOut className="size-3.5" />
+          Log Out
+        </button>
 
         <Link
           href="/messages"
