@@ -1338,13 +1338,13 @@ function AccountScreen() {
               </div>
 
               <p className="text-sm font-bold text-muted-foreground">
-                @{company?.slug || "user"} • {company?.tagline || dict.wholesaleSupplierDefault}
+                @{company?.slug || (company?.name ? company.name.toLowerCase().replace(/[^a-z0-9]+/g, "") : "")} {company?.tagline ? `• ${company.tagline}` : ""}
               </p>
 
               <div className="flex flex-wrap items-center gap-3.5 pt-1 text-xs text-muted-foreground font-semibold">
                 <span className="flex items-center gap-1">
                   <MapPin className="size-3.5 text-primary" />
-                  <span className="capitalize">{company?.city || metadata.city || "Sfax"}, {metadata.country ? dirT.countries[metadata.country as keyof typeof dirT.countries] : "Tunisia"}</span>
+                  <span className="capitalize">{(company?.city || metadata.city) ? `${company?.city || metadata.city}, ${metadata.country ? dirT.countries[metadata.country as keyof typeof dirT.countries] : "Tunisia"}` : "Location not set"}</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="size-3.5 text-primary" />
@@ -1352,7 +1352,7 @@ function AccountScreen() {
                 </span>
                 <span className="flex items-center gap-1">
                   <Building2 className="size-3.5 text-primary" />
-                  <span className="capitalize">{company?.businessType?.replace("_", " ") || dict.exporterWholesalerDefault}</span>
+                  <span className="capitalize">{company?.businessType ? company.businessType.replace("_", " ") : "Business type not set"}</span>
                 </span>
               </div>
             </div>
