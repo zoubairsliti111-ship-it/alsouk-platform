@@ -26,6 +26,8 @@ export interface Company {
   website: string | null // Keep 'website' for backwards compatibility
   websiteUrl: string | null
   websiteMode: CompanyWebsiteMode
+  /** The merchant's own online store hosted outside ALSOUK. */
+  externalStoreUrl: string | null
 
   // Contact & Location
   businessEmail: string | null

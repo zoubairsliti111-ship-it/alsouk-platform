@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Eye, Heart, ImagePlus, MessageCircle, Play, Radio, Send, Video as VideoIcon, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/components/auth-provider"
+import { ExternalStoreSync } from "@/components/studio/external-store-sync"
 
 type Company = {
   id: string
@@ -273,6 +274,8 @@ export function StudioPanel({ company }: { company: Company }) {
 
   return (
     <div>
+      <ExternalStoreSync companyId={company.id} />
+
       <div className="flex items-center gap-2.5 mb-4">
         <input
           type="file"

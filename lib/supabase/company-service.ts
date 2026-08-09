@@ -18,6 +18,7 @@ export type DBCompanyRow = {
   youtube_url: string | null
   website_url: string | null
   website_mode: any
+  external_store_url: string | null
   business_email: string | null
   phone_number: string | null
   whatsapp_number: string | null
@@ -60,6 +61,7 @@ export function mapCompanyRow(row: DBCompanyRow): Company {
     youtubeUrl: row.youtube_url,
     websiteUrl: row.website_url,
     websiteMode: row.website_mode || "alsouk",
+    externalStoreUrl: row.external_store_url ?? null,
     businessEmail: row.business_email,
     phoneNumber: row.phone_number,
     whatsappNumber: row.whatsapp_number,
@@ -199,6 +201,7 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
     youtube_url: companyInput.youtubeUrl || null,
     website_url: companyInput.websiteUrl || null,
     website_mode: companyInput.websiteMode || "alsouk",
+    external_store_url: companyInput.externalStoreUrl || null,
     business_email: companyInput.businessEmail || null,
     phone_number: companyInput.phoneNumber || null,
     whatsapp_number: companyInput.whatsappNumber || null,
@@ -290,6 +293,7 @@ export async function updateCompany(companyId: string, companyInput: Partial<Com
     youtube_url: companyInput.youtubeUrl,
     website_url: companyInput.websiteUrl,
     website_mode: companyInput.websiteMode,
+    external_store_url: companyInput.externalStoreUrl,
     business_email: companyInput.businessEmail,
     phone_number: companyInput.phoneNumber,
     whatsapp_number: companyInput.whatsappNumber,

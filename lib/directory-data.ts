@@ -36,6 +36,8 @@ export type Company = {
   // Website strategy
   websiteUrl: string | null
   websiteMode: CompanyWebsiteMode
+  /** The merchant's own online store hosted outside ALSOUK. */
+  externalStoreUrl: string | null
 
   // Contact & Location
   businessEmail: string | null
@@ -113,6 +115,8 @@ export type Supplier = {
   logoUrl: string | null
   profileViews: number
   coverPhotoUrl: string | null
+  /** The merchant's own online store hosted outside ALSOUK, when set. */
+  externalStoreUrl: string | null
 }
 
 /**
