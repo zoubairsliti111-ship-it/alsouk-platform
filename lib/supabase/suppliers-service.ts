@@ -11,6 +11,7 @@ import {
 } from "@/lib/directory-data"
 import { directoryT } from "@/lib/directory-i18n"
 import { SITE_URL } from "@/lib/site"
+import { safeExternalStoreUrl } from "@/lib/external-store"
 
 export type SupplierSort = "rating" | "products" | "years"
 export const SUPPLIER_SORTS: SupplierSort[] = ["rating", "products", "years"]
@@ -60,12 +61,13 @@ export type SupplierRow = {
   tagline: string | null
   created_at: string
   profile_views: number | null
+  external_store_url: string | null
   products_count?: number
   cover_photo_url?: string | null
 }
 
 export const SUPPLIER_COLUMNS =
-  "id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views"
+  "id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views,external_store_url"
 
 export const SORT_COLUMNS: Record<SupplierSort, string> = {
   rating: "created_at",
@@ -114,6 +116,7 @@ export function mapRow(row: SupplierRow): Supplier | null {
     logoUrl: row.logo_url?.trim() || null,
     profileViews: Number(row.profile_views) || 0,
     coverPhotoUrl: row.cover_photo_url?.trim() || null,
+    externalStoreUrl: safeExternalStoreUrl(row.external_store_url),
   }
 }
 

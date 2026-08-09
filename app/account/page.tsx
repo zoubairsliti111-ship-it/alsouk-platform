@@ -16,6 +16,7 @@ import {
   updateCompany
 } from "@/lib/supabase/company-service"
 import { type Company } from "@/lib/directory-data"
+import { normalizeExternalStoreUrl } from "@/lib/external-store"
 import { MerchantPosts } from "@/components/marketplace/merchant-posts"
 import { getProducts } from "@/lib/services/products-service"
 import { getExhibitions } from "@/lib/services/exhibitions-service"
@@ -131,6 +132,10 @@ const localT = {
     descriptionLabel: "Description",
     businessEmailLabel: "Business Email",
     whatsappNumberLabel: "WhatsApp Number",
+    externalStoreUrlLabel: "External Store Link",
+    externalStoreUrlPlaceholder: "https://mystore.com",
+    externalStoreUrlHint: "Already selling on your own online store? Paste its address and buyers will see a \"Visit External Store\" link on your profile.",
+    externalStoreUrlInvalid: "Enter a valid store address, for example https://mystore.com",
     activateSupplierSpace: "Complete Your Profile",
     tabBuyerReviews: "Buyer Reviews",
     verifiedReviewsTitle: "Verified Buyer Reviews",
@@ -236,6 +241,10 @@ const localT = {
     descriptionLabel: "Description",
     businessEmailLabel: "E-mail professionnel",
     whatsappNumberLabel: "Numéro WhatsApp",
+    externalStoreUrlLabel: "Lien de la boutique externe",
+    externalStoreUrlPlaceholder: "https://maboutique.com",
+    externalStoreUrlHint: "Vous vendez déjà sur votre propre boutique en ligne ? Collez son adresse et les acheteurs verront un lien « Visiter la boutique externe » sur votre profil.",
+    externalStoreUrlInvalid: "Saisissez une adresse de boutique valide, par exemple https://maboutique.com",
     activateSupplierSpace: "Compléter votre profil",
     tabBuyerReviews: "Avis acheteurs",
     verifiedReviewsTitle: "Avis vérifiés des acheteurs",
@@ -341,6 +350,10 @@ const localT = {
     descriptionLabel: "الوصف",
     businessEmailLabel: "البريد الإلكتروني للأعمال",
     whatsappNumberLabel: "رقم واتساب",
+    externalStoreUrlLabel: "رابط المتجر الخارجي",
+    externalStoreUrlPlaceholder: "https://mystore.com",
+    externalStoreUrlHint: "هل تبيع بالفعل عبر متجرك الإلكتروني الخاص؟ الصق عنوانه وسيرى المشترون رابط «زيارة المتجر الخارجي» في ملفك.",
+    externalStoreUrlInvalid: "أدخل عنوان متجر صالحًا، مثال https://mystore.com",
     activateSupplierSpace: "أكمل ملفك الشخصي",
     tabBuyerReviews: "تقييمات المشترين",
     verifiedReviewsTitle: "تقييمات المشترين الموثَّقة",
@@ -519,6 +532,7 @@ function AccountScreen() {
     businessEmail: "",
     phoneNumber: "",
     whatsappNumber: "",
+    externalStoreUrl: "",
     country: "tn",
     city: "",
     postalCode: "",
@@ -634,6 +648,7 @@ function AccountScreen() {
           businessEmail: companyData.businessEmail || "",
           phoneNumber: companyData.phoneNumber || "",
           whatsappNumber: companyData.whatsappNumber || "",
+          externalStoreUrl: companyData.externalStoreUrl || "",
           country: companyData.country || "tn",
           city: companyData.city || "",
           postalCode: companyData.postalCode || "",
@@ -911,6 +926,19 @@ function AccountScreen() {
       return
     }
 
+    // The external store address is stored verbatim and later rendered as a
+    // link, so reject anything that isn't an absolute http(s) URL up front
+    // rather than saving a value the profile would refuse to display.
+    let externalStoreUrl: string | null = null
+    if (companyForm.externalStoreUrl.trim()) {
+      const parsedStoreUrl = normalizeExternalStoreUrl(companyForm.externalStoreUrl)
+      if (!parsedStoreUrl.ok) {
+        setCompanyError(dict.externalStoreUrlInvalid)
+        return
+      }
+      externalStoreUrl = parsedStoreUrl.url
+    }
+
     setUpdating(true)
 
     try {
@@ -920,7 +948,8 @@ function AccountScreen() {
       const payload = {
         ...companyForm,
         slug: formattedSlug,
-        yearEstablished: parsedYear
+        yearEstablished: parsedYear,
+        externalStoreUrl
       }
 
       let updatedComp = null
@@ -1658,6 +1687,19 @@ function AccountScreen() {
                             className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
                           />
                         </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-muted-foreground">{dict.externalStoreUrlLabel}</label>
+                        <input
+                          type="url"
+                          inputMode="url"
+                          value={companyForm.externalStoreUrl}
+                          onChange={(e) => setCompanyForm({...companyForm, externalStoreUrl: e.target.value})}
+                          placeholder={dict.externalStoreUrlPlaceholder}
+                          className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                        />
+                        <p className="text-[10px] text-muted-foreground">{dict.externalStoreUrlHint}</p>
                       </div>
 
                       {/* BUSINESS FIELDS (Level 2+) */}

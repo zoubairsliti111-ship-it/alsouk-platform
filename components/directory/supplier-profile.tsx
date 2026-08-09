@@ -9,6 +9,7 @@ import {
   BadgeCheck,
   Boxes,
   Eye,
+  ExternalLink,
   Building2,
   CalendarClock,
   FileText,
@@ -20,6 +21,7 @@ import {
   Play,
   ShieldCheck,
   Star,
+  Store,
   TrendingUp,
 } from "lucide-react"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -30,6 +32,7 @@ import type { Supplier } from "@/lib/directory-data"
 import { RfqDialog } from "@/components/rfq/rfq-dialog"
 import { useAuth } from "@/components/auth-provider"
 import { createClient } from "@/lib/supabase/client"
+import { externalStoreLabel } from "@/lib/external-store"
 
 type Status = "loading" | "loaded" | "notFound" | "error"
 
@@ -347,6 +350,28 @@ export function SupplierProfile({ id }: { id: string }) {
           <Card title={p.catalogs} icon={<FileText className="size-4" />}>
             <EmptyState icon={<FileText className="size-5" />} text={p.catalogsEmpty} />
           </Card>
+
+          {s.externalStoreUrl && (
+            <Card title={p.externalStore} icon={<Store className="size-4" />}>
+              <a
+                href={s.externalStoreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-secondary/20 p-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary/40"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <Store className="size-5 shrink-0 text-primary" />
+                  <span className="min-w-0">
+                    <span className="block">{p.visitExternalStore}</span>
+                    <span className="block truncate text-xs font-normal text-muted-foreground">
+                      {externalStoreLabel(s.externalStoreUrl)}
+                    </span>
+                  </span>
+                </span>
+                <ExternalLink className="size-4 shrink-0 text-muted-foreground" />
+              </a>
+            </Card>
+          )}
 
           <Card title={p.certifications} icon={<Award className="size-4" />}>
             {certificates.length > 0 ? (
