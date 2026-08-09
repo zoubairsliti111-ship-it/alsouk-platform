@@ -356,7 +356,7 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
             <div className="absolute inset-0 opacity-15 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
           )}
           {/* Subtle logo/emblem inside cover */}
-          <div className="absolute top-4 right-4 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold text-white flex items-center gap-1">
+          <div className="absolute top-4 end-4 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold text-white flex items-center gap-1">
             <Shield className="size-3 text-emerald-400" />
             <span className="uppercase">{company.verificationTier}</span>
           </div>

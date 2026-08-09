@@ -1303,7 +1303,7 @@ function AccountScreen() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
         {/* Quick action buttons on cover */}
-        <div className="absolute top-4 right-4 sm:right-8 flex gap-2">
+        <div className="absolute top-4 end-4 sm:end-8 flex gap-2">
           <button
             onClick={() => setShowEditSettingsModal(true)}
             className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-xl bg-black/60 backdrop-blur-md text-white border border-white/20 hover:bg-black/80 transition-all cursor-pointer shadow-md"
@@ -2095,7 +2095,7 @@ function AccountScreen() {
                           {company && (
                             <button
                               onClick={() => handleDeleteMediaAsset(med.id)}
-                              className="absolute top-2 right-2 size-7 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
+                              className="absolute top-2 end-2 size-7 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
                             >
                               <Trash2 className="size-3.5" />
                             </button>
