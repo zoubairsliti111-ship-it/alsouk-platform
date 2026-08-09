@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { StudioPanel } from "@/components/studio/studio-panel"
 import { useAuth } from "@/components/auth-provider"
+import { BuyerAccountView } from "@/components/account/buyer-account-view"
 import { ImagePlus } from "lucide-react"
 import { MarketplaceShell } from "@/components/marketplace/shell"
 import { useLanguage } from "@/components/language-provider"
@@ -1252,6 +1253,10 @@ function AccountScreen() {
   )
   const emailVal = user.email && !isSyntheticEmail ? user.email : (metadata.email_address || t.auth.notSet)
   const accountType = metadata.account_type || ""
+
+  if (accountType === "buyer") {
+    return <BuyerAccountView name={fullName} avatarUrl={metadata.avatar_url || null} userId={user.id} />
+  }
 
   // Avatar rendering helper
   const renderAvatar = (url: string, name: string) => {
