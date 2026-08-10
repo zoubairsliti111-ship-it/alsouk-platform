@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
   BadgeCheck,
+  Eye,
   Building2,
   ExternalLink,
   Layers,
@@ -52,6 +53,9 @@ type Status = "loading" | "loaded" | "notFound" | "error"
 const LOCAL_I18N = {
   en: {
     sendRfq: "Send RFQ",
+    statsProducts: "Products",
+    statsYears: "Years",
+    statsViews: "Views",
     messageCompany: "Message Company",
     share: "Share",
     report: "Report Company",
@@ -87,6 +91,9 @@ const LOCAL_I18N = {
   },
   fr: {
     sendRfq: "Envoyer un devis",
+    statsProducts: "Produits",
+    statsYears: "Années",
+    statsViews: "Vues",
     messageCompany: "Contacter l'entreprise",
     share: "Partager",
     report: "Signaler l'entreprise",
@@ -122,6 +129,9 @@ const LOCAL_I18N = {
   },
   ar: {
     sendRfq: "أرسل طلب عرض سعر",
+    statsProducts: "المنتجات",
+    statsYears: "سنوات",
+    statsViews: "مشاهدات",
     messageCompany: "مراسلة الشركة",
     share: "مشاركة",
     report: "الإبلاغ عن الشركة",
@@ -497,6 +507,30 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
           )}
         </div>
       </section>
+
+
+      {/* Quick stats bar */}
+      <div className="mx-auto max-w-6xl px-4 -mt-4 mb-2">
+        <div className="bg-card border border-border rounded-[20px] shadow-sm grid grid-cols-3 divide-x divide-border rtl:divide-x-reverse">
+          <div className="flex flex-col items-center justify-center gap-1 py-4 px-2 text-center">
+            <Package className="size-5 text-primary" />
+            <span className="text-lg font-black text-foreground">{products.length}</span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{dict.statsProducts}</span>
+          </div>
+          <div className="flex flex-col items-center justify-center gap-1 py-4 px-2 text-center">
+            <Calendar className="size-5 text-primary" />
+            <span className="text-lg font-black text-foreground">
+              {company.yearEstablished ? `${new Date().getFullYear() - company.yearEstablished}+` : "—"}
+            </span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{dict.statsYears}</span>
+          </div>
+          <div className="flex flex-col items-center justify-center gap-1 py-4 px-2 text-center">
+            <Eye className="size-5 text-primary" />
+            <span className="text-lg font-black text-foreground">{company.profileViews}</span>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{dict.statsViews}</span>
+          </div>
+        </div>
+      </div>
 
       {/* Main content grid */}
       <div className="mx-auto max-w-6xl px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">

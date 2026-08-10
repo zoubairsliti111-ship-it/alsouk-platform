@@ -35,6 +35,7 @@ export type CompanyRow = {
   company_size: string | null
   tax_identifier: string | null
   profile_completion: number | null
+  profile_views: number | null
   verified: boolean
   verification_tier: CompanyVerificationTier | null
   verified_at: string | null
@@ -89,6 +90,7 @@ export const COMPANY_COLUMNS = [
   "company_size",
   "tax_identifier",
   "profile_completion",
+  "profile_views",
   "verified",
   "verification_tier",
   "verified_at",
@@ -146,6 +148,7 @@ export function mapCompany(row: CompanyRow): Company | null {
     companySize: row.company_size?.trim() || null,
     taxIdentifier: row.tax_identifier?.trim() || null,
     profileCompletion: row.profile_completion ? Number(row.profile_completion) : 0,
+    profileViews: row.profile_views ? Number(row.profile_views) : 0,
     verified: Boolean(row.verified),
     verificationTier: row.verification_tier || "basic",
     verifiedAt: row.verified_at || null,

@@ -47,6 +47,7 @@ export interface Company {
 
   // Profile progress & verification
   profileCompletion: number
+  profileViews: number
   verified: boolean
   verificationTier: CompanyVerificationTier
   verifiedAt: string | null
