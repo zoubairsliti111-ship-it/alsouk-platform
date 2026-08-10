@@ -33,14 +33,12 @@ function mapMessage(row: MessageRow): MessageItem {
  * finally to a generic placeholder if neither record exists.
  */
 export async function resolveParticipant(supabase: any, userId: string): Promise<MessageParticipant> {
-  const { data: membership } = await supabase
-    .from("company_members")
-    .select("company_id, companies(name, slug, logo_url)")
-    .eq("user_id", userId)
-    .eq("role", "owner")
+  const { data: company } = await supabase
+    .from("companies")
+    .select("name, slug, logo_url")
+    .eq("owner_id", userId)
     .maybeSingle()
 
-  const company = membership?.companies
   if (company?.name) {
     return {
       userId,
