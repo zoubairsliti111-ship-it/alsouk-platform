@@ -1249,12 +1249,12 @@ function AccountScreen() {
   const missingChecklist = useMemo(() => {
     if (!company) return []
     const items = []
-    if (!company.description) items.push({ key: "description", label: "Add a complete company description", tab: "about" as const })
-    if (!company.logoUrl) items.push({ key: "logoUrl", label: "Upload a company logo image", tab: "about" as const })
-    if (!company.bannerUrl) items.push({ key: "bannerUrl", label: "Upload a cover banner", tab: "about" as const })
-    if (!company.taxIdentifier) items.push({ key: "taxIdentifier", label: "Provide Tax ID (Matricule Fiscal / RNE)", tab: "about" as const })
-    if (!company.websiteUrl) items.push({ key: "websiteUrl", label: "Define website strategy & domain", tab: "about" as const })
-    if (!company.facebookUrl && !company.linkedinUrl && !company.instagramUrl) items.push({ key: "social", label: "Add social media handles (Facebook, LinkedIn, etc.)", tab: "about" as const })
+    if (!company.description) items.push({ key: "description", label: t.profile.addDescription, tab: "about" as const })
+    if (!company.logoUrl) items.push({ key: "logoUrl", label: t.profile.uploadLogo, tab: "about" as const })
+    if (!company.bannerUrl) items.push({ key: "bannerUrl", label: t.profile.uploadBanner, tab: "about" as const })
+    if (!company.taxIdentifier) items.push({ key: "taxIdentifier", label: t.profile.provideTaxId, tab: "about" as const })
+    if (!company.websiteUrl) items.push({ key: "websiteUrl", label: t.profile.defineWebsite, tab: "about" as const })
+    if (!company.facebookUrl && !company.linkedinUrl && !company.instagramUrl) items.push({ key: "social", label: t.profile.addSocialHandles, tab: "about" as const })
     if (companyMedia.length === 0) items.push({ key: "media", label: "Upload factory photos or quality certificates", tab: "certificates" as const })
     return items
   }, [company, companyMedia])
@@ -1886,14 +1886,14 @@ function AccountScreen() {
                         <span className="absolute text-sm font-black text-foreground">{company.profileCompletion}%</span>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-foreground">Completeness Score</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">Aim for &gt;85% to receive the Verified Partner badge.</p>
+                        <p className="text-xs font-bold text-foreground">{t.profile.completenessScore}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{t.profile.aimFor85}</p>
                       </div>
                     </div>
 
                     {missingChecklist.length > 0 && (
                       <div className="space-y-2 pt-2 border-t border-border">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase">Recommended Next Steps:</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase">{t.profile.recommendedNextSteps}</p>
                         {missingChecklist.map((item) => (
                           <div key={item.key} className="flex items-start gap-2 text-[11px] text-foreground font-semibold">
                             <AlertCircle className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
@@ -1907,15 +1907,15 @@ function AccountScreen() {
 
                 {/* Direct Contact Card */}
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-4">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Instant Contacts</h4>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">{t.profile.instantContacts}</h4>
                   <div className="space-y-3.5">
                     <a href={`mailto:${company?.businessEmail || "contact@alsouk.com"}`} className="flex items-center gap-3 p-3.5 bg-secondary/15 rounded-xl border border-border/40 text-xs font-bold text-foreground hover:bg-secondary/30 transition-all">
                       <Mail className="size-4 text-primary shrink-0" />
-                      <span className="truncate">{company?.businessEmail || "Not added yet"}</span>
+                      <span className="truncate">{company?.businessEmail || t.profile.notAdded}</span>
                     </a>
                     <a href={`tel:${company?.phoneNumber || "+216 71 123 456"}`} className="flex items-center gap-3 p-3.5 bg-secondary/15 rounded-xl border border-border/40 text-xs font-bold text-foreground hover:bg-secondary/30 transition-all">
                       <Phone className="size-4 text-primary shrink-0" />
-                      <span>{company?.phoneNumber || "Not added yet"}</span>
+                      <span>{company?.phoneNumber || t.profile.notAdded}</span>
                     </a>
                     {company?.whatsappNumber && (
                       <a href={`https://wa.me/${company.whatsappNumber}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15 transition-all">
@@ -1965,7 +1965,7 @@ function AccountScreen() {
                     className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary text-xs font-black text-white hover:opacity-95 shadow-xs cursor-pointer"
                   >
                     <Plus className="size-4" />
-                    <span>Add New Product</span>
+                    <span>{t.profile.addNewProduct}</span>
                   </button>
                 )}
               </div>
@@ -1974,29 +1974,29 @@ function AccountScreen() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
                   <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-base font-black text-foreground">Add New Product</h3>
+                      <h3 className="text-base font-black text-foreground">{t.profile.addNewProduct}</h3>
                       <button type="button" onClick={() => setShowAddProductModal(false)} className="text-muted-foreground text-xl leading-none">&times;</button>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-muted-foreground">Product Name *</label>
+                      <label className="text-xs font-bold text-muted-foreground">{t.profile.productName} *</label>
                       <input type="text" value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" placeholder="e.g. Organic Olive Oil 1L" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-bold text-muted-foreground">Price (TND)</label>
+                        <label className="text-xs font-bold text-muted-foreground">{t.profile.priceLabel}</label>
                         <input type="number" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" placeholder="0.00" />
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-muted-foreground">Min Order Qty</label>
+                        <label className="text-xs font-bold text-muted-foreground">{t.profile.minOrderQty}</label>
                         <input type="number" value={productForm.minOrderQuantity} onChange={(e) => setProductForm({ ...productForm, minOrderQuantity: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-muted-foreground">Unit (optional)</label>
+                      <label className="text-xs font-bold text-muted-foreground">{t.profile.unitOptional}</label>
                       <input type="text" value={productForm.unit} onChange={(e) => setProductForm({ ...productForm, unit: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" placeholder="e.g. box, kg, piece" />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-muted-foreground">Product Photo</label>
+                      <label className="text-xs font-bold text-muted-foreground">{t.profile.productPhoto}</label>
                       <input type="file" accept="image/*" onChange={(e) => {
                         const f = e.target.files?.[0]
                         if (f) { setProductImageFile(f); setProductImagePreview(URL.createObjectURL(f)) }
@@ -2012,7 +2012,7 @@ function AccountScreen() {
                       disabled={savingProduct || !productForm.name.trim()}
                       className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-black text-white disabled:opacity-50"
                     >
-                      {savingProduct ? "Saving..." : "Save Product"}
+                      {savingProduct ? t.profile.saving : t.profile.saveProduct}
                     </button>
                   </div>
                 </div>
