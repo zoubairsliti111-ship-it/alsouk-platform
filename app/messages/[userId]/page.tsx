@@ -24,6 +24,7 @@ function ThreadScreen({ otherUserId }: { otherUserId: string }) {
   const [participant, setParticipant] = useState<MessageParticipant | null>(null)
   const [draft, setDraft] = useState("")
   const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -53,18 +54,26 @@ function ThreadScreen({ otherUserId }: { otherUserId: string }) {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
     const trimmed = draft.trim()
-    if (!trimmed || sending) return
+    if (trimmed.length === 0 || sending) return
     setSending(true)
-    const res = await fetch("/api/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ receiverId: otherUserId, message: trimmed }),
-    })
-    const json = await res.json()
-    setSending(false)
-    if (json.success) {
-      setMessages((prev) => [...prev, json.data])
-      setDraft("")
+    setSendError(null)
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ receiverId: otherUserId, message: trimmed }),
+      })
+      const json = await res.json()
+      if (json.success) {
+        setMessages((prev) => [...prev, json.data])
+        setDraft("")
+      } else {
+        setSendError(`${res.status}: ${json.error || "unknown error"}`)
+      }
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : "network error")
+    } finally {
+      setSending(false)
     }
   }
 
@@ -121,6 +130,10 @@ function ThreadScreen({ otherUserId }: { otherUserId: string }) {
         <div ref={bottomRef} />
       </div>
 
+      {sendError && (
+        <p className="px-4 py-1.5 text-[10px] font-bold text-destructive bg-destructive/10">{sendError}</p>
+      )}
+
       <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-border px-4 py-3">
         <input
           type="text"
@@ -131,7 +144,7 @@ function ThreadScreen({ otherUserId }: { otherUserId: string }) {
         />
         <button
           type="submit"
-          disabled={sending || !draft.trim()}
+          disabled={sending || draft.trim().length === 0}
           className="size-10 rounded-full bg-primary text-white flex items-center justify-center disabled:opacity-50 shrink-0"
         >
           {sending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4 rtl:-scale-x-100" />}
