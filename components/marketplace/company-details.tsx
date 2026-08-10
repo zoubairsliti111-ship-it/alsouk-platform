@@ -455,13 +455,23 @@ export function CompanyDetailsView({ slug }: { slug: string }) {
                 <span>{dict.sendRfq}</span>
               </button>
 
-              <button
-                onClick={() => setShowContactModal(true)}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl border border-border bg-card hover:bg-secondary/40 text-xs font-bold text-foreground py-3 px-5 transition-all cursor-pointer"
-              >
-                <MessageSquare className="size-4 text-muted-foreground" />
-                <span>{dict.messageCompany}</span>
-              </button>
+              {company.ownerId ? (
+                <Link
+                  href={`/messages/${company.ownerId}`}
+                  className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl border border-border bg-card hover:bg-secondary/40 text-xs font-bold text-foreground py-3 px-5 transition-all cursor-pointer"
+                >
+                  <MessageSquare className="size-4 text-muted-foreground" />
+                  <span>{dict.messageCompany}</span>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => setShowContactModal(true)}
+                  className="flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl border border-border bg-card hover:bg-secondary/40 text-xs font-bold text-foreground py-3 px-5 transition-all cursor-pointer"
+                >
+                  <MessageSquare className="size-4 text-muted-foreground" />
+                  <span>{dict.messageCompany}</span>
+                </button>
+              )}
 
               <button
                 onClick={handleShare}

@@ -7,6 +7,7 @@ import { safeExternalStoreUrl } from "@/lib/external-store"
 /** Shape of a row in the Supabase `companies` table (snake_case). */
 export type CompanyRow = {
   id: string
+  owner_id: string | null
   name: string
   slug: string
   description: string | null
@@ -62,6 +63,7 @@ export type CompanyMediaRow = {
 
 export const COMPANY_COLUMNS = [
   "id",
+  "owner_id",
   "name",
   "slug",
   "description",
@@ -120,6 +122,7 @@ export function mapCompany(row: CompanyRow): Company | null {
   if (!row?.id || !row.name || !row.slug) return null
   return {
     id: row.id,
+    ownerId: row.owner_id || null,
     name: row.name,
     slug: row.slug,
     description: row.description?.trim() || null,

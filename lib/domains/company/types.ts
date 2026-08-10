@@ -7,6 +7,7 @@ export type ProfileLevel = "starter" | "business" | "enterprise"
 
 export interface Company {
   id: string
+  ownerId?: string | null
   profileLevel: ProfileLevel
   name: string
   slug: string
