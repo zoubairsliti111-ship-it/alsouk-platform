@@ -1305,12 +1305,7 @@ function AccountScreen() {
         </div>
       )
     }
-    const initial = name.trim() ? name.trim().charAt(0).toUpperCase() : "U"
-    return (
-      <div className="relative flex size-24 sm:size-32 items-center justify-center rounded-3xl bg-gradient-to-tr from-primary to-blue-600 text-4xl sm:text-5xl font-black text-white shadow-xl shadow-primary/20 border-4 border-card">
-        {initial}
-      </div>
-    )
+    return null
   }
 
   // Member Since date parsing (pure approach)
