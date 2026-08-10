@@ -177,6 +177,16 @@ export function SupplierProfile({ id }: { id: string }) {
     </button>
   )
 
+  const messageButton = s.ownerId && (
+    <Link
+      href={`/messages/${s.ownerId}`}
+      className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary active:scale-95"
+    >
+      <MessageSquare className="size-4" />
+      {p.social.message}
+    </Link>
+  )
+
   const requestQuoteButton = (
     <Button
       size="lg"
@@ -256,6 +266,7 @@ export function SupplierProfile({ id }: { id: string }) {
 
             <div className="hidden items-center gap-3 lg:flex">
               {followButton}
+              {messageButton}
               <div className="w-52">{requestQuoteButton}</div>
             </div>
           </div>
@@ -440,6 +451,7 @@ export function SupplierProfile({ id }: { id: string }) {
       {/* Sticky mobile CTA — sits above the bottom nav */}
       <div className="fixed inset-x-0 bottom-14 z-30 flex items-center gap-3 border-t border-border bg-card/95 p-3 backdrop-blur lg:hidden">
         {followButton}
+        {messageButton}
         <div className="flex-1">{requestQuoteButton}</div>
       </div>
 
