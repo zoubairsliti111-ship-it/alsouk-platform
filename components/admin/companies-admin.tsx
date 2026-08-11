@@ -83,7 +83,7 @@ export function CompaniesAdmin() {
               value={token}
               onChange={(e) => setToken(e.target.value)}
               placeholder="Paste RFQ_ADMIN_TOKEN"
-              className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm outline-none focus:border-primary"
+              className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-primary"
             />
           </label>
           {view === "unauthorized" && (
