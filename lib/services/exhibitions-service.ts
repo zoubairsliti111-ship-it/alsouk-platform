@@ -311,6 +311,7 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
       category: "Food & Agriculture",
       isFeatured: true,
       company: {
+        profileViews: 0,
         id: "comp-medina",
         name: "Medina Olive Co.",
         slug: "medina-olive-co",
@@ -361,6 +362,7 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
       category: "Food & Agriculture",
       isFeatured: false,
       company: {
+        profileViews: 0,
         id: "comp-sahara",
         name: "Sahara Dates Export",
         slug: "sahara-dates-export",
@@ -413,6 +415,7 @@ const MOCK_BOOTHS: Record<string, ExhibitionBooth[]> = {
       category: "Textiles & Apparel",
       isFeatured: true,
       company: {
+        profileViews: 0,
         id: "comp-carthage",
         name: "Carthage Textiles",
         slug: "carthage-textiles",
@@ -1424,6 +1427,7 @@ export async function approveApplication(
       logoUrl: null,
       bannerUrl: null,
       company: {
+        profileViews: 0,
         id: companyId,
         profileLevel: "starter",
         name: app.companyName,

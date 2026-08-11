@@ -90,6 +90,38 @@ export async function generateReply(messages: ChatMessage[]): Promise<GenerateRe
   }
 }
 
+/**
+ * Extracts short search keywords from a natural-language query using the
+ * configured AI provider (e.g. turns "where can I find wholesale clothing
+ * suppliers with good prices?" into "clothing wholesale"). Falls back to
+ * null when no provider is configured or extraction fails, so callers can
+ * fall back to the raw query.
+ */
+export async function extractSearchKeywords(query: string): Promise<string | null> {
+  const config = getAiConfig()
+  if (!config) return null
+
+  const trimmed = query.trim()
+  if (!trimmed) return null
+
+  const result = await generateReply([
+    {
+      role: "system",
+      content:
+        "Extract 2 to 5 short search keywords (product type, category, material) " +
+        "from the user query below, for a B2B marketplace search. Reply with ONLY " +
+        "the keywords separated by spaces, no punctuation, no explanation, in the " +
+        "same language as the query. If the query is already just keywords, return " +
+        "it as-is.",
+    },
+    { role: "user", content: trimmed.slice(0, 300) },
+  ])
+
+  if (!result.ok) return null
+  const cleaned = result.reply.trim().replace(/["'.]/g, "")
+  return cleaned || null
+}
+
 /** System prompt that scopes the assistant to ALSOUK's B2B use case. */
 export const ALSOUK_SYSTEM_PROMPT =
   "You are the ALSOUK assistant, a concise helper for a B2B marketplace serving " +

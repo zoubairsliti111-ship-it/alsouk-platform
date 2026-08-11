@@ -210,6 +210,27 @@ type Dict = {
     companies: string
     products: string
   }
+  profile: {
+    completenessScore: string
+    aimFor85: string
+    recommendedNextSteps: string
+    addDescription: string
+    uploadLogo: string
+    uploadBanner: string
+    provideTaxId: string
+    defineWebsite: string
+    addSocialHandles: string
+    instantContacts: string
+    notAdded: string
+    addNewProduct: string
+    productName: string
+    minOrderQty: string
+    priceLabel: string
+    unitOptional: string
+    productPhoto: string
+    saving: string
+    saveProduct: string
+  }
   ai: {
     launch: string
     title: string
@@ -253,6 +274,14 @@ type Dict = {
   home: {
     searchPlaceholder: string
     liveTag: string
+    liveTitle: string
+    liveSubtitle: string
+    liveBadge: string
+    liveUpcomingBadge: string
+    liveOpen: string
+    liveViewCompany: string
+    liveEmptyTitle: string
+    liveEmptyBody: string
     activityTitle: string
     activitySubtitle: string
     listed: string
@@ -730,6 +759,27 @@ export const translations: Record<Lang, Dict> = {
       companies: "Companies",
       products: "Products",
     },
+    profile: {
+      completenessScore: "Completeness Score",
+      aimFor85: "Aim for >85% to receive the Verified Partner badge",
+      recommendedNextSteps: "Recommended Next Steps:",
+      addDescription: "Add a complete company description",
+      uploadLogo: "Upload a company logo image",
+      uploadBanner: "Upload a cover banner",
+      provideTaxId: "Provide Tax ID (Matricule Fiscal / RNE)",
+      defineWebsite: "Define website strategy & domain",
+      addSocialHandles: "Add social media handles (Facebook, LinkedIn, etc.)",
+      instantContacts: "Instant Contacts",
+      notAdded: "Not added yet",
+      addNewProduct: "Add New Product",
+      productName: "Product Name",
+      minOrderQty: "Min Order Qty",
+      priceLabel: "Price (TND)",
+      unitOptional: "Unit (optional)",
+      productPhoto: "Product Photo",
+      saving: "Saving...",
+      saveProduct: "Save Product",
+    },
     ai: {
       launch: "Ask ALSOUK",
       title: "ALSOUK Assistant",
@@ -773,6 +823,14 @@ export const translations: Record<Lang, Dict> = {
     home: {
       searchPlaceholder: "Search products, suppliers or companies…",
       liveTag: "Live",
+      liveTitle: "Live Marketplace",
+      liveSubtitle: "Live product sessions hosted by verified companies.",
+      liveBadge: "LIVE",
+      liveUpcomingBadge: "UPCOMING",
+      liveOpen: "Open Live",
+      liveViewCompany: "View company",
+      liveEmptyTitle: "No live sessions right now",
+      liveEmptyBody: "No company is streaming or has scheduled a session yet. Check back soon.",
       activityTitle: "Live marketplace activity",
       activitySubtitle: "Verified suppliers and buyers trading across the region right now.",
       listed: "listed new products",
@@ -1262,6 +1320,27 @@ export const translations: Record<Lang, Dict> = {
       companies: "Entreprises",
       products: "Produits",
     },
+    profile: {
+      completenessScore: "Score de complétude",
+      aimFor85: "Visez >85% pour recevoir le badge Partenaire Vérifié",
+      recommendedNextSteps: "Prochaines étapes recommandées :",
+      addDescription: "Ajouter une description complète de l'entreprise",
+      uploadLogo: "Téléverser un logo d'entreprise",
+      uploadBanner: "Téléverser une bannière de couverture",
+      provideTaxId: "Fournir l'identifiant fiscal (Matricule Fiscal / RNE)",
+      defineWebsite: "Définir la stratégie de site web & domaine",
+      addSocialHandles: "Ajouter les réseaux sociaux (Facebook, LinkedIn, etc.)",
+      instantContacts: "Contacts instantanés",
+      notAdded: "Pas encore ajouté",
+      addNewProduct: "Ajouter un nouveau produit",
+      productName: "Nom du produit",
+      minOrderQty: "Quantité minimale de commande",
+      priceLabel: "Prix (TND)",
+      unitOptional: "Unité (optionnel)",
+      productPhoto: "Photo du produit",
+      saving: "Enregistrement...",
+      saveProduct: "Enregistrer le produit",
+    },
     ai: {
       launch: "Demander à ALSOUK",
       title: "Assistant ALSOUK",
@@ -1305,6 +1384,14 @@ export const translations: Record<Lang, Dict> = {
     home: {
       searchPlaceholder: "Rechercher produits, fournisseurs ou entreprises…",
       liveTag: "En direct",
+      liveTitle: "Marché en Direct",
+      liveSubtitle: "Sessions produits en direct animées par des entreprises vérifiées.",
+      liveBadge: "EN DIRECT",
+      liveUpcomingBadge: "À VENIR",
+      liveOpen: "Ouvrir le direct",
+      liveViewCompany: "Voir l'entreprise",
+      liveEmptyTitle: "Aucune session en direct pour le moment",
+      liveEmptyBody: "Aucune entreprise ne diffuse ni n'a programmé de session. Revenez bientôt.",
       activityTitle: "Activité en direct de la marketplace",
       activitySubtitle: "Fournisseurs vérifiés et acheteurs qui commercent dans la région en ce moment.",
       listed: "a publié de nouveaux produits",
@@ -1794,6 +1881,27 @@ export const translations: Record<Lang, Dict> = {
       companies: "الشركات",
       products: "المنتجات",
     },
+    profile: {
+      completenessScore: "درجة اكتمال الملف",
+      aimFor85: "اهدف لأكثر من 85% للحصول على شارة الشريك الموثّق",
+      recommendedNextSteps: "الخطوات التالية الموصى بها:",
+      addDescription: "أضف وصفاً كاملاً للشركة",
+      uploadLogo: "ارفع شعار الشركة",
+      uploadBanner: "ارفع صورة غلاف",
+      provideTaxId: "أدخل المعرّف الجبائي (المعرف الجبائي / RNE)",
+      defineWebsite: "حدد استراتيجية الموقع والنطاق",
+      addSocialHandles: "أضف حسابات التواصل الاجتماعي (فيسبوك، لينكدإن، إلخ)",
+      instantContacts: "وسائل الاتصال الفوري",
+      notAdded: "لم تُضف بعد",
+      addNewProduct: "إضافة منتج جديد",
+      productName: "اسم المنتج",
+      minOrderQty: "الحد الأدنى لكمية الطلب",
+      priceLabel: "السعر (دينار تونسي)",
+      unitOptional: "الوحدة (اختياري)",
+      productPhoto: "صورة المنتج",
+      saving: "جارٍ الحفظ...",
+      saveProduct: "حفظ المنتج",
+    },
     ai: {
       launch: "اسأل ألسوق",
       title: "مساعد ألسوق",
@@ -1837,6 +1945,14 @@ export const translations: Record<Lang, Dict> = {
     home: {
       searchPlaceholder: "ابحث عن منتجات أو موردين أو شركات…",
       liveTag: "مباشر",
+      liveTitle: "السوق المباشر",
+      liveSubtitle: "جلسات عرض منتجات مباشرة تقدّمها شركات موثّقة.",
+      liveBadge: "مباشر",
+      liveUpcomingBadge: "قريباً",
+      liveOpen: "افتح البث المباشر",
+      liveViewCompany: "عرض الشركة",
+      liveEmptyTitle: "لا توجد جلسات مباشرة حالياً",
+      liveEmptyBody: "لم تبدأ أي شركة بثاً أو تجدول جلسة بعد. تابعنا قريباً.",
       activityTitle: "نشاط السوق المباشر",
       activitySubtitle: "موردون موثّقون ومشترون يتاجرون في المنطقة الآن.",
       listed: "أضاف منتجات جديدة",

@@ -1,28 +1,17 @@
 import { NextResponse } from "next/server"
 import {
-  getMockExhibits,
   updateExhibit,
   deleteExhibit,
   duplicateExhibit,
   mapExhibitionExhibit,
 } from "@/lib/services/exhibitions-service"
-import { restGet, getRestConfig } from "@/lib/supabase/rest"
+import { restGet } from "@/lib/supabase/rest"
 import type { ExhibitionItemRow } from "@/lib/services/exhibitions-service"
 
 export const dynamic = "force-dynamic"
 
-/** Helper to find an exhibit by ID in either database or mocks. */
+/** Looks up a real exhibit by ID. Returns null if it doesn't exist. */
 async function findExhibitById(id: string) {
-  const cfg = getRestConfig()
-  if (!cfg || id.startsWith("exhibit-")) {
-    const mockData = getMockExhibits()
-    for (const bId in mockData) {
-      const found = mockData[bId].find((e) => e.id === id)
-      if (found) return found
-    }
-    return null
-  }
-
   try {
     const rows = await restGet<ExhibitionItemRow>(
       `exhibition_items?select=*&id=eq.${encodeURIComponent(id)}&limit=1`
@@ -32,13 +21,6 @@ async function findExhibitById(id: string) {
     }
   } catch (err) {
     console.warn(`[findExhibitById] Error querying database for ID ${id}:`, err)
-  }
-
-  // Double check mocks if database lookup failed
-  const mockData = getMockExhibits()
-  for (const bId in mockData) {
-    const found = mockData[bId].find((e) => e.id === id)
-    if (found) return found
   }
   return null
 }

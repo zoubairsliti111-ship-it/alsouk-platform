@@ -49,6 +49,7 @@ export const SUPPLIERS_TABLE = "companies"
 
 export type SupplierRow = {
   id: string
+  owner_id: string | null
   name: string
   business_type: string | null
   primary_industry: string | null
@@ -67,7 +68,7 @@ export type SupplierRow = {
 }
 
 export const SUPPLIER_COLUMNS =
-  "id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views,external_store_url"
+  "id,owner_id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views,external_store_url"
 
 export const SORT_COLUMNS: Record<SupplierSort, string> = {
   rating: "created_at",
@@ -97,6 +98,7 @@ export function mapRow(row: SupplierRow): Supplier | null {
 
   return {
     id: row.id,
+    ownerId: row.owner_id || null,
     name: row.name.trim(),
     monogram: deriveMonogram(row.name),
     logoColor: "blue",

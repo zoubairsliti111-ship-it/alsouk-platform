@@ -7,6 +7,7 @@ export type ProfileLevel = "starter" | "business" | "enterprise"
 
 export interface Company {
   id: string
+  ownerId?: string | null
   profileLevel: ProfileLevel
   name: string
   slug: string
@@ -47,6 +48,7 @@ export interface Company {
 
   // Profile progress & verification
   profileCompletion: number
+  profileViews: number
   verified: boolean
   verificationTier: CompanyVerificationTier
   verifiedAt: string | null

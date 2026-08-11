@@ -6,6 +6,7 @@ import {
   type ChatMessage,
   type ChatRole,
 } from "@/lib/ai/provider"
+import { search } from "@/lib/services/search-service"
 
 export const dynamic = "force-dynamic"
 
@@ -38,6 +39,38 @@ function sanitize(raw: unknown): ChatMessage[] | null {
   return messages.slice(-MAX_MESSAGES)
 }
 
+/**
+ * Builds a context block from real ALSOUK listings matching the user's last
+ * message, so the assistant grounds its answer in actual companies/products
+ * instead of generic advice. Returns null when nothing matched (the prompt
+ * then tells the assistant to say so honestly rather than invent results).
+ */
+async function buildGroundingContext(messages: ChatMessage[]): Promise<string | null> {
+  const lastUser = [...messages].reverse().find((m) => m.role === "user")
+  if (!lastUser) return null
+
+  const results = await search(lastUser.content, 5)
+  const lines: string[] = []
+
+  if (results.companies.length > 0) {
+    lines.push("Matching companies on ALSOUK:")
+    for (const c of results.companies) {
+      lines.push(`- ${c.name} (${c.country ?? "unknown country"}) — /companies/${c.slug}`)
+    }
+  }
+
+  if (results.products.length > 0) {
+    lines.push("Matching products on ALSOUK:")
+    for (const p of results.products) {
+      const price = p.price != null ? `${p.price} TND` : "price on request"
+      lines.push(`- ${p.name} — ${price}`)
+    }
+  }
+
+  if (lines.length === 0) return null
+  return lines.join("\n")
+}
+
 export async function POST(request: Request) {
   if (!isAiConfigured()) {
     return NextResponse.json({ enabled: false, reason: "disabled" }, { status: 503 })
@@ -55,10 +88,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: true, reason: "validation" }, { status: 400 })
   }
 
-  const result = await generateReply([
-    { role: "system", content: ALSOUK_SYSTEM_PROMPT },
-    ...messages,
-  ])
+  const grounding = await buildGroundingContext(messages)
+
+  const systemMessages: ChatMessage[] = [{ role: "system", content: ALSOUK_SYSTEM_PROMPT }]
+  if (grounding) {
+    systemMessages.push({
+      role: "system",
+      content:
+        "Here are real, current ALSOUK listings relevant to the user's question. " +
+        "Base your answer on these when relevant, and mention them by name. " +
+        "Do not invent companies or products that are not listed here.\n\n" + grounding,
+    })
+  } else {
+    systemMessages.push({
+      role: "system",
+      content:
+        "No matching companies or products were found on ALSOUK for this query. " +
+        "Say so honestly, and suggest the user browse categories or post an RFQ " +
+        "instead of inventing suppliers or products that don't exist on the platform.",
+    })
+  }
+
+  const result = await generateReply([...systemMessages, ...messages])
 
   if (!result.ok) {
     const status = result.reason === "disabled" ? 503 : 502

@@ -17,6 +17,7 @@ export type ProfileLevel = "starter" | "business" | "enterprise"
 
 export type Company = {
   id: string
+  ownerId?: string | null
   profileLevel: ProfileLevel
   supplierId: string | null
   name: string
@@ -93,6 +94,7 @@ export type CompanyMedia = {
 
 export type Supplier = {
   id: string
+  ownerId: string | null
   name: string
   monogram: string
   logoColor: "blue" | "green"

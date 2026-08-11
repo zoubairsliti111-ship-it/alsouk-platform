@@ -1,0 +1,17 @@
+-- ALSOUK — 0031: Grant missing table privileges (RECONSTRUCTION PLACEHOLDER).
+--
+-- This migration was applied directly to production before ever being
+-- committed to the repo (see CURRENT_STATE_AUDIT.md — migration/schema
+-- drift). Supabase does not retain the original SQL text of an applied
+-- migration, and there was no reliable way to reverse-engineer exactly
+-- which GRANT statements it ran from the current schema state alone.
+--
+-- This file is a placeholder to keep the migration history numbering
+-- accurate and to flag that a manual grants audit is still owed: compare
+-- `information_schema.role_table_grants` against what RLS policies expect
+-- for the anon/authenticated roles across all public tables, and confirm
+-- nothing is over- or under-granted.
+--
+-- Intentionally a no-op — do not guess and apply unverified GRANT/REVOKE
+-- statements here.
+select 1;

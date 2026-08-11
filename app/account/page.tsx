@@ -146,6 +146,9 @@ const localT = {
     tabInstagramFeed: "Instagram Feed",
     tabFeaturedProducts: "Featured Products",
     accountStatusLabel: "Account Status",
+    levelStarter: "1 — Starter Plan",
+    levelBusiness: "2 — Business Plan",
+    levelEnterprise: "3 — Enterprise Plan",
     progressiveProfileTitle: "Progressive B2B Profile System",
     progressiveProfileDesc: "Only show capabilities assigned to your account plan. Starter plans keep your space simple, while Business and Enterprise unlock advanced features.",
     assignedByAlsouk: "Assigned by ALSOUK",
@@ -258,6 +261,9 @@ const localT = {
     tabInstagramFeed: "Fil Instagram",
     tabFeaturedProducts: "Produits en vedette",
     accountStatusLabel: "Statut du compte",
+    levelStarter: "1 — Forfait Starter",
+    levelBusiness: "2 — Forfait Business",
+    levelEnterprise: "3 — Forfait Enterprise",
     progressiveProfileTitle: "Système de profil B2B progressif",
     progressiveProfileDesc: "N'affiche que les fonctionnalités attribuées à votre forfait. Les forfaits Starter gardent votre espace simple, tandis que Business et Enterprise débloquent des fonctionnalités avancées.",
     assignedByAlsouk: "Attribué par ALSOUK",
@@ -370,6 +376,9 @@ const localT = {
     tabInstagramFeed: "المنشورات",
     tabFeaturedProducts: "المنتجات المميزة",
     accountStatusLabel: "حالة الحساب",
+    levelStarter: "1 — الخطة الأساسية",
+    levelBusiness: "2 — خطة الأعمال",
+    levelEnterprise: "3 — خطة المؤسسات",
     progressiveProfileTitle: "نظام الملف التعريفي B2B التدريجي",
     progressiveProfileDesc: "تُعرض فقط الإمكانيات المخصَّصة لخطة حسابك. الخطة الأساسية تُبقي مساحتك بسيطة، بينما خطتا الأعمال والمؤسسات تفتحان ميزات متقدمة.",
     assignedByAlsouk: "مُخصَّصة من ALSOUK",
@@ -1258,12 +1267,12 @@ function AccountScreen() {
   const missingChecklist = useMemo(() => {
     if (!company) return []
     const items = []
-    if (!company.description) items.push({ key: "description", label: "Add a complete company description", tab: "about" as const })
-    if (!company.logoUrl) items.push({ key: "logoUrl", label: "Upload a company logo image", tab: "about" as const })
-    if (!company.bannerUrl) items.push({ key: "bannerUrl", label: "Upload a cover banner", tab: "about" as const })
-    if (!company.taxIdentifier) items.push({ key: "taxIdentifier", label: "Provide Tax ID (Matricule Fiscal / RNE)", tab: "about" as const })
-    if (!company.websiteUrl) items.push({ key: "websiteUrl", label: "Define website strategy & domain", tab: "about" as const })
-    if (!company.facebookUrl && !company.linkedinUrl && !company.instagramUrl) items.push({ key: "social", label: "Add social media handles (Facebook, LinkedIn, etc.)", tab: "about" as const })
+    if (!company.description) items.push({ key: "description", label: t.profile.addDescription, tab: "about" as const })
+    if (!company.logoUrl) items.push({ key: "logoUrl", label: t.profile.uploadLogo, tab: "about" as const })
+    if (!company.bannerUrl) items.push({ key: "bannerUrl", label: t.profile.uploadBanner, tab: "about" as const })
+    if (!company.taxIdentifier) items.push({ key: "taxIdentifier", label: t.profile.provideTaxId, tab: "about" as const })
+    if (!company.websiteUrl) items.push({ key: "websiteUrl", label: t.profile.defineWebsite, tab: "about" as const })
+    if (!company.facebookUrl && !company.linkedinUrl && !company.instagramUrl) items.push({ key: "social", label: t.profile.addSocialHandles, tab: "about" as const })
     if (companyMedia.length === 0) items.push({ key: "media", label: "Upload factory photos or quality certificates", tab: "certificates" as const })
     return items
   }, [company, companyMedia])
@@ -1314,12 +1323,7 @@ function AccountScreen() {
         </div>
       )
     }
-    const initial = name.trim() ? name.trim().charAt(0).toUpperCase() : "U"
-    return (
-      <div className="relative flex size-24 sm:size-32 items-center justify-center rounded-3xl bg-gradient-to-tr from-primary to-blue-600 text-4xl sm:text-5xl font-black text-white shadow-xl shadow-primary/20 border-4 border-card">
-        {initial}
-      </div>
-    )
+    return null
   }
 
   // Member Since date parsing (pure approach)
@@ -1341,7 +1345,7 @@ function AccountScreen() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
         {/* Quick action buttons on cover */}
-        <div className="absolute top-4 right-4 sm:right-8 flex gap-2">
+        <div className="absolute top-4 end-4 sm:end-8 flex gap-2">
           <button
             onClick={() => setShowEditSettingsModal(true)}
             className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-black rounded-xl bg-black/60 backdrop-blur-md text-white border border-white/20 hover:bg-black/80 transition-all cursor-pointer shadow-md"
@@ -1900,14 +1904,14 @@ function AccountScreen() {
                         <span className="absolute text-sm font-black text-foreground">{company.profileCompletion}%</span>
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-foreground">Completeness Score</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">Aim for &gt;85% to receive the Verified Partner badge.</p>
+                        <p className="text-xs font-bold text-foreground">{t.profile.completenessScore}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{t.profile.aimFor85}</p>
                       </div>
                     </div>
 
                     {missingChecklist.length > 0 && (
                       <div className="space-y-2 pt-2 border-t border-border">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase">Recommended Next Steps:</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase">{t.profile.recommendedNextSteps}</p>
                         {missingChecklist.map((item) => (
                           <div key={item.key} className="flex items-start gap-2 text-[11px] text-foreground font-semibold">
                             <AlertCircle className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
@@ -1919,26 +1923,17 @@ function AccountScreen() {
                   </div>
                 )}
 
-                {/* Photos & Videos link */}
-                <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-3">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Photos & Videos</h4>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">Manage your product photos and short videos in Studio.</p>
-                  <button type="button" onClick={() => setActiveProfileTab("studio")} className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-black text-white hover:opacity-95 w-full">
-                    Open Studio
-                  </button>
-                </div>
-
                 {/* Direct Contact Card */}
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-xs space-y-4">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">Instant Contacts</h4>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-muted-foreground">{t.profile.instantContacts}</h4>
                   <div className="space-y-3.5">
                     <a href={`mailto:${company?.businessEmail || "contact@alsouk.com"}`} className="flex items-center gap-3 p-3.5 bg-secondary/15 rounded-xl border border-border/40 text-xs font-bold text-foreground hover:bg-secondary/30 transition-all">
                       <Mail className="size-4 text-primary shrink-0" />
-                      <span className="truncate">{company?.businessEmail || "Not added yet"}</span>
+                      <span className="truncate">{company?.businessEmail || t.profile.notAdded}</span>
                     </a>
                     <a href={`tel:${company?.phoneNumber || "+216 71 123 456"}`} className="flex items-center gap-3 p-3.5 bg-secondary/15 rounded-xl border border-border/40 text-xs font-bold text-foreground hover:bg-secondary/30 transition-all">
                       <Phone className="size-4 text-primary shrink-0" />
-                      <span>{company?.phoneNumber || "Not added yet"}</span>
+                      <span>{company?.phoneNumber || t.profile.notAdded}</span>
                     </a>
                     {company?.whatsappNumber && (
                       <a href={`https://wa.me/${company.whatsappNumber}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-xs font-black text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15 transition-all">
@@ -1988,7 +1983,7 @@ function AccountScreen() {
                     className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary text-xs font-black text-white hover:opacity-95 shadow-xs cursor-pointer"
                   >
                     <Plus className="size-4" />
-                    <span>Add New Product</span>
+                    <span>{t.profile.addNewProduct}</span>
                   </button>
                 )}
               </div>
@@ -1997,29 +1992,29 @@ function AccountScreen() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
                   <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-base font-black text-foreground">Add New Product</h3>
+                      <h3 className="text-base font-black text-foreground">{t.profile.addNewProduct}</h3>
                       <button type="button" onClick={() => setShowAddProductModal(false)} className="text-muted-foreground text-xl leading-none">&times;</button>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-muted-foreground">Product Name *</label>
+                      <label className="text-xs font-bold text-muted-foreground">{t.profile.productName} *</label>
                       <input type="text" value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" placeholder="e.g. Organic Olive Oil 1L" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-xs font-bold text-muted-foreground">Price (TND)</label>
+                        <label className="text-xs font-bold text-muted-foreground">{t.profile.priceLabel}</label>
                         <input type="number" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" placeholder="0.00" />
                       </div>
                       <div>
-                        <label className="text-xs font-bold text-muted-foreground">Min Order Qty</label>
+                        <label className="text-xs font-bold text-muted-foreground">{t.profile.minOrderQty}</label>
                         <input type="number" value={productForm.minOrderQuantity} onChange={(e) => setProductForm({ ...productForm, minOrderQuantity: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" />
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-muted-foreground">Unit (optional)</label>
+                      <label className="text-xs font-bold text-muted-foreground">{t.profile.unitOptional}</label>
                       <input type="text" value={productForm.unit} onChange={(e) => setProductForm({ ...productForm, unit: e.target.value })} className="w-full mt-1 px-3.5 py-2 rounded-xl border border-border text-sm" placeholder="e.g. box, kg, piece" />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-muted-foreground">Product Photo</label>
+                      <label className="text-xs font-bold text-muted-foreground">{t.profile.productPhoto}</label>
                       <input type="file" accept="image/*" onChange={(e) => {
                         const f = e.target.files?.[0]
                         if (f) { setProductImageFile(f); setProductImagePreview(URL.createObjectURL(f)) }
@@ -2035,7 +2030,7 @@ function AccountScreen() {
                       disabled={savingProduct || !productForm.name.trim()}
                       className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-black text-white disabled:opacity-50"
                     >
-                      {savingProduct ? "Saving..." : "Save Product"}
+                      {savingProduct ? t.profile.saving : t.profile.saveProduct}
                     </button>
                   </div>
                 </div>
@@ -2146,7 +2141,7 @@ function AccountScreen() {
                           {company && (
                             <button
                               onClick={() => handleDeleteMediaAsset(med.id)}
-                              className="absolute top-2 right-2 size-7 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
+                              className="absolute top-2 end-2 size-7 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-600 transition-all cursor-pointer"
                             >
                               <Trash2 className="size-3.5" />
                             </button>

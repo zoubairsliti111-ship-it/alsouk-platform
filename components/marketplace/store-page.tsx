@@ -25,6 +25,7 @@ import type { StoreDetails } from "@/lib/domains/store/types"
 import type { ProductSummary } from "@/lib/domains/product/types"
 import { Breadcrumbs, MessageState } from "@/components/marketplace/shell"
 import { ProductCard } from "@/components/marketplace/product-card"
+import { StoreRfqButton } from "@/components/marketplace/store-rfq"
 
 type Status = "loading" | "loaded" | "notFound" | "error"
 
@@ -291,6 +292,7 @@ export function StorePage({ slug }: { slug: string }) {
             {/* View public page direct link */}
             {s.company && (
               <div className="shrink-0 flex gap-2">
+                <StoreRfqButton companyId={s.company.id} companyName={s.company.name} />
                 <Link
                   href={`/companies/${s.company.slug}`}
                   className="inline-flex items-center gap-1.5 text-xs font-black text-primary hover:underline border border-primary/20 hover:bg-primary/5 rounded-xl px-4 py-2.5 transition-all"
