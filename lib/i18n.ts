@@ -272,6 +272,14 @@ type Dict = {
   home: {
     searchPlaceholder: string
     liveTag: string
+    liveTitle: string
+    liveSubtitle: string
+    liveBadge: string
+    liveUpcomingBadge: string
+    liveOpen: string
+    liveViewCompany: string
+    liveEmptyTitle: string
+    liveEmptyBody: string
     activityTitle: string
     activitySubtitle: string
     listed: string
@@ -782,6 +790,14 @@ export const translations: Record<Lang, Dict> = {
     home: {
       searchPlaceholder: "Search products, suppliers or companies…",
       liveTag: "Live",
+      liveTitle: "Live Marketplace",
+      liveSubtitle: "Live product sessions hosted by verified companies.",
+      liveBadge: "LIVE",
+      liveUpcomingBadge: "UPCOMING",
+      liveOpen: "Open Live",
+      liveViewCompany: "View company",
+      liveEmptyTitle: "No live sessions right now",
+      liveEmptyBody: "No company is streaming or has scheduled a session yet. Check back soon.",
       activityTitle: "Live marketplace activity",
       activitySubtitle: "Verified suppliers and buyers trading across the region right now.",
       listed: "listed new products",
@@ -1304,6 +1320,14 @@ export const translations: Record<Lang, Dict> = {
     home: {
       searchPlaceholder: "Rechercher produits, fournisseurs ou entreprises…",
       liveTag: "En direct",
+      liveTitle: "Marché en Direct",
+      liveSubtitle: "Sessions produits en direct animées par des entreprises vérifiées.",
+      liveBadge: "EN DIRECT",
+      liveUpcomingBadge: "À VENIR",
+      liveOpen: "Ouvrir le direct",
+      liveViewCompany: "Voir l'entreprise",
+      liveEmptyTitle: "Aucune session en direct pour le moment",
+      liveEmptyBody: "Aucune entreprise ne diffuse ni n'a programmé de session. Revenez bientôt.",
       activityTitle: "Activité en direct de la marketplace",
       activitySubtitle: "Fournisseurs vérifiés et acheteurs qui commercent dans la région en ce moment.",
       listed: "a publié de nouveaux produits",
@@ -1826,6 +1850,14 @@ export const translations: Record<Lang, Dict> = {
     home: {
       searchPlaceholder: "ابحث عن منتجات أو موردين أو شركات…",
       liveTag: "مباشر",
+      liveTitle: "السوق المباشر",
+      liveSubtitle: "جلسات عرض منتجات مباشرة تقدّمها شركات موثّقة.",
+      liveBadge: "مباشر",
+      liveUpcomingBadge: "قريباً",
+      liveOpen: "افتح البث المباشر",
+      liveViewCompany: "عرض الشركة",
+      liveEmptyTitle: "لا توجد جلسات مباشرة حالياً",
+      liveEmptyBody: "لم تبدأ أي شركة بثاً أو تجدول جلسة بعد. تابعنا قريباً.",
       activityTitle: "نشاط السوق المباشر",
       activitySubtitle: "موردون موثّقون ومشترون يتاجرون في المنطقة الآن.",
       listed: "أضاف منتجات جديدة",
