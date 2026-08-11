@@ -57,6 +57,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       label: isAr ? "التحليلات والإحصاءات" : "Analytics & Stats",
       icon: BarChart3,
       active: pathname.startsWith("/admin/statistics")
+    },
+    {
+      href: "/admin/companies",
+      label: isAr ? "الشركات" : "Companies",
+      icon: ShieldCheck,
+      active: pathname.startsWith("/admin/companies")
     }
   ]
 
