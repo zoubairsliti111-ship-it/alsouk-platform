@@ -5,6 +5,7 @@ import { Eye, Heart, ImagePlus, MessageCircle, Play, Radio, Send, Video as Video
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/components/auth-provider"
 import { ExternalStoreSync } from "@/components/studio/external-store-sync"
+import { LiveBroadcastSheet } from "@/components/live/live-broadcast-sheet"
 
 type Company = {
   id: string
@@ -39,7 +40,7 @@ export function StudioPanel({ company }: { company: Company }) {
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
   const [productByUrl, setProductByUrl] = useState<Record<string, { name: string; price: number | null }>>({})
   const [openIndex, setOpenIndex] = useState<number | null>(null)
-  const [showLiveNote, setShowLiveNote] = useState(false)
+  const [showLiveSheet, setShowLiveSheet] = useState(false)
   const [openCommentsFor, setOpenCommentsFor] = useState<string | null>(null)
   const [comments, setComments] = useState<CommentRow[]>([])
   const [loadingComments, setLoadingComments] = useState(false)
@@ -317,7 +318,7 @@ export function StudioPanel({ company }: { company: Company }) {
 
         <button
           type="button"
-          onClick={() => setShowLiveNote(true)}
+          onClick={() => setShowLiveSheet(true)}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-red-500/90 px-3 py-2.5 text-xs font-bold text-white active:scale-95"
         >
           <Radio className="size-4" />
@@ -356,15 +357,8 @@ export function StudioPanel({ company }: { company: Company }) {
         </div>
       )}
 
-      {showLiveNote && (
-        <div className="fixed inset-x-4 bottom-20 z-40 flex items-center justify-between gap-3 rounded-2xl bg-card border border-border p-4 shadow-2xl">
-          <p className="text-xs font-semibold text-foreground">
-            Live streaming isn&apos;t available yet — we&apos;re building it. Stay tuned!
-          </p>
-          <button type="button" onClick={() => setShowLiveNote(false)} className="shrink-0 rounded-full bg-secondary p-1.5">
-            <X className="size-4 text-foreground" />
-          </button>
-        </div>
+      {showLiveSheet && (
+        <LiveBroadcastSheet company={{ id: company.id, name: company.name }} onClose={() => setShowLiveSheet(false)} />
       )}
 
       {pendingFile && (

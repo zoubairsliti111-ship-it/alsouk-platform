@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Building2, Eye, Heart, ImagePlus, MessageCircle, Radio, Send, Settings, Video as VideoIcon, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/components/auth-provider"
+import { LiveBroadcastSheet } from "@/components/live/live-broadcast-sheet"
 
 type Company = {
   id: string
@@ -38,7 +39,7 @@ export default function StudioPage() {
   const [storeId, setStoreId] = useState<string | null>(null)
   const [loadingCompany, setLoadingCompany] = useState(true)
   const [media, setMedia] = useState<MediaRow[]>([])
-  const [showLiveNote, setShowLiveNote] = useState(false)
+  const [showLiveSheet, setShowLiveSheet] = useState(false)
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
   const [productByUrl, setProductByUrl] = useState<Record<string, { name: string; price: number | null }>>({})
   const [openCommentsFor, setOpenCommentsFor] = useState<string | null>(null)
@@ -392,7 +393,7 @@ export default function StudioPage() {
 
         <button
           type="button"
-          onClick={() => setShowLiveNote(true)}
+          onClick={() => setShowLiveSheet(true)}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-full bg-red-500/90 px-3 py-2.5 text-xs font-bold text-white backdrop-blur active:scale-95"
         >
           <Radio className="size-4" />
@@ -420,19 +421,8 @@ export default function StudioPage() {
         </div>
       )}
 
-      {showLiveNote && (
-        <div className="absolute inset-x-4 bottom-6 z-30 flex items-center justify-between gap-3 rounded-2xl bg-white p-4 shadow-2xl">
-          <p className="text-xs font-semibold text-foreground">
-            Live streaming isn&apos;t available yet — we&apos;re building it. Stay tuned!
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowLiveNote(false)}
-            className="shrink-0 rounded-full bg-secondary p-1.5"
-          >
-            <X className="size-4 text-foreground" />
-          </button>
-        </div>
+      {showLiveSheet && (
+        <LiveBroadcastSheet company={{ id: company.id, name: company.name }} onClose={() => setShowLiveSheet(false)} />
       )}
 
       {/* Compose sheet: shown right after picking a photo/video */}
