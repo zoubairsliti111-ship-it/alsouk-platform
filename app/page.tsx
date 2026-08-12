@@ -7,6 +7,7 @@ import { Opportunities } from "@/components/home/opportunities"
 import { CategoriesSection } from "@/components/categories-section"
 import { FeaturedSuppliers } from "@/components/featured-suppliers"
 import { FeaturedProducts } from "@/components/featured-products"
+import { LiveActivity } from "@/components/home/live-activity"
 import { LiveMarketplace } from "@/components/home/live-marketplace"
 import { UpcomingExhibitionsSection } from "@/components/home/exhibitions-section"
 import { RfqSection } from "@/components/rfq-section"
@@ -38,6 +39,7 @@ export default function HomePage() {
           <FeaturedProducts />
 
           {/* Section 7: Live Marketplace */}
+          <LiveActivity />
           <LiveMarketplace />
 
           {/* Section 7.5: Upcoming B2B Exhibitions */}
