@@ -102,8 +102,19 @@ export async function startLiveSession(
 
 export type EndLiveResult = { ok: true } | { ok: false; reason: "not_found" | "not_member" | "error" }
 
-/** Ends a company's live broadcast. Idempotent: ending an already-ended session succeeds without a write. */
-export async function endLiveSession(supabase: any, userId: string, sessionId: string): Promise<EndLiveResult> {
+/**
+ * Ends a company's live broadcast. Idempotent: ending an already-ended
+ * session succeeds without a write. `replayUrl`, when given, is the public
+ * URL of the recording the host's browser uploaded — omitted (not merely
+ * falsy) when there was no recording or the upload failed, so ending never
+ * blocks on it and replay_url is simply left untouched in that case.
+ */
+export async function endLiveSession(
+  supabase: any,
+  userId: string,
+  sessionId: string,
+  replayUrl?: string,
+): Promise<EndLiveResult> {
   const { data: session } = await supabase
     .from("live_sessions")
     .select("id,company_id,status")
@@ -116,10 +127,10 @@ export async function endLiveSession(supabase: any, userId: string, sessionId: s
   }
   if (session.status !== "live") return { ok: true }
 
-  const { error } = await supabase
-    .from("live_sessions")
-    .update({ status: "ended", ended_at: new Date().toISOString() })
-    .eq("id", sessionId)
+  const update: Record<string, unknown> = { status: "ended", ended_at: new Date().toISOString() }
+  if (replayUrl) update.replay_url = replayUrl
+
+  const { error } = await supabase.from("live_sessions").update(update).eq("id", sessionId)
 
   if (error) {
     console.error("[live-service] Failed to end live session:", error)

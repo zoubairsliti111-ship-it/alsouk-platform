@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  let body: { sessionId?: unknown }
+  let body: { sessionId?: unknown; replayUrl?: unknown }
   try {
     body = (await request.json()) as typeof body
   } catch {
@@ -25,8 +25,11 @@ export async function POST(request: Request) {
   if (typeof body.sessionId !== "string") {
     return NextResponse.json({ error: "validation" }, { status: 400 })
   }
+  if (body.replayUrl !== undefined && typeof body.replayUrl !== "string") {
+    return NextResponse.json({ error: "validation" }, { status: 400 })
+  }
 
-  const result = await endLiveSession(supabase, user.id, body.sessionId)
+  const result = await endLiveSession(supabase, user.id, body.sessionId, body.replayUrl as string | undefined)
   if (!result.ok) {
     const status = result.reason === "not_member" ? 403 : result.reason === "not_found" ? 404 : 500
     return NextResponse.json({ error: result.reason }, { status })
