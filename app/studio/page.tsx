@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { Building2, Eye, Heart, ImagePlus, MessageCircle, Radio, Send, Settings, Video as VideoIcon, X } from "lucide-react"
+import { Building2, Eye, Film, Heart, ImagePlus, MessageCircle, Radio, Send, Settings, Video as VideoIcon, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/components/auth-provider"
 import { LiveBroadcastSheet } from "@/components/live/live-broadcast-sheet"
+import { LiveRecordingsSheet } from "@/components/live/live-recordings-sheet"
 
 type Company = {
   id: string
@@ -40,6 +41,7 @@ export default function StudioPage() {
   const [loadingCompany, setLoadingCompany] = useState(true)
   const [media, setMedia] = useState<MediaRow[]>([])
   const [showLiveSheet, setShowLiveSheet] = useState(false)
+  const [showRecordingsSheet, setShowRecordingsSheet] = useState(false)
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
   const [productByUrl, setProductByUrl] = useState<Record<string, { name: string; price: number | null }>>({})
   const [openCommentsFor, setOpenCommentsFor] = useState<string | null>(null)
@@ -343,13 +345,23 @@ export default function StudioPage() {
             <p className="text-[11px] text-white/70">Welcome back</p>
           </div>
         </div>
-        <Link
-          href="/account"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur"
-          title="Settings"
-        >
-          <Settings className="size-4" />
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowRecordingsSheet(true)}
+            className="flex size-9 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur"
+            title="Recordings"
+          >
+            <Film className="size-4" />
+          </button>
+          <Link
+            href="/account"
+            className="flex size-9 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur"
+            title="Settings"
+          >
+            <Settings className="size-4" />
+          </Link>
+        </div>
       </div>
 
       <div className="absolute inset-x-0 top-20 z-20 flex items-center justify-center gap-3 px-4">
@@ -423,6 +435,10 @@ export default function StudioPage() {
 
       {showLiveSheet && (
         <LiveBroadcastSheet company={{ id: company.id, name: company.name }} onClose={() => setShowLiveSheet(false)} />
+      )}
+
+      {showRecordingsSheet && (
+        <LiveRecordingsSheet company={{ id: company.id, name: company.name }} onClose={() => setShowRecordingsSheet(false)} />
       )}
 
       {/* Compose sheet: shown right after picking a photo/video */}

@@ -28,6 +28,8 @@ export function LiveBroadcastSheet({ company, onClose }: { company: Company; onC
   const micTrackRef = useRef<IMicrophoneAudioTrack | null>(null)
   const clientRef = useRef<IAgoraRTCClient | null>(null)
   const lastCountWriteRef = useRef(0)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const recordedChunksRef = useRef<Blob[]>([])
 
   const viewerCount = useLivePresence(phase === "live" ? sessionId : null, "host")
 
@@ -85,11 +87,63 @@ export function LiveBroadcastSheet({ company, onClose }: { company: Company; onC
     try {
       await clientRef.current?.leave()
     } catch {}
+    if (mediaRecorderRef.current?.state === "recording") {
+      try {
+        mediaRecorderRef.current.stop()
+      } catch {}
+    }
+    mediaRecorderRef.current = null
     camTrackRef.current?.close()
     micTrackRef.current?.close()
     camTrackRef.current = null
     micTrackRef.current = null
     clientRef.current = null
+  }
+
+  // Records the exact audio+video being published, in-browser, so "End Live"
+  // has something to upload. Best-effort: a browser without MediaRecorder
+  // (or any other failure here) must not stop the broadcast from going live.
+  const startRecording = (camTrack: ICameraVideoTrack, micTrack: IMicrophoneAudioTrack) => {
+    try {
+      if (typeof MediaRecorder === "undefined") return
+      const stream = new MediaStream([camTrack.getMediaStreamTrack(), micTrack.getMediaStreamTrack()])
+      const mimeType = ["video/webm;codecs=vp8,opus", "video/webm;codecs=vp9,opus", "video/webm"].find((t) =>
+        MediaRecorder.isTypeSupported(t),
+      )
+      if (!mimeType) return
+      recordedChunksRef.current = []
+      const recorder = new MediaRecorder(stream, { mimeType })
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) recordedChunksRef.current.push(e.data)
+      }
+      recorder.start(1000)
+      mediaRecorderRef.current = recorder
+    } catch (err) {
+      console.error("[live] Recording failed to start (broadcast continues without a saved copy):", err)
+    }
+  }
+
+  // Stops the recorder and resolves with everything captured so far. Never
+  // rejects — a recording problem must never be the reason "End Live" fails.
+  const stopRecording = (): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+      const recorder = mediaRecorderRef.current
+      const finish = () => {
+        const chunks = recordedChunksRef.current
+        resolve(chunks.length > 0 ? new Blob(chunks, { type: "video/webm" }) : null)
+      }
+      if (!recorder || recorder.state === "inactive") {
+        finish()
+        return
+      }
+      try {
+        recorder.onstop = finish
+        recorder.stop()
+      } catch (err) {
+        console.error("[live] Failed to stop recorder cleanly:", err)
+        finish()
+      }
+    })
   }
 
   const handleClose = async () => {
@@ -135,6 +189,7 @@ export function LiveBroadcastSheet({ company, onClose }: { company: Company; onC
 
       await client.publish([camTrackRef.current, micTrack])
       clientRef.current = client
+      startRecording(camTrackRef.current, micTrack)
       setSessionId(createdSessionId)
       setPhase("live")
     } catch (err) {
@@ -154,11 +209,34 @@ export function LiveBroadcastSheet({ company, onClose }: { company: Company; onC
   const endLive = async () => {
     if (!sessionId) return
     setPhase("ending")
+
+    // Recording upload is best-effort: any failure here still lets the
+    // broadcast end normally, just with no replay_url saved.
+    let replayUrl: string | undefined
+    try {
+      const blob = await stopRecording()
+      if (blob) {
+        const supabase = createClient()
+        const path = `${company.id}/${sessionId}.webm`
+        const { error: uploadError } = await supabase.storage
+          .from("live-recordings")
+          .upload(path, blob, { contentType: "video/webm", upsert: true })
+        if (uploadError) {
+          console.error("[live] Recording upload failed (ending anyway):", uploadError)
+        } else {
+          const { data } = supabase.storage.from("live-recordings").getPublicUrl(path)
+          replayUrl = data.publicUrl
+        }
+      }
+    } catch (err) {
+      console.error("[live] Recording finalize/upload failed (ending anyway):", err)
+    }
+
     try {
       await fetch("/api/live/end", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ sessionId, ...(replayUrl ? { replayUrl } : {}) }),
       })
     } catch (err) {
       console.error("[live] Failed to end broadcast cleanly:", err)
