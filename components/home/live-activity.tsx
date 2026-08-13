@@ -49,7 +49,7 @@ export function LiveActivity() {
               return {
                 id: row.id,
                 text: `${company.name} ${verb}: ${row.title}`,
-                href: `/companies/${company.slug}`,
+                href: row.status === "live" ? `/live/${row.id}` : `/companies/${company.slug}`,
               }
             })
             .filter((i): i is ActivityItem => i !== null),

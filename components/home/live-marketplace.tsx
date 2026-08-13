@@ -187,7 +187,7 @@ export function LiveMarketplace() {
                     </div>
 
                     <Link
-                      href={`/companies/${live.company.slug}`}
+                      href={live.status === "live" ? `/live/${live.id}` : `/companies/${live.company.slug}`}
                       className="flex h-8 items-center justify-center rounded-xl bg-[#2563EB] hover:bg-blue-700 text-[10px] font-semibold text-white transition-all shadow-md active:scale-95 text-center"
                     >
                       {live.status === "live" ? t.home.liveOpen : t.home.liveViewCompany}
