@@ -16,7 +16,7 @@ type Company = {
 
 type MediaRow = {
   id: string
-  media_type: "factory_photo" | "product_gallery" | "video" | "certificate"
+  media_type: "factory_photo" | "product_gallery" | "video" | "certificate" | "recording"
   url: string
   caption: string | null
   created_at: string
@@ -119,7 +119,29 @@ export default function StudioPage() {
       .in("media_type", ["product_gallery", "video", "factory_photo"])
       .order("created_at", { ascending: false })
     if (!error && data) {
-      setMedia(data as MediaRow[])
+      // Recorded lives join the same feed as regular videos — one grid,
+      // sorted together by date, instead of a separate recordings-only view.
+      const { data: recordingRows } = await supabase
+        .from("live_sessions")
+        .select("id,title,ended_at,replay_url")
+        .eq("company_id", companyId)
+        .eq("status", "ended")
+        .not("replay_url", "is", null)
+      const recordings: MediaRow[] = (recordingRows ?? []).map(
+        (r: { id: string; title: string; ended_at: string | null; replay_url: string }) => ({
+          id: r.id,
+          media_type: "recording",
+          url: r.replay_url,
+          caption: r.title,
+          created_at: r.ended_at ?? new Date(0).toISOString(),
+          view_count: 0,
+          like_count: 0,
+        }),
+      )
+      const combined = [...(data as MediaRow[]), ...recordings].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )
+      setMedia(combined)
       const { data: prodRows } = await supabase
         .from("products")
         .select("name,price,product_images(url)")
