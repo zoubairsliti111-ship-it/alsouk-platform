@@ -2,10 +2,12 @@
 
 import { use, useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Building2, Eye, Radio, VideoOff } from "lucide-react"
+import { ArrowLeft, Building2, Eye, Radio, Send, VideoOff } from "lucide-react"
 import type { IAgoraRTCClient, IAgoraRTCRemoteUser } from "agora-rtc-sdk-ng"
 import { createClient } from "@/lib/supabase/client"
+import { useAuth } from "@/components/auth-provider"
 import { useLivePresence } from "@/lib/hooks/use-live-presence"
+import { useLiveChat } from "@/lib/hooks/use-live-chat"
 
 type Company = { name: string; slug: string; logo_url: string | null }
 
@@ -32,16 +34,32 @@ type Session = {
 
 export default function LiveViewerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const { user } = useAuth()
 
   const [session, setSession] = useState<Session | null | undefined>(undefined) // undefined = loading, null = not found
   const [connecting, setConnecting] = useState(false)
   const [connectError, setConnectError] = useState<string | null>(null)
   const [remoteJoined, setRemoteJoined] = useState(false)
+  const [chatInput, setChatInput] = useState("")
 
   const videoContainerRef = useRef<HTMLDivElement>(null)
   const clientRef = useRef<IAgoraRTCClient | null>(null)
+  const chatListRef = useRef<HTMLDivElement>(null)
 
   const viewerCount = useLivePresence(session?.status === "live" ? session.id : null, "viewer")
+  const { messages: chatMessages, sendMessage, sending: sendingMessage, error: chatError } = useLiveChat(session?.status === "live" ? session.id : null)
+
+  useEffect(() => {
+    if (chatListRef.current) chatListRef.current.scrollTop = chatListRef.current.scrollHeight
+  }, [chatMessages])
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault()
+    const text = chatInput
+    if (!text.trim()) return
+    setChatInput("")
+    sendMessage(text)
+  }
 
   // Load the session row (public read — same as the home page carousels).
   useEffect(() => {
@@ -234,6 +252,51 @@ export default function LiveViewerPage({ params }: { params: Promise<{ id: strin
           />
         )}
       </div>
+
+      {session?.status === "live" && (
+        <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col">
+          <div
+            ref={chatListRef}
+            className="flex max-h-[35vh] flex-col gap-1.5 overflow-y-auto px-4 pb-2 [mask-image:linear-gradient(to_top,black_85%,transparent)]"
+          >
+            {chatMessages.map((m) => (
+              <p key={m.id} className="text-xs text-white drop-shadow-sm">
+                <span className="font-bold">{m.authorName}</span>
+                <span className="text-white/90">: {m.message}</span>
+              </p>
+            ))}
+          </div>
+          <form onSubmit={handleSendMessage} className="flex items-center gap-2 bg-gradient-to-t from-black/80 to-transparent p-4 pt-2">
+            {user ? (
+              <>
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Say something..."
+                  maxLength={500}
+                  className="flex-1 rounded-full bg-white/15 px-4 py-2.5 text-sm text-white placeholder:text-white/50 backdrop-blur focus:outline-none"
+                />
+                <button
+                  type="submit"
+                  disabled={sendingMessage || !chatInput.trim()}
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white text-black disabled:opacity-50"
+                >
+                  <Send className="size-4" />
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="flex-1 rounded-full bg-white/15 px-4 py-2.5 text-center text-xs font-bold text-white backdrop-blur"
+              >
+                Log in to chat
+              </Link>
+            )}
+          </form>
+          {chatError && <p className="px-4 pb-2 text-[11px] text-red-400">{chatError}</p>}
+        </div>
+      )}
     </div>
   )
 }
