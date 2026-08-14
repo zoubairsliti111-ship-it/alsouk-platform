@@ -33,6 +33,35 @@ type CommentRow = {
   authorAvatar: string | null
 }
 
+// TEMPORARY — recordings-missing investigation. Remove this whole
+// component and its call sites once the root cause is fixed.
+type DebugInfo = {
+  userId: string | null
+  resolvedCompanyId: string | null
+  resolvedVia: string | null
+  mediaCount: number | null
+  mediaError: string | null
+  recordingsCount: number | null
+  recordingsError: string | null
+  recordingsRows: unknown
+}
+
+function DebugPanel({ info }: { info: DebugInfo }) {
+  return (
+    <div className="fixed inset-x-0 top-0 z-50 max-h-[45vh] overflow-y-auto break-words border-b-2 border-yellow-400 bg-black/95 p-3 font-mono text-[11px] leading-relaxed text-yellow-300">
+      <p className="mb-1 font-bold text-yellow-400">DEBUG — studio recordings</p>
+      <p>userId: {info.userId ?? "—"}</p>
+      <p>resolvedCompanyId: {info.resolvedCompanyId ?? "—"}</p>
+      <p>resolvedVia: {info.resolvedVia ?? "—"}</p>
+      <p>mediaCount: {info.mediaCount ?? "—"}</p>
+      <p>mediaError: {info.mediaError ?? "none"}</p>
+      <p>recordingsCount: {info.recordingsCount ?? "—"}</p>
+      <p>recordingsError: {info.recordingsError ?? "none"}</p>
+      <p className="whitespace-pre-wrap">recordingsRows: {JSON.stringify(info.recordingsRows, null, 2) ?? "—"}</p>
+    </div>
+  )
+}
+
 export default function StudioPage() {
   const { user, isLoading: authLoading } = useAuth()
 
@@ -58,6 +87,19 @@ export default function StudioPage() {
   const [postName, setPostName] = useState("")
   const [postPrice, setPostPrice] = useState("")
   const [posting, setPosting] = useState(false)
+
+  // TEMPORARY on-screen diagnostics for the missing-recording investigation.
+  // Remove this whole block (state + banner) once the root cause is fixed.
+  const [debugInfo, setDebugInfo] = useState<DebugInfo>({
+    userId: null,
+    resolvedCompanyId: null,
+    resolvedVia: null,
+    mediaCount: null,
+    mediaError: null,
+    recordingsCount: null,
+    recordingsError: null,
+    recordingsRows: null,
+  })
 
   useEffect(() => {
     let active = true
@@ -93,11 +135,12 @@ export default function StudioPage() {
         }
       }
       if (!active) return
-      console.log("[studio-debug] resolved company", {
+      setDebugInfo((prev) => ({
+        ...prev,
         userId: user!.id,
         resolvedCompanyId: resolvedCompany?.id ?? null,
-        via: owned ? "owner_id" : "company_members",
-      })
+        resolvedVia: owned ? "owner_id" : "company_members",
+      }))
       setCompany(resolvedCompany)
       if (resolvedCompany) {
         const { data: store } = await supabase
@@ -123,12 +166,11 @@ export default function StudioPage() {
       .eq("company_id", companyId)
       .in("media_type", ["product_gallery", "video", "factory_photo"])
       .order("created_at", { ascending: false })
-    console.log("[studio-debug] company_media query", {
-      companyId,
-      filters: { media_type: ["product_gallery", "video", "factory_photo"] },
-      count: data?.length ?? 0,
-      error,
-    })
+    setDebugInfo((prev) => ({
+      ...prev,
+      mediaCount: data?.length ?? 0,
+      mediaError: error ? error.message : null,
+    }))
     if (!error && data) {
       // Recorded lives join the same feed as regular videos — one grid,
       // sorted together by date, instead of a separate recordings-only view.
@@ -138,13 +180,12 @@ export default function StudioPage() {
         .eq("company_id", companyId)
         .eq("status", "ended")
         .not("replay_url", "is", null)
-      console.log("[studio-debug] live_sessions recordings query", {
-        companyId,
-        filters: { status: "ended", replay_url: "not null" },
-        count: recordingRows?.length ?? 0,
-        error: recordingsError,
-        rows: recordingRows,
-      })
+      setDebugInfo((prev) => ({
+        ...prev,
+        recordingsCount: recordingRows?.length ?? 0,
+        recordingsError: recordingsError ? recordingsError.message : null,
+        recordingsRows: recordingRows ?? [],
+      }))
       const recordings: MediaRow[] = (recordingRows ?? []).map(
         (r: { id: string; title: string; ended_at: string | null; replay_url: string }) => ({
           id: r.id,
@@ -357,6 +398,7 @@ export default function StudioPage() {
   if (!user || !company) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-3 bg-black px-6 text-center text-white">
+        <DebugPanel info={debugInfo} />
         <Building2 className="size-10 text-white/60" />
         <p className="text-sm text-white/80">
           {!user ? "Please sign in to access your studio." : "No company found for this account yet."}
@@ -370,6 +412,7 @@ export default function StudioPage() {
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-black">
+      <DebugPanel info={debugInfo} />
       <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-3 bg-gradient-to-b from-black/70 to-transparent px-4 pb-8 pt-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-white/30 bg-white/10">
