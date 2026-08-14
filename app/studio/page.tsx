@@ -93,6 +93,11 @@ export default function StudioPage() {
         }
       }
       if (!active) return
+      console.log("[studio-debug] resolved company", {
+        userId: user!.id,
+        resolvedCompanyId: resolvedCompany?.id ?? null,
+        via: owned ? "owner_id" : "company_members",
+      })
       setCompany(resolvedCompany)
       if (resolvedCompany) {
         const { data: store } = await supabase
@@ -118,15 +123,28 @@ export default function StudioPage() {
       .eq("company_id", companyId)
       .in("media_type", ["product_gallery", "video", "factory_photo"])
       .order("created_at", { ascending: false })
+    console.log("[studio-debug] company_media query", {
+      companyId,
+      filters: { media_type: ["product_gallery", "video", "factory_photo"] },
+      count: data?.length ?? 0,
+      error,
+    })
     if (!error && data) {
       // Recorded lives join the same feed as regular videos — one grid,
       // sorted together by date, instead of a separate recordings-only view.
-      const { data: recordingRows } = await supabase
+      const { data: recordingRows, error: recordingsError } = await supabase
         .from("live_sessions")
         .select("id,title,ended_at,replay_url")
         .eq("company_id", companyId)
         .eq("status", "ended")
         .not("replay_url", "is", null)
+      console.log("[studio-debug] live_sessions recordings query", {
+        companyId,
+        filters: { status: "ended", replay_url: "not null" },
+        count: recordingRows?.length ?? 0,
+        error: recordingsError,
+        rows: recordingRows,
+      })
       const recordings: MediaRow[] = (recordingRows ?? []).map(
         (r: { id: string; title: string; ended_at: string | null; replay_url: string }) => ({
           id: r.id,
