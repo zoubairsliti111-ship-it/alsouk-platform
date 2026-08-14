@@ -614,7 +614,7 @@ function FeedItem({
 
   return (
     <div className="relative flex h-screen w-full snap-start items-center justify-center">
-      {item.media_type === "video" ? (
+      {item.media_type === "video" || item.media_type === "recording" ? (
         <video ref={videoRef} src={item.url} muted loop playsInline controls className="h-full w-full object-contain" />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
