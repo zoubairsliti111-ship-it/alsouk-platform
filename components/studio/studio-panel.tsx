@@ -15,7 +15,7 @@ type Company = {
 
 type MediaRow = {
   id: string
-  media_type: "factory_photo" | "product_gallery" | "video" | "certificate"
+  media_type: "factory_photo" | "product_gallery" | "video" | "certificate" | "recording"
   url: string
   caption: string | null
   created_at: string
@@ -81,7 +81,29 @@ export function StudioPanel({ company }: { company: Company }) {
       .in("media_type", ["product_gallery", "video", "factory_photo"])
       .order("created_at", { ascending: false })
     if (!error && data) {
-      setMedia(data as MediaRow[])
+      // Recorded lives join the same feed as regular videos — one grid,
+      // sorted together by date, instead of a separate recordings-only view.
+      const { data: recordingRows } = await supabase
+        .from("live_sessions")
+        .select("id,title,ended_at,replay_url")
+        .eq("company_id", companyId)
+        .eq("status", "ended")
+        .not("replay_url", "is", null)
+      const recordings: MediaRow[] = (recordingRows ?? []).map(
+        (r: { id: string; title: string; ended_at: string | null; replay_url: string }) => ({
+          id: r.id,
+          media_type: "recording",
+          url: r.replay_url,
+          caption: r.title,
+          created_at: r.ended_at ?? new Date(0).toISOString(),
+          view_count: 0,
+          like_count: 0,
+        }),
+      )
+      const combined = [...(data as MediaRow[]), ...recordings].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )
+      setMedia(combined)
       const ids = (data as MediaRow[]).map((m) => m.id)
       if (ids.length > 0) {
         const { data: commentRows } = await supabase
@@ -340,7 +362,7 @@ export function StudioPanel({ company }: { company: Company }) {
               onClick={() => setOpenIndex(i)}
               className="relative aspect-square overflow-hidden bg-secondary"
             >
-              {m.media_type === "video" ? (
+              {m.media_type === "video" || m.media_type === "recording" ? (
                 <>
                   {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
                   <video src={m.url} className="size-full object-cover" muted />
@@ -528,7 +550,7 @@ function FeedItem({
 
   return (
     <div className="relative flex h-screen w-full snap-start items-center justify-center">
-      {item.media_type === "video" ? (
+      {item.media_type === "video" || item.media_type === "recording" ? (
         <video ref={videoRef} src={item.url} muted loop playsInline controls className="h-full w-full object-contain" />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
