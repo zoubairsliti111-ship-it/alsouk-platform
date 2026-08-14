@@ -21,6 +21,8 @@ type MediaRow = {
   created_at: string
   view_count: number
   like_count: number
+  storage_bucket: string | null
+  storage_path: string | null
 }
 
 type CommentRow = {
@@ -40,7 +42,7 @@ export function StudioPanel({ company }: { company: Company }) {
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
   const [productByUrl, setProductByUrl] = useState<Record<string, { name: string; price: number | null }>>({})
   const [openIndex, setOpenIndex] = useState<number | null>(null)
-  const [deletingRecordingId, setDeletingRecordingId] = useState<string | null>(null)
+  const [deletingMediaId, setDeletingMediaId] = useState<string | null>(null)
   const [showLiveSheet, setShowLiveSheet] = useState(false)
   const [openCommentsFor, setOpenCommentsFor] = useState<string | null>(null)
   const [comments, setComments] = useState<CommentRow[]>([])
@@ -77,7 +79,7 @@ export function StudioPanel({ company }: { company: Company }) {
     const supabase = createClient()
     const { data, error } = await supabase
       .from("company_media")
-      .select("id,media_type,url,caption,created_at,view_count,like_count")
+      .select("id,media_type,url,caption,created_at,view_count,like_count,storage_bucket,storage_path")
       .eq("company_id", companyId)
       .in("media_type", ["product_gallery", "video", "factory_photo"])
       .order("created_at", { ascending: false })
@@ -99,6 +101,8 @@ export function StudioPanel({ company }: { company: Company }) {
           created_at: r.ended_at ?? new Date(0).toISOString(),
           view_count: 0,
           like_count: 0,
+          storage_bucket: null,
+          storage_path: null,
         }),
       )
       const combined = [...(data as MediaRow[]), ...recordings].sort(
@@ -152,7 +156,7 @@ export function StudioPanel({ company }: { company: Company }) {
   // is the ownership check — no separate client-side check needed.
   const deleteRecording = async (recording: MediaRow) => {
     if (!confirm("Delete this recording? This action cannot be undone.")) return
-    setDeletingRecordingId(recording.id)
+    setDeletingMediaId(recording.id)
     const supabase = createClient()
     const path = `${company.id}/${recording.id}.webm`
     try {
@@ -164,9 +168,33 @@ export function StudioPanel({ company }: { company: Company }) {
       console.error("[live] Failed to delete recording:", err)
       alert("Couldn't delete this recording. Please try again.")
     } finally {
-      setDeletingRecordingId(null)
+      setDeletingMediaId(null)
     }
   }
+
+  // Photos/videos/product_gallery posts: remove the storage object (path is
+  // whatever was recorded at upload time) then the company_media row. RLS
+  // (is_company_manager: owner/admin) is the ownership check.
+  const deleteCompanyMedia = async (item: MediaRow) => {
+    if (!confirm("Delete this post? This action cannot be undone.")) return
+    setDeletingMediaId(item.id)
+    const supabase = createClient()
+    try {
+      if (item.storage_bucket && item.storage_path) {
+        await supabase.storage.from(item.storage_bucket).remove([item.storage_path])
+      }
+      await supabase.from("company_media").delete().eq("id", item.id)
+      setMedia((prev) => prev.filter((m) => m.id !== item.id))
+      setOpenIndex(null)
+    } catch (err) {
+      console.error("[studio] Failed to delete media:", err)
+      alert("Couldn't delete this post. Please try again.")
+    } finally {
+      setDeletingMediaId(null)
+    }
+  }
+
+  const deleteMedia = (item: MediaRow) => (item.media_type === "recording" ? deleteRecording(item) : deleteCompanyMedia(item))
 
   const openComments = async (mediaId: string) => {
     setOpenCommentsFor(mediaId)
@@ -472,8 +500,8 @@ export function StudioPanel({ company }: { company: Company }) {
                 commentCount={commentCounts[m.id] ?? 0}
                 onOpenComments={() => openComments(m.id)}
                 product={productByUrl[m.url]}
-                onDeleteRecording={() => deleteRecording(m)}
-                deletingRecording={deletingRecordingId === m.id}
+                onDelete={() => deleteMedia(m)}
+                deletingMedia={deletingMediaId === m.id}
               />
             ))}
           </div>
@@ -546,16 +574,16 @@ function FeedItem({
   commentCount,
   onOpenComments,
   product,
-  onDeleteRecording,
-  deletingRecording,
+  onDelete,
+  deletingMedia,
 }: {
   item: MediaRow
   companyName: string
   commentCount: number
   onOpenComments: () => void
   product?: { name: string; price: number | null }
-  onDeleteRecording: () => void
-  deletingRecording: boolean
+  onDelete: () => void
+  deletingMedia: boolean
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -585,17 +613,15 @@ function FeedItem({
         <img src={item.url} alt={item.caption ?? companyName} className="h-full w-full object-contain" />
       )}
 
-      {item.media_type === "recording" && (
-        <button
-          type="button"
-          onClick={onDeleteRecording}
-          disabled={deletingRecording}
-          className="absolute top-4 end-4 z-20 flex items-center gap-1.5 rounded-full bg-red-500/90 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur disabled:opacity-50"
-        >
-          <Trash2 className="size-3.5" />
-          {deletingRecording ? "Deleting..." : "Delete"}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={onDelete}
+        disabled={deletingMedia}
+        className="absolute top-4 end-4 z-20 flex items-center gap-1.5 rounded-full bg-red-500/90 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur disabled:opacity-50"
+      >
+        <Trash2 className="size-3.5" />
+        {deletingMedia ? "Deleting..." : "Delete"}
+      </button>
 
       {product && (
         <div className="absolute top-4 start-16 z-10 flex items-center gap-2 rounded-full bg-white px-3 py-1.5 shadow-lg max-w-[65%]">
