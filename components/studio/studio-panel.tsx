@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Eye, Heart, ImagePlus, MessageCircle, Play, Radio, Send, Video as VideoIcon, X } from "lucide-react"
+import { Eye, Heart, ImagePlus, MessageCircle, Play, Radio, Send, Trash2, Video as VideoIcon, X } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/components/auth-provider"
 import { ExternalStoreSync } from "@/components/studio/external-store-sync"
@@ -40,6 +40,7 @@ export function StudioPanel({ company }: { company: Company }) {
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
   const [productByUrl, setProductByUrl] = useState<Record<string, { name: string; price: number | null }>>({})
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [deletingRecordingId, setDeletingRecordingId] = useState<string | null>(null)
   const [showLiveSheet, setShowLiveSheet] = useState(false)
   const [openCommentsFor, setOpenCommentsFor] = useState<string | null>(null)
   const [comments, setComments] = useState<CommentRow[]>([])
@@ -145,6 +146,27 @@ export function StudioPanel({ company }: { company: Company }) {
       feedContainerRef.current.scrollTop = openIndex * h
     }
   }, [openIndex])
+
+  // Same delete flow as LiveRecordingsSheet: remove the webm from storage,
+  // clear replay_url so it drops out of the feed. RLS (is_company_member)
+  // is the ownership check — no separate client-side check needed.
+  const deleteRecording = async (recording: MediaRow) => {
+    if (!confirm("Delete this recording? This action cannot be undone.")) return
+    setDeletingRecordingId(recording.id)
+    const supabase = createClient()
+    const path = `${company.id}/${recording.id}.webm`
+    try {
+      await supabase.storage.from("live-recordings").remove([path])
+      await supabase.from("live_sessions").update({ replay_url: null }).eq("id", recording.id)
+      setMedia((prev) => prev.filter((m) => m.id !== recording.id))
+      setOpenIndex(null)
+    } catch (err) {
+      console.error("[live] Failed to delete recording:", err)
+      alert("Couldn't delete this recording. Please try again.")
+    } finally {
+      setDeletingRecordingId(null)
+    }
+  }
 
   const openComments = async (mediaId: string) => {
     setOpenCommentsFor(mediaId)
@@ -450,6 +472,8 @@ export function StudioPanel({ company }: { company: Company }) {
                 commentCount={commentCounts[m.id] ?? 0}
                 onOpenComments={() => openComments(m.id)}
                 product={productByUrl[m.url]}
+                onDeleteRecording={() => deleteRecording(m)}
+                deletingRecording={deletingRecordingId === m.id}
               />
             ))}
           </div>
@@ -522,12 +546,16 @@ function FeedItem({
   commentCount,
   onOpenComments,
   product,
+  onDeleteRecording,
+  deletingRecording,
 }: {
   item: MediaRow
   companyName: string
   commentCount: number
   onOpenComments: () => void
   product?: { name: string; price: number | null }
+  onDeleteRecording: () => void
+  deletingRecording: boolean
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -555,6 +583,18 @@ function FeedItem({
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.url} alt={item.caption ?? companyName} className="h-full w-full object-contain" />
+      )}
+
+      {item.media_type === "recording" && (
+        <button
+          type="button"
+          onClick={onDeleteRecording}
+          disabled={deletingRecording}
+          className="absolute top-4 end-4 z-20 flex items-center gap-1.5 rounded-full bg-red-500/90 px-3 py-1.5 text-[11px] font-bold text-white backdrop-blur disabled:opacity-50"
+        >
+          <Trash2 className="size-3.5" />
+          {deletingRecording ? "Deleting..." : "Delete"}
+        </button>
       )}
 
       {product && (
