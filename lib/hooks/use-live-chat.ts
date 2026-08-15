@@ -35,7 +35,7 @@ export function useLiveChat(sessionId: string | null) {
 
   const resolveAuthor = useCallback(async (supabase: ReturnType<typeof createClient>, senderId: string): Promise<ProfileInfo> => {
     if (profileCache.current[senderId]) return profileCache.current[senderId]
-    const { data } = await supabase.from("profiles").select("full_name,avatar_url").eq("id", senderId).maybeSingle()
+    const { data } = await supabase.from("public_profiles_view").select("full_name,avatar_url").eq("id", senderId).maybeSingle()
     const info: ProfileInfo = { full_name: data?.full_name ?? null, avatar_url: data?.avatar_url ?? null }
     profileCache.current[senderId] = info
     return info

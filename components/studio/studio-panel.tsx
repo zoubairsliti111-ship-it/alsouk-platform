@@ -214,7 +214,7 @@ export function StudioPanel({ company }: { company: Company }) {
     let profileMap: Record<string, { full_name: string | null; avatar_url: string | null }> = {}
     if (userIds.length > 0) {
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_profiles_view")
         .select("id,full_name,avatar_url")
         .in("id", userIds)
       if (profiles) {
