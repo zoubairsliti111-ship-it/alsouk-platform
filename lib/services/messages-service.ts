@@ -49,7 +49,7 @@ export async function resolveParticipant(supabase: any, userId: string): Promise
   }
 
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("public_profiles_view")
     .select("full_name, avatar_url")
     .eq("id", userId)
     .maybeSingle()
