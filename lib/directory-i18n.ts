@@ -128,6 +128,10 @@ type DirectoryDict = {
     visitExternalStore: string
     reviewsTitle: string
     reviewsEmpty: string
+    tabOverview: string
+    tabProducts: string
+    tabMedia: string
+    tabReviews: string
     social: {
       followers: string
       following: string
@@ -413,6 +417,10 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       visitExternalStore: "Visit External Store",
       reviewsTitle: "Buyer reviews",
       reviewsEmpty: "No written reviews yet. Be the first to work with this supplier.",
+      tabOverview: "Overview",
+      tabProducts: "Products",
+      tabMedia: "Media",
+      tabReviews: "Reviews",
       social: {
         followers: "Followers",
         following: "Following",
@@ -693,6 +701,10 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       visitExternalStore: "Visiter la boutique externe",
       reviewsTitle: "Avis des acheteurs",
       reviewsEmpty: "Aucun avis écrit pour le moment. Soyez le premier à travailler avec ce fournisseur.",
+      tabOverview: "Aperçu",
+      tabProducts: "Produits",
+      tabMedia: "Médias",
+      tabReviews: "Avis",
       errorTitle: "Impossible de charger ce fournisseur",
       errorSubtitle: "Nous n'avons pas pu joindre la base de données des fournisseurs. Veuillez réessayer dans un instant.",
       retry: "Réessayer",
@@ -976,6 +988,10 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       visitExternalStore: "زيارة المتجر الخارجي",
       reviewsTitle: "تقييمات المشترين",
       reviewsEmpty: "لا توجد مراجعات مكتوبة بعد. كن أول من يتعامل مع هذا المورّد.",
+      tabOverview: "نظرة عامة",
+      tabProducts: "المنتجات",
+      tabMedia: "الوسائط",
+      tabReviews: "التقييمات",
       errorTitle: "تعذّر تحميل هذا المورّد",
       errorSubtitle: "تعذّر الوصول إلى قاعدة بيانات الموردين. يُرجى المحاولة مرة أخرى بعد قليل.",
       retry: "إعادة المحاولة",

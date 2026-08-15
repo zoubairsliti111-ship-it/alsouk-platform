@@ -1,8 +1,9 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { Suspense, useCallback, useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import {
   ArrowLeft,
   Award,
@@ -46,10 +47,29 @@ type MediaRow = {
   caption: string | null
 }
 
+const TAB_IDS = ["overview", "products", "media", "reviews"] as const
+type TabId = (typeof TAB_IDS)[number]
+
+function isTabId(value: string | null): value is TabId {
+  return value !== null && (TAB_IDS as readonly string[]).includes(value)
+}
+
 export function SupplierProfile({ id }: { id: string }) {
+  return (
+    <Suspense fallback={null}>
+      <SupplierProfileContent id={id} />
+    </Suspense>
+  )
+}
+
+function SupplierProfileContent({ id }: { id: string }) {
   const { lang } = useLanguage()
   const t = directoryT[lang]
   const p = t.profile
+
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   const [state, setState] = useState<{ id: string; status: Status; supplier: Supplier | null }>({
     id,
@@ -59,8 +79,24 @@ export function SupplierProfile({ id }: { id: string }) {
   const [media, setMedia] = useState<MediaRow[]>([])
   const [rfqOpen, setRfqOpen] = useState(false)
   const [following, setFollowing] = useState(false)
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    const fromUrl = searchParams.get("tab")
+    return isTabId(fromUrl) ? fromUrl : "overview"
+  })
   const { user: authUser } = useAuth()
   const closeRfq = useCallback(() => setRfqOpen(false), [])
+
+  const handleTabChange = useCallback(
+    (tab: TabId) => {
+      setActiveTab(tab)
+      const params = new URLSearchParams(searchParams.toString())
+      if (tab === "overview") params.delete("tab")
+      else params.set("tab", tab)
+      const qs = params.toString()
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    },
+    [pathname, router, searchParams],
+  )
 
   useEffect(() => {
     let active = true
@@ -152,6 +188,11 @@ export function SupplierProfile({ id }: { id: string }) {
   const certificates = media.filter((m) => m.media_type === "certificate")
   const coverUrl = photos[0]?.url || COVER_IMAGE
 
+  const hasCompanyInfo = Boolean(
+    s.websiteUrl || s.phoneNumber || s.whatsappNumber || s.streetAddress || s.postalCode || s.companySize ||
+    s.facebookUrl || s.instagramUrl || s.tiktokUrl || s.linkedinUrl || s.youtubeUrl,
+  )
+
   const followButton = (
     <button
       type="button"
@@ -198,6 +239,13 @@ export function SupplierProfile({ id }: { id: string }) {
       {p.requestQuote}
     </Button>
   )
+
+  const tabs: { id: TabId; label: string; icon: typeof Building2 }[] = [
+    { id: "overview", label: p.tabOverview, icon: Building2 },
+    { id: "products", label: p.tabProducts, icon: Package },
+    { id: "media", label: p.tabMedia, icon: Play },
+    { id: "reviews", label: p.tabReviews, icon: Star },
+  ]
 
   return (
     <div className="pb-32 lg:pb-8">
@@ -280,9 +328,9 @@ export function SupplierProfile({ id }: { id: string }) {
           </div>
 
           {/* Quick stats. Response rate and minimum order quantity are omitted
-              here (and from the sidebar below) because the platform doesn't
-              collect that data yet — showing "0%"/"0" for every supplier would
-              look like a real measurement when it isn't one. */}
+              here (and from Company Information below) because the platform
+              doesn't collect that data yet — showing "0%"/"0" for every
+              supplier would look like a real measurement when it isn't one. */}
           <div className="mt-6 grid grid-cols-3 gap-3">
             <Stat icon={<Package className="size-4 text-primary" />} value={String(s.products)} label={p.products} />
             <Stat
@@ -292,241 +340,276 @@ export function SupplierProfile({ id }: { id: string }) {
             />
             <Stat icon={<Eye className="size-4 text-primary" />} value={String(s.profileViews)} label="Views" />
           </div>
+
+          {/* Tabs — same segmented-bar pattern used in Account's company
+              profile tabs, scrollable on mobile, state mirrored to the
+              `tab` query param so a specific tab is shareable/linkable and
+              survives a refresh, without a separate route per tab. */}
+          <div className="mt-6 flex overflow-x-auto no-scrollbar scroll-smooth border-b border-border">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleTabChange(tab.id)}
+                aria-current={activeTab === tab.id}
+                className={`flex shrink-0 items-center gap-1.5 border-b-2 px-5 py-3 text-xs font-black transition-all ${
+                  activeTab === tab.id
+                    ? "rounded-t-xl border-primary bg-primary/5 text-primary"
+                    : "border-transparent text-muted-foreground hover:bg-secondary/15 hover:text-foreground"
+                }`}
+              >
+                <tab.icon className="size-4" />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Body */}
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
-          <Card title={p.overview} icon={<Building2 className="size-4" />}>
-            <p className="text-sm leading-relaxed text-muted-foreground">{s.description ?? p.aboutEmpty}</p>
-          </Card>
+      {/* Tab panels */}
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        {activeTab === "overview" && (
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <Card title={p.overview} icon={<Building2 className="size-4" />}>
+                <p className="text-sm leading-relaxed text-muted-foreground">{s.description ?? p.aboutEmpty}</p>
+              </Card>
 
-          <Card title={p.categories} icon={<Layers className="size-4" />}>
-            <div className="flex flex-wrap gap-2">
-              {s.categories.map((cat) => (
-                <span
-                  key={cat}
-                  className="rounded-full border border-border px-3 py-1 text-sm font-medium text-foreground"
-                >
-                  {t.categories[cat]}
-                </span>
-              ))}
+              <Card title={p.categories} icon={<Layers className="size-4" />}>
+                <div className="flex flex-wrap gap-2">
+                  {s.categories.map((cat) => (
+                    <span
+                      key={cat}
+                      className="rounded-full border border-border px-3 py-1 text-sm font-medium text-foreground"
+                    >
+                      {t.categories[cat]}
+                    </span>
+                  ))}
+                </div>
+              </Card>
             </div>
-          </Card>
 
-          <Card title={p.products} icon={<Package className="size-4" />}>
-            <p className="text-sm font-semibold text-foreground">{p.productsCount(s.products)}</p>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.productsEmpty}</p>
-            <Link href="/products" className={buttonVariants({ variant: "outline", size: "sm", className: "mt-4" })}>
-              <Package className="size-4" />
-              {p.products}
-            </Link>
-          </Card>
-
-          <Link href={`/suppliers/${s.id}/feed`} className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-accent px-5 py-3.5 text-sm font-black text-white shadow-lg active:scale-95">
-            <Play className="size-4" />
-            Watch Photos & Videos
-          </Link>
-
-          <Card title={p.factory} icon={<Building2 className="size-4" />}>
-            {photos.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {photos.map((ph) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={ph.id}
-                    src={ph.url}
-                    alt={ph.caption ?? s.name}
-                    className="aspect-square w-full rounded-xl border border-border object-cover"
+            <aside className="space-y-6">
+              <Card title={p.commercialTerms} icon={<Boxes className="size-4" />}>
+                <dl className="divide-y divide-border text-sm">
+                  <Row label={p.businessType} value={s.businessTypes.map((bt) => t.businessTypes[bt]).join(", ")} />
+                  <Row
+                    label={p.yearsInBusiness}
+                    value={s.yearEstablished !== null ? String(s.years) : p.notAvailable}
                   />
-                ))}
-              </div>
-            ) : (
-              <EmptyState icon={<Building2 className="size-5" />} text={p.factoryEmpty} />
-            )}
-          </Card>
+                </dl>
+              </Card>
 
-          <Card title={p.videos} icon={<Play className="size-4" />}>
-            {videos.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {videos.map((v) => (
-                  <video key={v.id} src={v.url} controls className="w-full rounded-xl border border-border aspect-video" />
-                ))}
-              </div>
-            ) : (
-              <EmptyState icon={<Play className="size-5" />} text={p.videosEmpty} />
-            )}
-          </Card>
+              {/* Every field here is already null unless the owner opted in
+                  (companies_public nulls it out server-side, see migration
+                  0046) — so this renders nothing for a hidden/unset field
+                  rather than an empty "—" row, and the whole card disappears
+                  if nothing is opted in, instead of showing an empty shell. */}
+              {hasCompanyInfo && (
+                <Card title={p.companyInfo} icon={<Building2 className="size-4" />}>
+                  <dl className="divide-y divide-border text-sm">
+                    {s.websiteUrl && (
+                      <div className="flex items-center justify-between gap-4 py-2.5">
+                        <dt className="flex items-center gap-1.5 text-muted-foreground">
+                          <Globe className="size-3.5" />
+                          {p.website}
+                        </dt>
+                        <dd className="text-end font-medium">
+                          <a
+                            href={s.websiteUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            {externalStoreLabel(s.websiteUrl)}
+                          </a>
+                        </dd>
+                      </div>
+                    )}
+                    {s.phoneNumber && (
+                      <div className="flex items-center justify-between gap-4 py-2.5">
+                        <dt className="flex items-center gap-1.5 text-muted-foreground">
+                          <Phone className="size-3.5" />
+                          {p.phone}
+                        </dt>
+                        <dd className="text-end font-medium">
+                          <a href={`tel:${s.phoneNumber}`} className="text-primary hover:underline">
+                            {s.phoneNumber}
+                          </a>
+                        </dd>
+                      </div>
+                    )}
+                    {s.whatsappNumber && (
+                      <div className="flex items-center justify-between gap-4 py-2.5">
+                        <dt className="flex items-center gap-1.5 text-muted-foreground">
+                          <MessageSquare className="size-3.5" />
+                          {p.whatsapp}
+                        </dt>
+                        <dd className="text-end font-medium">
+                          <a
+                            href={`https://wa.me/${s.whatsappNumber.replace(/[^0-9]/g, "")}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            {s.whatsappNumber}
+                          </a>
+                        </dd>
+                      </div>
+                    )}
+                    {(s.streetAddress || s.postalCode) && (
+                      <Row label={p.address} value={[s.streetAddress, s.postalCode].filter(Boolean).join(", ")} />
+                    )}
+                    {s.companySize && <Row label={p.companySize} value={s.companySize} />}
+                    {(s.facebookUrl || s.instagramUrl || s.tiktokUrl || s.linkedinUrl || s.youtubeUrl) && (
+                      <div className="py-2.5">
+                        <dt className="mb-2 flex items-center gap-1.5 text-muted-foreground">{p.socialMedia}</dt>
+                        <dd className="flex flex-wrap gap-2">
+                          {[
+                            ["Facebook", s.facebookUrl],
+                            ["Instagram", s.instagramUrl],
+                            ["TikTok", s.tiktokUrl],
+                            ["LinkedIn", s.linkedinUrl],
+                            ["YouTube", s.youtubeUrl],
+                          ]
+                            .filter(([, url]) => url)
+                            .map(([label, url]) => (
+                              <a
+                                key={label}
+                                href={url as string}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary"
+                              >
+                                {label}
+                                <ExternalLink className="size-3" />
+                              </a>
+                            ))}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                </Card>
+              )}
 
-          <Card title={p.catalogs} icon={<FileText className="size-4" />}>
-            <EmptyState icon={<FileText className="size-5" />} text={p.catalogsEmpty} />
-          </Card>
+              <Card title={p.location} icon={<MapPin className="size-4" />}>
+                <dl className="divide-y divide-border text-sm">
+                  <Row label={t.filters.country} value={t.countries[s.country] ?? s.country} />
+                  <Row label={p.location} value={t.cities[s.cityKey] ?? s.cityKey} />
+                  <Row label={p.region} value={t.regions[s.region]} />
+                </dl>
+              </Card>
+            </aside>
+          </div>
+        )}
 
-          {s.externalStoreUrl && (
-            <Card title={p.externalStore} icon={<Store className="size-4" />}>
-              <a
-                href={s.externalStoreUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-secondary/20 p-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary/40"
-              >
-                <span className="flex min-w-0 items-center gap-3">
-                  <Store className="size-5 shrink-0 text-primary" />
-                  <span className="min-w-0">
-                    <span className="block">{p.visitExternalStore}</span>
-                    <span className="block truncate text-xs font-normal text-muted-foreground">
-                      {externalStoreLabel(s.externalStoreUrl)}
+        {activeTab === "products" && (
+          <div className="space-y-6">
+            <Card title={p.products} icon={<Package className="size-4" />}>
+              <p className="text-sm font-semibold text-foreground">{p.productsCount(s.products)}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.productsEmpty}</p>
+              <Link href="/products" className={buttonVariants({ variant: "outline", size: "sm", className: "mt-4" })}>
+                <Package className="size-4" />
+                {p.products}
+              </Link>
+            </Card>
+
+            {s.externalStoreUrl && (
+              <Card title={p.externalStore} icon={<Store className="size-4" />}>
+                <a
+                  href={s.externalStoreUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-secondary/20 p-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary/40"
+                >
+                  <span className="flex min-w-0 items-center gap-3">
+                    <Store className="size-5 shrink-0 text-primary" />
+                    <span className="min-w-0">
+                      <span className="block">{p.visitExternalStore}</span>
+                      <span className="block truncate text-xs font-normal text-muted-foreground">
+                        {externalStoreLabel(s.externalStoreUrl)}
+                      </span>
                     </span>
                   </span>
-                </span>
-                <ExternalLink className="size-4 shrink-0 text-muted-foreground" />
-              </a>
-            </Card>
-          )}
-
-          <Card title={p.certifications} icon={<Award className="size-4" />}>
-            {certificates.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {certificates.map((c) => (
-                  <a
-                    key={c.id}
-                    href={c.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-xl border border-border bg-secondary/20 p-3 text-sm font-medium text-foreground hover:bg-secondary/40"
-                  >
-                    <ShieldCheck className="size-5 shrink-0 text-primary" />
-                    <span className="truncate">{c.caption || p.certifications}</span>
-                  </a>
-                ))}
-              </div>
-            ) : (
-              <EmptyState icon={<ShieldCheck className="size-5" />} text={p.certificationsEmpty} />
+                  <ExternalLink className="size-4 shrink-0 text-muted-foreground" />
+                </a>
+              </Card>
             )}
-          </Card>
+          </div>
+        )}
 
+        {activeTab === "media" && (
+          <div className="space-y-6">
+            <Link href={`/suppliers/${s.id}/feed`} className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-primary to-accent px-5 py-3.5 text-sm font-black text-white shadow-lg active:scale-95">
+              <Play className="size-4" />
+              Watch Photos & Videos
+            </Link>
+
+            <Card title={p.factory} icon={<Building2 className="size-4" />}>
+              {photos.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {photos.map((ph) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={ph.id}
+                      src={ph.url}
+                      alt={ph.caption ?? s.name}
+                      className="aspect-square w-full rounded-xl border border-border object-cover"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState icon={<Building2 className="size-5" />} text={p.factoryEmpty} />
+              )}
+            </Card>
+
+            <Card title={p.videos} icon={<Play className="size-4" />}>
+              {videos.length > 0 ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {videos.map((v) => (
+                    <video key={v.id} src={v.url} controls className="w-full rounded-xl border border-border aspect-video" />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState icon={<Play className="size-5" />} text={p.videosEmpty} />
+              )}
+            </Card>
+
+            <Card title={p.catalogs} icon={<FileText className="size-4" />}>
+              <EmptyState icon={<FileText className="size-5" />} text={p.catalogsEmpty} />
+            </Card>
+
+            <Card title={p.certifications} icon={<Award className="size-4" />}>
+              {certificates.length > 0 ? (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {certificates.map((c) => (
+                    <a
+                      key={c.id}
+                      href={c.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 rounded-xl border border-border bg-secondary/20 p-3 text-sm font-medium text-foreground hover:bg-secondary/40"
+                    >
+                      <ShieldCheck className="size-5 shrink-0 text-primary" />
+                      <span className="truncate">{c.caption || p.certifications}</span>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState icon={<ShieldCheck className="size-5" />} text={p.certificationsEmpty} />
+              )}
+            </Card>
+          </div>
+        )}
+
+        {activeTab === "reviews" && (
           <Card title={p.reviewsTitle} icon={<Star className="size-4" />}>
             {/* No review/rating system exists yet — there is no data source
                 for a star rating or review count, so this stays an honest
                 empty state rather than a fabricated "0.0" rating. */}
             <EmptyState icon={<Star className="size-5" />} text={p.reviewsEmpty} />
           </Card>
-        </div>
-
-        {/* Sidebar */}
-        <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-          <Card title={p.commercialTerms} icon={<Boxes className="size-4" />}>
-            <dl className="divide-y divide-border text-sm">
-              <Row label={p.businessType} value={s.businessTypes.map((bt) => t.businessTypes[bt]).join(", ")} />
-              <Row
-                label={p.yearsInBusiness}
-                value={s.yearEstablished !== null ? String(s.years) : p.notAvailable}
-              />
-            </dl>
-          </Card>
-
-          {/* Every field here is already null unless the owner opted in
-              (companies_public nulls it out server-side, see migration
-              0046) — so this renders nothing for a hidden/unset field
-              rather than an empty "—" row, and the whole card disappears
-              if nothing is opted in, instead of showing an empty shell. */}
-          {(s.websiteUrl || s.phoneNumber || s.whatsappNumber || s.streetAddress || s.postalCode || s.companySize ||
-            s.facebookUrl || s.instagramUrl || s.tiktokUrl || s.linkedinUrl || s.youtubeUrl) && (
-            <Card title={p.companyInfo} icon={<Building2 className="size-4" />}>
-              <dl className="divide-y divide-border text-sm">
-                {s.websiteUrl && (
-                  <div className="flex items-center justify-between gap-4 py-2.5">
-                    <dt className="flex items-center gap-1.5 text-muted-foreground">
-                      <Globe className="size-3.5" />
-                      {p.website}
-                    </dt>
-                    <dd className="text-end font-medium">
-                      <a
-                        href={s.websiteUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {externalStoreLabel(s.websiteUrl)}
-                      </a>
-                    </dd>
-                  </div>
-                )}
-                {s.phoneNumber && (
-                  <div className="flex items-center justify-between gap-4 py-2.5">
-                    <dt className="flex items-center gap-1.5 text-muted-foreground">
-                      <Phone className="size-3.5" />
-                      {p.phone}
-                    </dt>
-                    <dd className="text-end font-medium">
-                      <a href={`tel:${s.phoneNumber}`} className="text-primary hover:underline">
-                        {s.phoneNumber}
-                      </a>
-                    </dd>
-                  </div>
-                )}
-                {s.whatsappNumber && (
-                  <div className="flex items-center justify-between gap-4 py-2.5">
-                    <dt className="flex items-center gap-1.5 text-muted-foreground">
-                      <MessageSquare className="size-3.5" />
-                      {p.whatsapp}
-                    </dt>
-                    <dd className="text-end font-medium">
-                      <a
-                        href={`https://wa.me/${s.whatsappNumber.replace(/[^0-9]/g, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {s.whatsappNumber}
-                      </a>
-                    </dd>
-                  </div>
-                )}
-                {(s.streetAddress || s.postalCode) && (
-                  <Row label={p.address} value={[s.streetAddress, s.postalCode].filter(Boolean).join(", ")} />
-                )}
-                {s.companySize && <Row label={p.companySize} value={s.companySize} />}
-                {(s.facebookUrl || s.instagramUrl || s.tiktokUrl || s.linkedinUrl || s.youtubeUrl) && (
-                  <div className="py-2.5">
-                    <dt className="mb-2 flex items-center gap-1.5 text-muted-foreground">{p.socialMedia}</dt>
-                    <dd className="flex flex-wrap gap-2">
-                      {[
-                        ["Facebook", s.facebookUrl],
-                        ["Instagram", s.instagramUrl],
-                        ["TikTok", s.tiktokUrl],
-                        ["LinkedIn", s.linkedinUrl],
-                        ["YouTube", s.youtubeUrl],
-                      ]
-                        .filter(([, url]) => url)
-                        .map(([label, url]) => (
-                          <a
-                            key={label}
-                            href={url as string}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary"
-                          >
-                            {label}
-                            <ExternalLink className="size-3" />
-                          </a>
-                        ))}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </Card>
-          )}
-
-          <Card title={p.location} icon={<MapPin className="size-4" />}>
-            <dl className="divide-y divide-border text-sm">
-              <Row label={t.filters.country} value={t.countries[s.country] ?? s.country} />
-              <Row label={p.location} value={t.cities[s.cityKey] ?? s.cityKey} />
-              <Row label={p.region} value={t.regions[s.region]} />
-            </dl>
-          </Card>
-        </aside>
+        )}
       </div>
 
       {/* Sticky mobile CTA — sits above the bottom nav */}
