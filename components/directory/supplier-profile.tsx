@@ -13,11 +13,13 @@ import {
   Building2,
   CalendarClock,
   FileText,
+  Globe,
   Heart,
   Layers,
   MapPin,
   MessageSquare,
   Package,
+  Phone,
   Play,
   ShieldCheck,
   Star,
@@ -423,6 +425,99 @@ export function SupplierProfile({ id }: { id: string }) {
               />
             </dl>
           </Card>
+
+          {/* Every field here is already null unless the owner opted in
+              (companies_public nulls it out server-side, see migration
+              0046) — so this renders nothing for a hidden/unset field
+              rather than an empty "—" row, and the whole card disappears
+              if nothing is opted in, instead of showing an empty shell. */}
+          {(s.websiteUrl || s.phoneNumber || s.whatsappNumber || s.streetAddress || s.postalCode || s.companySize ||
+            s.facebookUrl || s.instagramUrl || s.tiktokUrl || s.linkedinUrl || s.youtubeUrl) && (
+            <Card title={p.companyInfo} icon={<Building2 className="size-4" />}>
+              <dl className="divide-y divide-border text-sm">
+                {s.websiteUrl && (
+                  <div className="flex items-center justify-between gap-4 py-2.5">
+                    <dt className="flex items-center gap-1.5 text-muted-foreground">
+                      <Globe className="size-3.5" />
+                      {p.website}
+                    </dt>
+                    <dd className="text-end font-medium">
+                      <a
+                        href={s.websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        {externalStoreLabel(s.websiteUrl)}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                {s.phoneNumber && (
+                  <div className="flex items-center justify-between gap-4 py-2.5">
+                    <dt className="flex items-center gap-1.5 text-muted-foreground">
+                      <Phone className="size-3.5" />
+                      {p.phone}
+                    </dt>
+                    <dd className="text-end font-medium">
+                      <a href={`tel:${s.phoneNumber}`} className="text-primary hover:underline">
+                        {s.phoneNumber}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                {s.whatsappNumber && (
+                  <div className="flex items-center justify-between gap-4 py-2.5">
+                    <dt className="flex items-center gap-1.5 text-muted-foreground">
+                      <MessageSquare className="size-3.5" />
+                      {p.whatsapp}
+                    </dt>
+                    <dd className="text-end font-medium">
+                      <a
+                        href={`https://wa.me/${s.whatsappNumber.replace(/[^0-9]/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        {s.whatsappNumber}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                {(s.streetAddress || s.postalCode) && (
+                  <Row label={p.address} value={[s.streetAddress, s.postalCode].filter(Boolean).join(", ")} />
+                )}
+                {s.companySize && <Row label={p.companySize} value={s.companySize} />}
+                {(s.facebookUrl || s.instagramUrl || s.tiktokUrl || s.linkedinUrl || s.youtubeUrl) && (
+                  <div className="py-2.5">
+                    <dt className="mb-2 flex items-center gap-1.5 text-muted-foreground">{p.socialMedia}</dt>
+                    <dd className="flex flex-wrap gap-2">
+                      {[
+                        ["Facebook", s.facebookUrl],
+                        ["Instagram", s.instagramUrl],
+                        ["TikTok", s.tiktokUrl],
+                        ["LinkedIn", s.linkedinUrl],
+                        ["YouTube", s.youtubeUrl],
+                      ]
+                        .filter(([, url]) => url)
+                        .map(([label, url]) => (
+                          <a
+                            key={label}
+                            href={url as string}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-secondary"
+                          >
+                            {label}
+                            <ExternalLink className="size-3" />
+                          </a>
+                        ))}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </Card>
+          )}
 
           <Card title={p.location} icon={<MapPin className="size-4" />}>
             <dl className="divide-y divide-border text-sm">

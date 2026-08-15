@@ -26,6 +26,12 @@ export type DBCompanyRow = {
   city: string | null
   postal_code: string | null
   street_address: string | null
+  website_visible: boolean
+  social_visible: boolean
+  phone_visible: boolean
+  whatsapp_visible: boolean
+  address_visible: boolean
+  company_size_visible: boolean
   business_type: string | null
   primary_industry: string | null
   year_established: number | null
@@ -69,6 +75,12 @@ export function mapCompanyRow(row: DBCompanyRow): Company {
     city: row.city,
     postalCode: row.postal_code,
     streetAddress: row.street_address,
+    websiteVisible: Boolean(row.website_visible),
+    socialVisible: Boolean(row.social_visible),
+    phoneVisible: Boolean(row.phone_visible),
+    whatsappVisible: Boolean(row.whatsapp_visible),
+    addressVisible: Boolean(row.address_visible),
+    companySizeVisible: Boolean(row.company_size_visible),
     businessType: row.business_type,
     primaryIndustry: row.primary_industry,
     yearEstablished: row.year_established,
@@ -301,6 +313,12 @@ export async function updateCompany(companyId: string, companyInput: Partial<Com
     city: companyInput.city,
     postal_code: companyInput.postalCode,
     street_address: companyInput.streetAddress,
+    website_visible: companyInput.websiteVisible,
+    social_visible: companyInput.socialVisible,
+    phone_visible: companyInput.phoneVisible,
+    whatsapp_visible: companyInput.whatsappVisible,
+    address_visible: companyInput.addressVisible,
+    company_size_visible: companyInput.companySizeVisible,
     business_type: companyInput.businessType,
     primary_industry: companyInput.primaryIndustry,
     year_established: companyInput.yearEstablished,

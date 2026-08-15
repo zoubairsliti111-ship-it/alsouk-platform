@@ -98,6 +98,13 @@ type DirectoryDict = {
     businessType: string
     yearsInBusiness: string
     notAvailable: string
+    companyInfo: string
+    website: string
+    phone: string
+    whatsapp: string
+    address: string
+    companySize: string
+    socialMedia: string
     location: string
     region: string
     requestQuote: string
@@ -376,6 +383,13 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       businessType: "Business type",
       yearsInBusiness: "Years in business",
       notAvailable: "Not specified",
+      companyInfo: "Company Information",
+      website: "Website",
+      phone: "Phone",
+      whatsapp: "WhatsApp",
+      address: "Address",
+      companySize: "Company size",
+      socialMedia: "Social media",
       location: "Location",
       region: "Region",
       requestQuote: "Request Quote",
@@ -652,6 +666,13 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       businessType: "Type d'entreprise",
       yearsInBusiness: "Années d'activité",
       notAvailable: "Non spécifié",
+      companyInfo: "Informations sur l'entreprise",
+      website: "Site web",
+      phone: "Téléphone",
+      whatsapp: "WhatsApp",
+      address: "Adresse",
+      companySize: "Taille de l'entreprise",
+      socialMedia: "Réseaux sociaux",
       location: "Emplacement",
       region: "Région",
       requestQuote: "Demander un devis",
@@ -928,6 +949,13 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       businessType: "نوع النشاط",
       yearsInBusiness: "سنوات النشاط",
       notAvailable: "غير محدد",
+      companyInfo: "معلومات الشركة",
+      website: "الموقع الإلكتروني",
+      phone: "الهاتف",
+      whatsapp: "واتساب",
+      address: "العنوان",
+      companySize: "حجم الشركة",
+      socialMedia: "وسائل التواصل",
       location: "الموقع",
       region: "المنطقة",
       requestQuote: "طلب عرض سعر",
