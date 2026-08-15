@@ -91,10 +91,8 @@ export function mapRow(row: SupplierRow): Supplier | null {
 
   const country = resolveCountry(row.country) ?? "tn"
   const currentYear = new Date().getFullYear()
-  const years =
-    row.year_established && row.year_established > 1800
-      ? Math.max(0, currentYear - row.year_established)
-      : 0
+  const yearEstablished = row.year_established && row.year_established > 1800 ? row.year_established : null
+  const years = yearEstablished !== null ? Math.max(0, currentYear - yearEstablished) : 0
 
   return {
     id: row.id,
@@ -110,6 +108,7 @@ export function mapRow(row: SupplierRow): Supplier | null {
     reviews: 0,
     products: row.products_count ?? 0,
     years,
+    yearEstablished,
     responseRate: 0,
     minMoq: 0,
     businessTypes: (row.business_type ? [row.business_type] : []) as BusinessTypeKey[],

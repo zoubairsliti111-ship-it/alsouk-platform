@@ -109,6 +109,7 @@ type DirectoryDict = {
     reviews: string
     businessType: string
     yearsInBusiness: string
+    notAvailable: string
     location: string
     region: string
     requestQuote: string
@@ -404,6 +405,7 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       reviews: "reviews",
       businessType: "Business type",
       yearsInBusiness: "Years in business",
+      notAvailable: "Not specified",
       location: "Location",
       region: "Region",
       requestQuote: "Request Quote",
@@ -697,6 +699,7 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       reviews: "avis",
       businessType: "Type d'entreprise",
       yearsInBusiness: "Années d'activité",
+      notAvailable: "Non spécifié",
       location: "Emplacement",
       region: "Région",
       requestQuote: "Demander un devis",
@@ -990,6 +993,7 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       reviews: "مراجعة",
       businessType: "نوع النشاط",
       yearsInBusiness: "سنوات النشاط",
+      notAvailable: "غير محدد",
       location: "الموقع",
       region: "المنطقة",
       requestQuote: "طلب عرض سعر",

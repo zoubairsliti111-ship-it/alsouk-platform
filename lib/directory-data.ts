@@ -106,6 +106,10 @@ export type Supplier = {
   reviews: number
   products: number
   years: number
+  /** Raw founding year, or null when the company hasn't set one. Kept alongside
+   *  the derived `years` count so callers can tell "founded this year" (0) apart
+   *  from "unknown" (null) instead of both collapsing to the same 0. */
+  yearEstablished: number | null
   responseRate: number
   /** smallest minimum order quantity offered, used for MOQ filtering */
   minMoq: number
