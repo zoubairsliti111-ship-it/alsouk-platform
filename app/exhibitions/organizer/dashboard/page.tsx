@@ -53,7 +53,8 @@ const dict = {
     meetings: "B2B Meetings Requested",
     placeholderLabel: "Simulated",
     loading: "Loading dashboard controls...",
-    errorLoad: "Failed to load organizer dashboard. Please try again."
+    errorLoad: "Failed to load organizer dashboard. Please try again.",
+    noExhibitions: "No exhibition has been created for your account yet."
   },
   fr: {
     title: "Espace de Contrôle de l'Organisateur",
@@ -83,7 +84,8 @@ const dict = {
     meetings: "Rendez-vous B2B",
     placeholderLabel: "Simulé",
     loading: "Chargement du tableau de bord...",
-    errorLoad: "Impossible de charger le tableau de bord. Veuillez réessayer."
+    errorLoad: "Impossible de charger le tableau de bord. Veuillez réessayer.",
+    noExhibitions: "Aucune exposition n'a encore été créée pour votre compte."
   },
   ar: {
     title: "مركز تحكم المنظم",
@@ -113,7 +115,8 @@ const dict = {
     meetings: "اجتماعات B2B المطلوبة",
     placeholderLabel: "افتراضي",
     loading: "جاري تحميل لوحة التحكم...",
-    errorLoad: "فشل تحميل لوحة تحكم المنظم. يرجى المحاولة مرة أخرى."
+    errorLoad: "فشل تحميل لوحة تحكم المنظم. يرجى المحاولة مرة أخرى.",
+    noExhibitions: "لا يوجد معرض تم إنشاؤه لحسابك بعد."
   }
 }
 
@@ -140,19 +143,19 @@ function DashboardContent() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [noExhibitions, setNoExhibitions] = useState(false)
   const [data, setData] = useState<{ exhibition: any; stats: any } | null>(null)
 
   useEffect(() => {
     let active = true
     fetch("/api/exhibitions/organizer/dashboard")
-      .then((res) => {
-        if (!res.ok) throw new Error("HTTP " + res.status)
-        return res.json()
-      })
-      .then((json) => {
+      .then((res) => res.json().then((json) => ({ res, json })))
+      .then(({ res, json }) => {
         if (!active) return
         if (json.success && json.data) {
           setData(json.data)
+        } else if (res.status === 404 && json.error === "no_exhibitions_found") {
+          setNoExhibitions(true)
         } else {
           setError(json.error || d.errorLoad)
         }
@@ -174,6 +177,23 @@ function DashboardContent() {
       <div className="flex flex-col items-center justify-center py-32 gap-3" dir={dir}>
         <Loader2 className="size-9 text-primary animate-spin" />
         <span className="text-xs font-bold text-muted-foreground">{d.loading}</span>
+      </div>
+    )
+  }
+
+  if (noExhibitions) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-12 text-center space-y-6" dir={dir}>
+        <div className="rounded-[20px] border border-border bg-secondary/30 p-8 text-center space-y-4">
+          <Building2 className="size-10 text-muted-foreground mx-auto" />
+          <p className="text-sm font-bold text-foreground">{d.noExhibitions}</p>
+        </div>
+        <button
+          onClick={() => router.push("/exhibitions")}
+          className="rounded-xl bg-secondary hover:bg-secondary/80 text-foreground px-5 py-3 text-xs font-black"
+        >
+          {lang === "ar" ? "العودة إلى المعارض" : "Back to Exhibitions"}
+        </button>
       </div>
     )
   }

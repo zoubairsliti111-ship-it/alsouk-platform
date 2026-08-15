@@ -34,6 +34,7 @@ export type ExhibitionRow = {
   contact_email?: string | null
   contact_phone?: string | null
   website?: string | null
+  status?: string | null
 }
 
 export type ExhibitionBoothRow = {
@@ -125,21 +126,8 @@ export type ExhibitionApplicationRow = {
 }
 
 // Map helpers
-// In-memory global store to hold exhibition status overrides safely
-function getExhibitionStatusOverrides(): Record<string, "Draft" | "Published" | "Archived" | "Open" | "Closed"> {
-  if (typeof globalThis !== "undefined") {
-    const g = globalThis as any
-    if (!g.__exhibitionStatusOverrides) {
-      g.__exhibitionStatusOverrides = {}
-    }
-    return g.__exhibitionStatusOverrides
-  }
-  return {}
-}
-
 export function mapExhibition(row: ExhibitionRow): Exhibition {
-  const overrides = getExhibitionStatusOverrides()
-  const status = overrides[row.id] || "Published"
+  const status = row.status || "Published"
 
   return {
     id: row.id,
@@ -718,20 +706,7 @@ export async function getBoothDetails(id: string): Promise<ExhibitionBooth | nul
 
     return booth
   } catch (err) {
-    console.warn(`[exhibitions-service] Failed to fetch booth details ${id}. Using mock search:`, err)
-    // Double check mock
-    const mockData = getMockBooths()
-    for (const slug in mockData) {
-      const found = mockData[slug].find((b) => b.id === id)
-      if (found) {
-        return {
-          ...found,
-          exhibits: MOCK_EXHIBITS[id] || [],
-          media: MOCK_MEDIA[id] || [],
-          documents: MOCK_DOCS[id] || [],
-        }
-      }
-    }
+    console.warn(`[exhibitions-service] Failed to fetch booth details ${id}:`, err)
     return null
   }
 }
@@ -825,9 +800,8 @@ export async function getExhibitionApplicationById(id: string): Promise<Exhibiti
     if (!rows || rows.length === 0) return null
     return mapExhibitionApplication(rows[0])
   } catch (err) {
-    console.warn(`[exhibitions-service] Failed to fetch application ID ${id}. Checking mock:`, err)
-    const mockApp = getMockApplications().find((a) => a.id === id)
-    return mockApp || null
+    console.warn(`[exhibitions-service] Failed to fetch application ID ${id}:`, err)
+    return null
   }
 }
 
@@ -846,8 +820,8 @@ export async function getExhibitionApplicationsByExhibitionId(exhibitionId: stri
     )
     return rows.map(mapExhibitionApplication)
   } catch (err) {
-    console.warn(`[exhibitions-service] Failed to fetch applications for exhibition ${exhibitionId}. Falling back to mocks:`, err)
-    return getMockApplications().filter((a) => a.exhibitionId === exhibitionId)
+    console.warn(`[exhibitions-service] Failed to fetch applications for exhibition ${exhibitionId}:`, err)
+    return []
   }
 }
 
@@ -882,13 +856,8 @@ export async function checkDuplicateApplication(
     const rows = await restGet<ExhibitionApplicationRow>(`exhibition_applications?select=id&${orClause}&limit=1`)
     return rows && rows.length > 0
   } catch (err) {
-    console.warn("[exhibitions-service] Failed to check for duplicate applications. Checking mock:", err)
-    const match = getMockApplications().some(
-      (a) =>
-        a.exhibitionId === exhibitionId &&
-        (a.email.toLowerCase() === email.toLowerCase() || (companyId && a.companyId === companyId))
-    )
-    return match
+    console.warn("[exhibitions-service] Failed to check for duplicate applications:", err)
+    return false
   }
 }
 
@@ -1010,9 +979,7 @@ export async function getExhibitsForBooth(boothId: string): Promise<ExhibitionEx
     return rows.map(mapExhibitionExhibit)
   } catch (err) {
     console.warn(`[exhibitions-service] getExhibitsForBooth error:`, err)
-    const mockData = getMockExhibits()
-    const list = mockData[boothId] || []
-    return list.sort((a, b) => a.sortOrder - b.sortOrder)
+    return []
   }
 }
 
@@ -1373,8 +1340,8 @@ export async function getApplicationsList(params: {
 
     return list
   } catch (err) {
-    console.warn("[exhibitions-service] Failed to getApplicationsList. Falling back to mocks:", err)
-    return getMockApplications()
+    console.warn("[exhibitions-service] Failed to getApplicationsList:", err)
+    return []
   }
 }
 
@@ -1744,25 +1711,47 @@ export async function createExhibition(
 }
 
 /**
- * Updates an exhibition status in-memory overlay safely.
+ * Updates an exhibition's status.
  */
 export async function updateExhibitionStatus(
   id: string,
   status: "Draft" | "Published" | "Archived" | "Open" | "Closed"
 ): Promise<Exhibition> {
-  const overrides = getExhibitionStatusOverrides()
-  overrides[id] = status
+  const cfg = getRestConfig()
 
-  // Find the exhibition to return it mapped with updated status
-  const list = await getExhibitions()
-  const found = list.find((e) => e.id === id)
-  if (!found) {
+  if (!cfg || id.startsWith("exh-")) {
+    const list = getMockExhibitions()
+    const idx = list.findIndex((e) => e.id === id)
+    if (idx === -1) {
+      throw new Error(`Exhibition not found to update status: ${id}`)
+    }
+    list[idx] = { ...list[idx], status, updatedAt: new Date().toISOString() }
+    return list[idx]
+  }
+
+  const res = await fetch(`${cfg.url}/rest/v1/exhibitions?id=eq.${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: cfg.key,
+      Authorization: `Bearer ${cfg.key}`,
+      "content-type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({ status, updated_at: new Date().toISOString() }),
+    cache: "no-store",
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to update exhibition status: ${res.status} ${text}`)
+  }
+
+  const rows = (await res.json()) as ExhibitionRow[]
+  if (!rows || rows.length === 0) {
     throw new Error(`Exhibition not found to update status: ${id}`)
   }
-  return {
-    ...found,
-    status,
-  }
+
+  return mapExhibition(rows[0])
 }
 
 /**
