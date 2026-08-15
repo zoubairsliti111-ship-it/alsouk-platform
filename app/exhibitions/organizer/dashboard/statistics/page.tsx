@@ -25,6 +25,7 @@ const dict = {
     title: "Trade Show Analytics",
     subtitle: "Consolidated performance statistics for exhibitor participation, country demographics, focus category weight, and most visited booth leaderboards.",
     back: "Back to Control Center",
+    noExhibitions: "No exhibition has been created for your account yet.",
     loading: "Computing analytics metrics...",
     errorLoad: "Failed to load statistics.",
     appSection: "Applications Distribution",
@@ -50,6 +51,7 @@ const dict = {
     title: "Analyses & Statistiques",
     subtitle: "Rapports d'activité consolidés concernant les exposants, les pays d'origine, le poids des secteurs d'activité et l'engagement des visiteurs.",
     back: "Retour au tableau de bord",
+    noExhibitions: "Aucune exposition n'a encore été créée pour votre compte.",
     loading: "Calcul des statistiques en cours...",
     errorLoad: "Impossible de charger les rapports.",
     appSection: "Répartition des Candidatures",
@@ -75,6 +77,7 @@ const dict = {
     title: "تحليلات وإحصاءات المعرض",
     subtitle: "إحصاءات الأداء الموحدة لمشاركات العارضين، التوزع الديموغرافي للدول، نسب الفئات المستهدفة، وقائمة الأجنحة الأكثرEngaged.",
     back: "العودة إلى لوحة التحكم",
+    noExhibitions: "لا يوجد معرض تم إنشاؤه لحسابك بعد.",
     loading: "جاري حساب التحليلات والإحصاءات...",
     errorLoad: "فشل تحميل التقارير الإحصائية.",
     appSection: "توزع طلبات التقديم",
@@ -121,16 +124,19 @@ function StatisticsContent() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [noExhibitions, setNoExhibitions] = useState(false)
   const [stats, setStats] = useState<any | null>(null)
 
   useEffect(() => {
     let active = true
     fetch("/api/exhibitions/organizer/statistics")
-      .then((res) => res.json())
-      .then((json) => {
+      .then((res) => res.json().then((json) => ({ res, json })))
+      .then(({ res, json }) => {
         if (!active) return
         if (json.success && json.data) {
           setStats(json.data)
+        } else if (res.status === 404 && json.error === "no_exhibitions_found") {
+          setNoExhibitions(true)
         } else {
           setError(json.error || d.errorLoad)
         }
@@ -152,6 +158,23 @@ function StatisticsContent() {
       <div className="flex flex-col items-center justify-center py-32 gap-3" dir={dir}>
         <Loader2 className="size-9 text-primary animate-spin" />
         <span className="text-xs font-bold text-muted-foreground">{d.loading}</span>
+      </div>
+    )
+  }
+
+  if (noExhibitions) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-12 text-center space-y-6" dir={dir}>
+        <div className="rounded-[20px] border border-border bg-secondary/30 p-8 text-center space-y-4">
+          <Building2 className="size-10 text-muted-foreground mx-auto" />
+          <p className="text-sm font-bold text-foreground">{d.noExhibitions}</p>
+        </div>
+        <button
+          onClick={() => router.push("/exhibitions/organizer/dashboard")}
+          className="rounded-xl bg-secondary hover:bg-secondary/80 text-foreground px-5 py-3 text-xs font-black"
+        >
+          {d.back}
+        </button>
       </div>
     )
   }

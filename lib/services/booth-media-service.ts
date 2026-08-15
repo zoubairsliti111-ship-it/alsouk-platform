@@ -79,8 +79,7 @@ export async function getMediaForBooth(boothId: string): Promise<ExhibitionMedia
     }))
   } catch (err) {
     console.warn(`[exhibitions-service] getMediaForBooth error:`, err)
-    const list = getMockMedia()[boothId] || []
-    return list.sort((a, b) => a.sortOrder - b.sortOrder)
+    return []
   }
 }
 
@@ -384,8 +383,7 @@ export async function getDocumentsForBooth(boothId: string): Promise<ExhibitionD
     return rows.map(mapExhibitionDocument)
   } catch (err) {
     console.warn(`[exhibitions-service] getDocumentsForBooth error:`, err)
-    const list = getMockDocs()[boothId] || []
-    return list.sort((a, b) => a.sortOrder - b.sortOrder)
+    return []
   }
 }
 
