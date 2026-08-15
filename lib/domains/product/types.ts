@@ -22,7 +22,7 @@ export interface Product {
   description: string | null
   price: number | null
   currency: string
-  minOrderQuantity: number
+  minOrderQuantity: number | null
   unit: string | null
   stockQuantity: number | null
   isActive: boolean
@@ -38,7 +38,7 @@ export interface ProductSummary {
   slug: string
   price: number | null
   currency: string
-  minOrderQuantity: number
+  minOrderQuantity: number | null
   unit: string | null
   primaryImage: ProductImage | null
 }

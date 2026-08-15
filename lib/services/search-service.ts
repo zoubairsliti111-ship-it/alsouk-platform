@@ -61,11 +61,33 @@ async function searchSuppliers(pattern: string, limit: number): Promise<Supplier
   try {
     const rows = await restGet<SupplierRow>(
       `${SUPPLIERS_TABLE}?select=${SUPPLIER_COLUMNS}` +
-        `&company_name=ilike.${pattern}&order=rating.desc&limit=${limit}`,
+        `&name=ilike.${pattern}&order=created_at.desc&limit=${limit}`,
     )
+    await attachProductCounts(rows)
     return rows.map(mapRow).filter((s): s is Supplier => s !== null)
   } catch {
     return []
+  }
+}
+
+/**
+ * Mirrors the real product-count query in app/api/suppliers/route.ts so
+ * search results show an actual catalog size instead of silently defaulting
+ * to 0 (mapRow falls back to 0 when `products_count` was never set).
+ */
+async function attachProductCounts(rows: SupplierRow[]): Promise<void> {
+  const ids = rows.map((r) => r.id).filter(Boolean)
+  if (ids.length === 0) return
+  try {
+    const idsParam = ids.map((id) => `"${id}"`).join(",")
+    const productRows = await restGet<{ company_id: string }>(
+      `products?select=company_id&company_id=in.(${idsParam})&is_active=eq.true`,
+    )
+    const counts = new Map<string, number>()
+    for (const p of productRows) counts.set(p.company_id, (counts.get(p.company_id) ?? 0) + 1)
+    for (const row of rows) row.products_count = counts.get(row.id) ?? 0
+  } catch (err) {
+    console.error("[search] Failed to load supplier product counts:", err)
   }
 }
 

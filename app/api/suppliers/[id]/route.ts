@@ -47,7 +47,27 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       return NextResponse.json({ supplier: null, error: true, notFound: false }, { status: 502 })
     }
     const rows = (await res.json()) as SupplierRow[]
-    const supplier = rows[0] ? mapRow(rows[0]) : null
+    const row = rows[0]
+    if (!row) {
+      return NextResponse.json({ supplier: null, error: false, notFound: true }, { status: 404 })
+    }
+
+    // Mirror the list endpoint's real product-count query so the profile page
+    // doesn't fall back to a hardcoded 0 for suppliers that do have products.
+    try {
+      const countRes = await fetch(
+        `${url}/rest/v1/products?select=id&company_id=eq.${encodeURIComponent(row.id)}&is_active=eq.true`,
+        { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: "no-store" },
+      )
+      if (countRes.ok) {
+        const productRows = (await countRes.json()) as { id: string }[]
+        row.products_count = productRows.length
+      }
+    } catch (err) {
+      console.error("[api/suppliers/[id]] Failed to load product count:", err)
+    }
+
+    const supplier = mapRow(row)
     if (!supplier) {
       return NextResponse.json({ supplier: null, error: false, notFound: true }, { status: 404 })
     }

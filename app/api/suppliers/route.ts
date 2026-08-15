@@ -80,7 +80,7 @@ export async function GET(request: Request) {
   const sortParam = searchParams.get("sort")
   const sort: SupplierSort = SUPPLIER_SORTS.includes(sortParam as SupplierSort)
     ? (sortParam as SupplierSort)
-    : "rating"
+    : "newest"
   const limitParam = Number.parseInt(searchParams.get("limit") ?? "", 10)
   const limit = Number.isFinite(limitParam) && limitParam > 0 ? limitParam : undefined
 

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { BadgeCheck, MapPin, MessageSquare, Package, Star, TrendingUp } from "lucide-react"
+import { BadgeCheck, MapPin, MessageSquare, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
@@ -53,18 +53,6 @@ export function SupplierCard({ supplier }: { supplier: Supplier }) {
               {t.cities[supplier.cityKey] ?? supplier.cityKey}, {t.countries[supplier.country] ?? supplier.country}
             </span>
           </div>
-
-          <div className="mt-1.5 flex items-center gap-1.5">
-            <div className="flex items-center gap-0.5 text-amber-500" aria-hidden="true">
-              <Star className="size-4 fill-current" />
-            </div>
-            <span className="text-sm font-semibold text-card-foreground">
-              {supplier.rating.toFixed(1)}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              ({supplier.reviews} {t.card.reviews})
-            </span>
-          </div>
         </div>
       </div>
 
@@ -80,21 +68,19 @@ export function SupplierCard({ supplier }: { supplier: Supplier }) {
         ))}
       </div>
 
-      {/* Stats */}
-      <div className="mt-4 grid grid-cols-3 divide-x divide-border border-y border-border bg-secondary/40 text-center rtl:divide-x-reverse">
+      {/* Stats. Response rate has no real data source anywhere in the schema,
+          so it's omitted here rather than shown as a fabricated "0%". */}
+      <div className="mt-4 grid grid-cols-2 divide-x divide-border border-y border-border bg-secondary/40 text-center rtl:divide-x-reverse">
         <div className="flex flex-col items-center gap-0.5 px-2 py-3">
           <Package className="size-4 text-primary" aria-hidden="true" />
           <span className="text-sm font-bold text-card-foreground">{supplier.products}</span>
           <span className="text-[11px] text-muted-foreground">{t.card.products}</span>
         </div>
         <div className="flex flex-col items-center gap-0.5 px-2 py-3">
-          <span className="text-sm font-bold text-card-foreground">{supplier.years}</span>
+          <span className="text-sm font-bold text-card-foreground">
+            {supplier.yearEstablished !== null ? supplier.years : "—"}
+          </span>
           <span className="text-[11px] text-muted-foreground">{t.card.yearsInBusiness}</span>
-        </div>
-        <div className="flex flex-col items-center gap-0.5 px-2 py-3">
-          <TrendingUp className="size-4 text-accent" aria-hidden="true" />
-          <span className="text-sm font-bold text-card-foreground">{supplier.responseRate}%</span>
-          <span className="text-[11px] text-muted-foreground">{t.card.responseRate}</span>
         </div>
       </div>
 
@@ -113,9 +99,6 @@ export function SupplierCard({ supplier }: { supplier: Supplier }) {
             </span>
           ))}
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">
-          {t.card.moqFrom} <span className="font-semibold text-card-foreground">{supplier.minMoq}</span>
-        </p>
       </div>
 
       {/* Actions */}

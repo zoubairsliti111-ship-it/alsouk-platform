@@ -53,8 +53,7 @@ type Dict = {
     title: string
     subtitle: string
     viewAll: string
-    suppliersLabel: string
-    items: { name: string; count: string }[]
+    items: { name: string }[]
   }
   suppliers: {
     title: string
@@ -284,7 +283,6 @@ type Dict = {
     activitySubtitle: string
     isLiveNow: string
     hasScheduled: string
-    liveComingSoon: string
     listed: string
     joined: string
     requested: string
@@ -545,16 +543,15 @@ export const translations: Record<Lang, Dict> = {
       title: "Explore Categories",
       subtitle: "Browse thousands of verified products across leading industries",
       viewAll: "View all categories",
-      suppliersLabel: "suppliers",
       items: [
-        { name: "Food & Agriculture", count: "3,200+" },
-        { name: "Textiles & Apparel", count: "2,800+" },
-        { name: "Industrial Machinery", count: "1,500+" },
-        { name: "Construction & Building", count: "1,900+" },
-        { name: "Handicrafts & Ceramics", count: "1,100+" },
-        { name: "Cosmetics & Health", count: "950+" },
-        { name: "Leather & Footwear", count: "1,300+" },
-        { name: "Chemicals & Plastics", count: "720+" },
+        { name: "Food & Agriculture" },
+        { name: "Textiles & Apparel" },
+        { name: "Industrial Machinery" },
+        { name: "Construction & Building" },
+        { name: "Handicrafts & Ceramics" },
+        { name: "Cosmetics & Health" },
+        { name: "Leather & Footwear" },
+        { name: "Chemicals & Plastics" },
       ],
     },
     suppliers: {
@@ -805,7 +802,6 @@ export const translations: Record<Lang, Dict> = {
       activitySubtitle: "Verified suppliers and buyers trading across the region right now.",
       isLiveNow: "is live now",
       hasScheduled: "has scheduled a live session",
-      liveComingSoon: "Live streaming isn't available yet — we're building it. Stay tuned.",
       listed: "listed new products",
       joined: "is now a verified supplier",
       requested: "posted a new buying request",
@@ -1078,16 +1074,15 @@ export const translations: Record<Lang, Dict> = {
       title: "Explorer les catégories",
       subtitle: "Parcourez des milliers de produits vérifiés dans les principales industries",
       viewAll: "Voir toutes les catégories",
-      suppliersLabel: "fournisseurs",
       items: [
-        { name: "Alimentation & Agriculture", count: "3 200+" },
-        { name: "Textiles & Habillement", count: "2 800+" },
-        { name: "Machines industrielles", count: "1 500+" },
-        { name: "Construction & Bâtiment", count: "1 900+" },
-        { name: "Artisanat & Céramique", count: "1 100+" },
-        { name: "Cosmétiques & Santé", count: "950+" },
-        { name: "Cuir & Chaussures", count: "1 300+" },
-        { name: "Chimie & Plastiques", count: "720+" },
+        { name: "Alimentation & Agriculture" },
+        { name: "Textiles & Habillement" },
+        { name: "Machines industrielles" },
+        { name: "Construction & Bâtiment" },
+        { name: "Artisanat & Céramique" },
+        { name: "Cosmétiques & Santé" },
+        { name: "Cuir & Chaussures" },
+        { name: "Chimie & Plastiques" },
       ],
     },
     suppliers: {
@@ -1338,7 +1333,6 @@ export const translations: Record<Lang, Dict> = {
       activitySubtitle: "Fournisseurs vérifiés et acheteurs qui commercent dans la région en ce moment.",
       isLiveNow: "est en direct",
       hasScheduled: "a programmé une session en direct",
-      liveComingSoon: "La diffusion en direct n'est pas encore disponible — nous la préparons. Restez à l'écoute.",
       listed: "a publié de nouveaux produits",
       joined: "est désormais un fournisseur vérifié",
       requested: "a publié une nouvelle demande d'achat",
@@ -1611,16 +1605,15 @@ export const translations: Record<Lang, Dict> = {
       title: "استكشف الفئات",
       subtitle: "تصفّح آلاف المنتجات الموثّقة في أبرز الصناعات",
       viewAll: "عرض كل الفئات",
-      suppliersLabel: "مورّد",
       items: [
-        { name: "الأغذية والزراعة", count: "+3,200" },
-        { name: "المنسوجات والملابس", count: "+2,800" },
-        { name: "الآلات الصناعية", count: "+1,500" },
-        { name: "البناء والتشييد", count: "+1,900" },
-        { name: "الحرف والخزف", count: "+1,100" },
-        { name: "مستحضرات التجميل والصحة", count: "+950" },
-        { name: "الجلود والأحذية", count: "+1,300" },
-        { name: "الكيماويات والبلاستيك", count: "+720" },
+        { name: "الأغذية والزراعة" },
+        { name: "المنسوجات والملابس" },
+        { name: "الآلات الصناعية" },
+        { name: "البناء والتشييد" },
+        { name: "الحرف والخزف" },
+        { name: "مستحضرات التجميل والصحة" },
+        { name: "الجلود والأحذية" },
+        { name: "الكيماويات والبلاستيك" },
       ],
     },
     suppliers: {
@@ -1871,7 +1864,6 @@ export const translations: Record<Lang, Dict> = {
       activitySubtitle: "موردون موثّقون ومشترون يتاجرون في المنطقة الآن.",
       isLiveNow: "يبثّ مباشرة الآن",
       hasScheduled: "جدول جلسة بث مباشر",
-      liveComingSoon: "البث المباشر غير متاح بعد — نحن نعمل عليه. ترقّبوا الجديد.",
       listed: "أضاف منتجات جديدة",
       joined: "أصبح الآن مورّداً موثّقاً",
       requested: "نشر طلب شراء جديد",

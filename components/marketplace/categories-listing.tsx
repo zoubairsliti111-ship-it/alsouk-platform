@@ -109,7 +109,6 @@ export function CategoriesListing() {
                 href="/products"
                 image={CATEGORY_IMAGES[i % CATEGORY_IMAGES.length] ?? CATEGORY_IMAGES[0]}
                 name={cat.name}
-                meta={`${cat.count} ${t.categories.suppliersLabel}`}
               />
             ))}
           </div>

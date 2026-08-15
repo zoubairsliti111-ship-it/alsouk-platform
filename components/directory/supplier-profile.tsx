@@ -22,7 +22,6 @@ import {
   ShieldCheck,
   Star,
   Store,
-  TrendingUp,
 } from "lucide-react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
@@ -256,11 +255,6 @@ export function SupplierProfile({ id }: { id: string }) {
                   <MapPin className="size-4 text-primary" />
                   {t.cities[s.cityKey] ?? s.cityKey}, {t.countries[s.country] ?? s.country}
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Star className="size-4 fill-amber-500 text-amber-500" />
-                  <span className="font-semibold text-foreground">{s.rating.toFixed(1)}</span>({s.reviews}{" "}
-                  {p.reviews})
-                </span>
               </div>
             </div>
 
@@ -283,12 +277,17 @@ export function SupplierProfile({ id }: { id: string }) {
             ))}
           </div>
 
-          {/* Quick stats */}
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
+          {/* Quick stats. Response rate and minimum order quantity are omitted
+              here (and from the sidebar below) because the platform doesn't
+              collect that data yet — showing "0%"/"0" for every supplier would
+              look like a real measurement when it isn't one. */}
+          <div className="mt-6 grid grid-cols-3 gap-3">
             <Stat icon={<Package className="size-4 text-primary" />} value={String(s.products)} label={p.products} />
-            <Stat icon={<TrendingUp className="size-4 text-accent" />} value={`${s.responseRate}%`} label={p.responseRate} />
-            <Stat icon={<CalendarClock className="size-4 text-primary" />} value={String(s.years)} label={p.yearsInBusiness} />
-            <Stat icon={<Boxes className="size-4 text-accent" />} value={s.minMoq.toLocaleString()} label={p.moq} />
+            <Stat
+              icon={<CalendarClock className="size-4 text-primary" />}
+              value={s.yearEstablished !== null ? String(s.years) : "—"}
+              label={p.yearsInBusiness}
+            />
             <Stat icon={<Eye className="size-4 text-primary" />} value={String(s.profileViews)} label="Views" />
           </div>
         </div>
@@ -406,23 +405,10 @@ export function SupplierProfile({ id }: { id: string }) {
           </Card>
 
           <Card title={p.reviewsTitle} icon={<Star className="size-4" />}>
-            <div className="flex items-center gap-4 rounded-xl bg-secondary/40 p-4">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-foreground">{s.rating.toFixed(1)}</p>
-                <div className="mt-1 flex items-center justify-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`size-3.5 ${
-                        i < Math.round(s.rating) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/40"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground">{p.reviewsSummary(s.reviews)}</p>
-            </div>
-            <p className="mt-3 text-sm text-muted-foreground">{p.reviewsEmpty}</p>
+            {/* No review/rating system exists yet — there is no data source
+                for a star rating or review count, so this stays an honest
+                empty state rather than a fabricated "0.0" rating. */}
+            <EmptyState icon={<Star className="size-5" />} text={p.reviewsEmpty} />
           </Card>
         </div>
 
@@ -430,11 +416,11 @@ export function SupplierProfile({ id }: { id: string }) {
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <Card title={p.commercialTerms} icon={<Boxes className="size-4" />}>
             <dl className="divide-y divide-border text-sm">
-              <Row label={p.moq} value={`${s.minMoq.toLocaleString()} ${p.moqUnit}`} />
-              <Row label={p.responseRate} value={`${s.responseRate}%`} />
-              <Row label={p.rating} value={`${s.rating.toFixed(1)} / 5`} />
               <Row label={p.businessType} value={s.businessTypes.map((bt) => t.businessTypes[bt]).join(", ")} />
-              <Row label={p.yearsInBusiness} value={String(s.years)} />
+              <Row
+                label={p.yearsInBusiness}
+                value={s.yearEstablished !== null ? String(s.years) : p.notAvailable}
+              />
             </dl>
           </Card>
 

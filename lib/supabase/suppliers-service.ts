@@ -13,8 +13,8 @@ import { directoryT } from "@/lib/directory-i18n"
 import { SITE_URL } from "@/lib/site"
 import { safeExternalStoreUrl } from "@/lib/external-store"
 
-export type SupplierSort = "rating" | "products" | "years"
-export const SUPPLIER_SORTS: SupplierSort[] = ["rating", "products", "years"]
+export type SupplierSort = "newest" | "products" | "years"
+export const SUPPLIER_SORTS: SupplierSort[] = ["newest", "products", "years"]
 
 const EN = directoryT.en
 function buildReverse(map: Record<string, string>): Record<string, string> {
@@ -71,7 +71,7 @@ export const SUPPLIER_COLUMNS =
   "id,owner_id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views,external_store_url"
 
 export const SORT_COLUMNS: Record<SupplierSort, string> = {
-  rating: "created_at",
+  newest: "created_at",
   products: "created_at",
   years: "year_established",
 }
@@ -91,10 +91,8 @@ export function mapRow(row: SupplierRow): Supplier | null {
 
   const country = resolveCountry(row.country) ?? "tn"
   const currentYear = new Date().getFullYear()
-  const years =
-    row.year_established && row.year_established > 1800
-      ? Math.max(0, currentYear - row.year_established)
-      : 0
+  const yearEstablished = row.year_established && row.year_established > 1800 ? row.year_established : null
+  const years = yearEstablished !== null ? Math.max(0, currentYear - yearEstablished) : 0
 
   return {
     id: row.id,
@@ -106,12 +104,9 @@ export function mapRow(row: SupplierRow): Supplier | null {
     cityKey: resolveCityKey(row.city),
     region: "capital" as RegionKey,
     verified: Boolean(row.verified),
-    rating: 0,
-    reviews: 0,
     products: row.products_count ?? 0,
     years,
-    responseRate: 0,
-    minMoq: 0,
+    yearEstablished,
     businessTypes: (row.business_type ? [row.business_type] : []) as BusinessTypeKey[],
     categories: (row.primary_industry ? [row.primary_industry] : []) as CategoryKey[],
     description: row.description?.trim() || row.tagline?.trim() || null,

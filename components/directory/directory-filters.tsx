@@ -7,13 +7,11 @@ import {
   BUSINESS_TYPE_KEYS,
   CATEGORY_KEYS,
   COUNTRY_KEYS,
-  MOQ_TIERS,
   REGION_KEYS,
   YEARS_TIERS,
   type BusinessTypeKey,
   type CategoryKey,
   type CountryKey,
-  type MoqTier,
   type RegionKey,
   type YearsTier,
 } from "@/lib/directory-data"
@@ -24,7 +22,6 @@ export type FilterState = {
   categories: CategoryKey[]
   businessTypes: BusinessTypeKey[]
   verifiedOnly: boolean
-  moq: MoqTier
   years: YearsTier
 }
 
@@ -34,7 +31,6 @@ export const emptyFilters: FilterState = {
   categories: [],
   businessTypes: [],
   verifiedOnly: false,
-  moq: "any",
   years: "any",
 }
 
@@ -88,7 +84,6 @@ export function DirectoryFilters({
     filters.businessTypes.length > 0 ||
     filters.region !== "any" ||
     filters.verifiedOnly ||
-    filters.moq !== "any" ||
     filters.years !== "any"
 
   return (
@@ -187,21 +182,6 @@ export function DirectoryFilters({
             />
           ))}
         </div>
-      </Section>
-
-      {/* MOQ */}
-      <Section title={t.filters.moq}>
-        <select
-          value={filters.moq}
-          onChange={(e) => setFilters((p) => ({ ...p, moq: e.target.value as MoqTier }))}
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-        >
-          {MOQ_TIERS.map((m) => (
-            <option key={m} value={m}>
-              {t.moqTiers[m]}
-            </option>
-          ))}
-        </select>
       </Section>
 
       {/* Years */}
