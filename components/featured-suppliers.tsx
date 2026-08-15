@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useState } from "react"
-import { ArrowRight, BadgeCheck, MapPin, Star } from "lucide-react"
+import { ArrowRight, BadgeCheck, MapPin, Package } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
 import { directoryT } from "@/lib/directory-i18n"
@@ -22,7 +22,7 @@ export function FeaturedSuppliers() {
 
   useEffect(() => {
     let active = true
-    fetchSuppliers({ sort: "rating", limit: FEATURED_LIMIT }).then((res) => {
+    fetchSuppliers({ sort: "newest", limit: FEATURED_LIMIT }).then((res) => {
       if (!active) return
       setItems(res.suppliers ?? [])
       setLoading(false)
@@ -96,15 +96,12 @@ export function FeaturedSuppliers() {
                       </span>
                     </p>
 
-                    {/* Stats & Rating */}
-                    <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2 text-xs">
-                      <div className="flex items-center gap-0.5 font-bold text-foreground">
-                        <Star className="size-3.5 fill-amber-400 text-amber-400" />
-                        <span>{s.rating}</span>
-                      </div>
-                      <span className="text-[10px] font-semibold text-muted-foreground">
-                        {s.reviews} reviews
-                      </span>
+                    {/* Real product count. No rating/review system exists yet,
+                        so this stays grounded in an actual number instead of
+                        a fabricated star rating. */}
+                    <div className="mt-3 flex items-center gap-1 border-t border-border/40 pt-2 text-xs font-bold text-foreground">
+                      <Package className="size-3.5 text-primary" />
+                      <span>{dt.card.products}: {s.products}</span>
                     </div>
 
                     {/* Visit Store Button */}

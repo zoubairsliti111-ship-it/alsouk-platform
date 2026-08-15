@@ -9,9 +9,9 @@ import { directoryT } from "@/lib/directory-i18n"
 import { DirectoryFilters, emptyFilters, type FilterState } from "@/components/directory/directory-filters"
 import { SupplierCard } from "@/components/directory/supplier-card"
 import { fetchSuppliers } from "@/lib/supabase/suppliers-service"
-import { matchesMoq, matchesYears, type Supplier } from "@/lib/directory-data"
+import { matchesYears, type Supplier } from "@/lib/directory-data"
 
-type SortKey = "relevance" | "rating" | "products" | "years"
+type SortKey = "relevance" | "newest" | "products" | "years"
 type Status = "loading" | "ready" | "error"
 
 const PAGE_SIZE = 9
@@ -63,8 +63,7 @@ export function SuppliersDirectory() {
         !filters.businessTypes.some((b) => s.businessTypes.includes(b))
       )
         return false
-      if (!matchesMoq(filters.moq, s.minMoq)) return false
-      if (!matchesYears(filters.years, s.years)) return false
+      if (!matchesYears(filters.years, s.yearEstablished)) return false
 
       if (q) {
         const haystack = [
@@ -80,10 +79,12 @@ export function SuppliersDirectory() {
     })
 
     const sorted = [...result]
-    if (sort === "rating") sorted.sort((a, b) => b.rating - a.rating)
-    else if (sort === "products") sorted.sort((a, b) => b.products - a.products)
+    if (sort === "newest") {
+      // No-op: suppliersData already comes back newest-first from the API
+      // (SORT_COLUMNS.newest = created_at desc), and filter() preserves order.
+    } else if (sort === "products") sorted.sort((a, b) => b.products - a.products)
     else if (sort === "years") sorted.sort((a, b) => b.years - a.years)
-    else sorted.sort((a, b) => Number(b.verified) - Number(a.verified) || b.rating - a.rating)
+    else sorted.sort((a, b) => Number(b.verified) - Number(a.verified) || b.products - a.products)
 
     return sorted
   }, [query, filters, sort, t, suppliersData])
@@ -193,7 +194,7 @@ export function SuppliersDirectory() {
                   className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 >
                   <option value="relevance">{t.sort.relevance}</option>
-                  <option value="rating">{t.sort.rating}</option>
+                  <option value="newest">{t.sort.newest}</option>
                   <option value="products">{t.sort.products}</option>
                   <option value="years">{t.sort.years}</option>
                 </select>

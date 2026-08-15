@@ -102,17 +102,12 @@ export type Supplier = {
   cityKey: string
   region: RegionKey
   verified: boolean
-  rating: number
-  reviews: number
   products: number
   years: number
   /** Raw founding year, or null when the company hasn't set one. Kept alongside
    *  the derived `years` count so callers can tell "founded this year" (0) apart
    *  from "unknown" (null) instead of both collapsing to the same 0. */
   yearEstablished: number | null
-  responseRate: number
-  /** smallest minimum order quantity offered, used for MOQ filtering */
-  minMoq: number
   businessTypes: BusinessTypeKey[]
   categories: CategoryKey[]
   /** Long-form company description shown on the profile page. */
@@ -150,28 +145,17 @@ export const BUSINESS_TYPE_KEYS: BusinessTypeKey[] = [
   "wholesaler",
 ]
 
-export type MoqTier = "any" | "lt100" | "100to500" | "500to1000" | "gt1000"
-export const MOQ_TIERS: MoqTier[] = ["any", "lt100", "100to500", "500to1000", "gt1000"]
-
-export function matchesMoq(tier: MoqTier, minMoq: number): boolean {
-  switch (tier) {
-    case "lt100":
-      return minMoq < 100
-    case "100to500":
-      return minMoq >= 100 && minMoq <= 500
-    case "500to1000":
-      return minMoq > 500 && minMoq <= 1000
-    case "gt1000":
-      return minMoq > 1000
-    default:
-      return true
-  }
-}
-
 export type YearsTier = "any" | "1to3" | "3to5" | "5to10" | "gt10"
 export const YEARS_TIERS: YearsTier[] = ["any", "1to3", "3to5", "5to10", "gt10"]
 
-export function matchesYears(tier: YearsTier, years: number): boolean {
+/**
+ * `yearEstablished` is null when the company never set a founding year — in
+ * that case only "any" matches, since we have no real data to bucket it by.
+ */
+export function matchesYears(tier: YearsTier, yearEstablished: number | null): boolean {
+  if (tier === "any") return true
+  if (yearEstablished === null) return false
+  const years = Math.max(0, new Date().getFullYear() - yearEstablished)
   switch (tier) {
     case "1to3":
       return years >= 1 && years <= 3

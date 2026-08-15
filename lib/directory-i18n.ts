@@ -3,7 +3,6 @@ import type {
   BusinessTypeKey,
   CategoryKey,
   CountryKey,
-  MoqTier,
   RegionKey,
   YearsTier,
 } from "@/lib/directory-data"
@@ -34,7 +33,6 @@ type DirectoryDict = {
     businessType: string
     verified: string
     verifiedOnly: string
-    moq: string
     years: string
     showFilters: string
     hideFilters: string
@@ -43,7 +41,7 @@ type DirectoryDict = {
   sort: {
     label: string
     relevance: string
-    rating: string
+    newest: string
     products: string
     years: string
   }
@@ -53,15 +51,11 @@ type DirectoryDict = {
   }
   card: {
     verified: string
-    rating: string
-    reviews: string
     products: string
     yearsInBusiness: string
-    responseRate: string
     mainCategories: string
     contact: string
     quote: string
-    moqFrom: string
   }
   empty: {
     title: string
@@ -84,7 +78,6 @@ type DirectoryDict = {
   categories: Record<CategoryKey, string>
   businessTypes: Record<BusinessTypeKey, string>
   cities: Record<string, string>
-  moqTiers: Record<MoqTier, string>
   yearsTiers: Record<YearsTier, string>
   anyOption: string
   profile: {
@@ -102,11 +95,6 @@ type DirectoryDict = {
     certifications: string
     certificationsEmpty: string
     commercialTerms: string
-    moq: string
-    moqUnit: string
-    responseRate: string
-    rating: string
-    reviews: string
     businessType: string
     yearsInBusiness: string
     notAvailable: string
@@ -133,7 +121,6 @@ type DirectoryDict = {
     visitExternalStore: string
     reviewsTitle: string
     reviewsEmpty: string
-    reviewsSummary: (n: number) => string
     social: {
       followers: string
       following: string
@@ -277,7 +264,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       businessType: "Business type",
       verified: "Verification",
       verifiedOnly: "Verified suppliers only",
-      moq: "Minimum order quantity",
       years: "Years in business",
       showFilters: "Show filters",
       hideFilters: "Hide filters",
@@ -286,7 +272,7 @@ export const directoryT: Record<Lang, DirectoryDict> = {
     sort: {
       label: "Sort by",
       relevance: "Relevance",
-      rating: "Highest rated",
+      newest: "Newest",
       products: "Most products",
       years: "Most experienced",
     },
@@ -296,15 +282,11 @@ export const directoryT: Record<Lang, DirectoryDict> = {
     },
     card: {
       verified: "Verified",
-      rating: "Rating",
-      reviews: "reviews",
       products: "Products",
       yearsInBusiness: "Years",
-      responseRate: "Response",
       mainCategories: "Main categories",
       contact: "Contact",
       quote: "Request quotation",
-      moqFrom: "MOQ from",
     },
     empty: {
       title: "No suppliers match your filters",
@@ -368,13 +350,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       tripoli: "Tripoli",
       benghazi: "Benghazi",
     },
-    moqTiers: {
-      any: "Any quantity",
-      lt100: "Under 100 units",
-      "100to500": "100 – 500 units",
-      "500to1000": "500 – 1,000 units",
-      gt1000: "Over 1,000 units",
-    },
     yearsTiers: {
       any: "Any experience",
       "1to3": "1 – 3 years",
@@ -398,11 +373,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       certifications: "Certifications",
       certificationsEmpty: "No certifications have been listed yet.",
       commercialTerms: "Commercial terms",
-      moq: "Minimum order",
-      moqUnit: "units",
-      responseRate: "Response rate",
-      rating: "Rating",
-      reviews: "reviews",
       businessType: "Business type",
       yearsInBusiness: "Years in business",
       notAvailable: "Not specified",
@@ -429,7 +399,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       visitExternalStore: "Visit External Store",
       reviewsTitle: "Buyer reviews",
       reviewsEmpty: "No written reviews yet. Be the first to work with this supplier.",
-      reviewsSummary: (n) => `Based on ${n} buyer rating${n === 1 ? "" : "s"}`,
       social: {
         followers: "Followers",
         following: "Following",
@@ -571,7 +540,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       businessType: "Type d'entreprise",
       verified: "Vérification",
       verifiedOnly: "Fournisseurs vérifiés uniquement",
-      moq: "Quantité minimale de commande",
       years: "Années d'activité",
       showFilters: "Afficher les filtres",
       hideFilters: "Masquer les filtres",
@@ -580,7 +548,7 @@ export const directoryT: Record<Lang, DirectoryDict> = {
     sort: {
       label: "Trier par",
       relevance: "Pertinence",
-      rating: "Mieux notés",
+      newest: "Plus récents",
       products: "Plus de produits",
       years: "Plus expérimentés",
     },
@@ -590,15 +558,11 @@ export const directoryT: Record<Lang, DirectoryDict> = {
     },
     card: {
       verified: "Vérifié",
-      rating: "Note",
-      reviews: "avis",
       products: "Produits",
       yearsInBusiness: "Années",
-      responseRate: "Réponse",
       mainCategories: "Catégories principales",
       contact: "Contacter",
       quote: "Demander un devis",
-      moqFrom: "Qté min. dès",
     },
     empty: {
       title: "Aucun fournisseur ne correspond à vos filtres",
@@ -662,13 +626,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       tripoli: "Tripoli",
       benghazi: "Benghazi",
     },
-    moqTiers: {
-      any: "Toute quantité",
-      lt100: "Moins de 100 unités",
-      "100to500": "100 – 500 unités",
-      "500to1000": "500 – 1 000 unités",
-      gt1000: "Plus de 1 000 unités",
-    },
     yearsTiers: {
       any: "Toute expérience",
       "1to3": "1 – 3 ans",
@@ -692,11 +649,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       certifications: "Certifications",
       certificationsEmpty: "Aucune certification n'a encore été renseignée.",
       commercialTerms: "Conditions commerciales",
-      moq: "Commande minimale",
-      moqUnit: "unités",
-      responseRate: "Taux de réponse",
-      rating: "Note",
-      reviews: "avis",
       businessType: "Type d'entreprise",
       yearsInBusiness: "Années d'activité",
       notAvailable: "Non spécifié",
@@ -720,7 +672,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       visitExternalStore: "Visiter la boutique externe",
       reviewsTitle: "Avis des acheteurs",
       reviewsEmpty: "Aucun avis écrit pour le moment. Soyez le premier à travailler avec ce fournisseur.",
-      reviewsSummary: (n) => `Basé sur ${n} évaluation${n === 1 ? "" : "s"} d'acheteurs`,
       errorTitle: "Impossible de charger ce fournisseur",
       errorSubtitle: "Nous n'avons pas pu joindre la base de données des fournisseurs. Veuillez réessayer dans un instant.",
       retry: "Réessayer",
@@ -865,7 +816,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       businessType: "نوع النشاط",
       verified: "التوثيق",
       verifiedOnly: "الموردون الموثّقون فقط",
-      moq: "الحد الأدنى للطلب",
       years: "سنوات النشاط",
       showFilters: "إظهار عوامل التصفية",
       hideFilters: "إخفاء عوامل التصفية",
@@ -874,7 +824,7 @@ export const directoryT: Record<Lang, DirectoryDict> = {
     sort: {
       label: "ترتيب حسب",
       relevance: "الصلة",
-      rating: "الأعلى تقييماً",
+      newest: "الأحدث",
       products: "الأكثر منتجات",
       years: "الأكثر خبرة",
     },
@@ -884,15 +834,11 @@ export const directoryT: Record<Lang, DirectoryDict> = {
     },
     card: {
       verified: "موثّق",
-      rating: "التقييم",
-      reviews: "مراجعة",
       products: "منتج",
       yearsInBusiness: "سنة",
-      responseRate: "الرد",
       mainCategories: "الفئات الرئيسية",
       contact: "تواصل",
       quote: "طلب عرض سعر",
-      moqFrom: "الحد الأدنى من",
     },
     empty: {
       title: "لا يوجد موردون يطابقون عوامل التصفية",
@@ -956,13 +902,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       tripoli: "طرابلس",
       benghazi: "بنغازي",
     },
-    moqTiers: {
-      any: "أي كمية",
-      lt100: "أقل من 100 وحدة",
-      "100to500": "100 – 500 وحدة",
-      "500to1000": "500 – 1,000 وحدة",
-      gt1000: "أكثر من 1,000 وحدة",
-    },
     yearsTiers: {
       any: "أي خبرة",
       "1to3": "1 – 3 سنوات",
@@ -986,11 +925,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       certifications: "الشهادات",
       certificationsEmpty: "لم يتم إدراج أي شهادات بعد.",
       commercialTerms: "الشروط التجارية",
-      moq: "الحد الأدنى للطلب",
-      moqUnit: "وحدة",
-      responseRate: "معدل الرد",
-      rating: "التقييم",
-      reviews: "مراجعة",
       businessType: "نوع النشاط",
       yearsInBusiness: "سنوات النشاط",
       notAvailable: "غير محدد",
@@ -1014,7 +948,6 @@ export const directoryT: Record<Lang, DirectoryDict> = {
       visitExternalStore: "زيارة المتجر الخارجي",
       reviewsTitle: "تقييمات المشترين",
       reviewsEmpty: "لا توجد مراجعات مكتوبة بعد. كن أول من يتعامل مع هذا المورّد.",
-      reviewsSummary: (n) => `بناءً على ${n} تقييم من المشترين`,
       errorTitle: "تعذّر تحميل هذا المورّد",
       errorSubtitle: "تعذّر الوصول إلى قاعدة بيانات الموردين. يُرجى المحاولة مرة أخرى بعد قليل.",
       retry: "إعادة المحاولة",
