@@ -49,6 +49,16 @@ export type Company = {
   postalCode: string | null
   streetAddress: string | null
 
+  // Public visibility, per field — whether this piece of contact/marketing
+  // info shows on the public profile page (see companies_public view).
+  // Independent of whether the field itself has a value.
+  websiteVisible: boolean
+  socialVisible: boolean
+  phoneVisible: boolean
+  whatsappVisible: boolean
+  addressVisible: boolean
+  companySizeVisible: boolean
+
   // Business classification
   businessType: string | null
   primaryIndustry: string | null
@@ -118,6 +128,18 @@ export type Supplier = {
   coverPhotoUrl: string | null
   /** The merchant's own online store hosted outside ALSOUK, when set. */
   externalStoreUrl: string | null
+  /** Already null unless the owner opted in — see companies_public view. */
+  websiteUrl: string | null
+  facebookUrl: string | null
+  instagramUrl: string | null
+  tiktokUrl: string | null
+  linkedinUrl: string | null
+  youtubeUrl: string | null
+  phoneNumber: string | null
+  whatsappNumber: string | null
+  streetAddress: string | null
+  postalCode: string | null
+  companySize: string | null
 }
 
 /**

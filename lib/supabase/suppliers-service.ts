@@ -45,7 +45,12 @@ export type SuppliersResult = {
   error: boolean
 }
 
-export const SUPPLIERS_TABLE = "companies"
+// companies_public, not the raw companies table — companies has ~55 columns
+// including tax_identifier/license_document_url/business_email that were
+// never meant to be public, and per-field opt-in visibility (website/
+// social/phone/whatsapp/address/company_size) can only be enforced by a
+// view (RLS is row-level, not column-level — see migration 0046).
+export const SUPPLIERS_TABLE = "companies_public"
 
 export type SupplierRow = {
   id: string
@@ -63,12 +68,24 @@ export type SupplierRow = {
   created_at: string
   profile_views: number | null
   external_store_url: string | null
+  website_url: string | null
+  facebook_url: string | null
+  instagram_url: string | null
+  tiktok_url: string | null
+  linkedin_url: string | null
+  youtube_url: string | null
+  phone_number: string | null
+  whatsapp_number: string | null
+  street_address: string | null
+  postal_code: string | null
+  company_size: string | null
   products_count?: number
   cover_photo_url?: string | null
 }
 
 export const SUPPLIER_COLUMNS =
-  "id,owner_id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views,external_store_url"
+  "id,owner_id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views,external_store_url," +
+  "website_url,facebook_url,instagram_url,tiktok_url,linkedin_url,youtube_url,phone_number,whatsapp_number,street_address,postal_code,company_size"
 
 export const SORT_COLUMNS: Record<SupplierSort, string> = {
   newest: "created_at",
@@ -114,6 +131,17 @@ export function mapRow(row: SupplierRow): Supplier | null {
     profileViews: Number(row.profile_views) || 0,
     coverPhotoUrl: row.cover_photo_url?.trim() || null,
     externalStoreUrl: safeExternalStoreUrl(row.external_store_url),
+    websiteUrl: row.website_url?.trim() || null,
+    facebookUrl: row.facebook_url?.trim() || null,
+    instagramUrl: row.instagram_url?.trim() || null,
+    tiktokUrl: row.tiktok_url?.trim() || null,
+    linkedinUrl: row.linkedin_url?.trim() || null,
+    youtubeUrl: row.youtube_url?.trim() || null,
+    phoneNumber: row.phone_number?.trim() || null,
+    whatsappNumber: row.whatsapp_number?.trim() || null,
+    streetAddress: row.street_address?.trim() || null,
+    postalCode: row.postal_code?.trim() || null,
+    companySize: row.company_size?.trim() || null,
   }
 }
 

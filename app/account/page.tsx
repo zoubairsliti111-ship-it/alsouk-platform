@@ -64,7 +64,8 @@ import {
   Languages,
   BadgeAlert,
   Menu,
-  PhoneCall
+  PhoneCall,
+  EyeOff
 } from "lucide-react"
 
 // Predefined Tunisian/North African countries and cities matching directory-data
@@ -130,8 +131,12 @@ const localT = {
     descriptionLabel: "Description",
     businessEmailLabel: "Business Email",
     whatsappNumberLabel: "WhatsApp Number",
+    phoneNumberLabel: "Phone Number",
     externalStoreUrlLabel: "External Store Link",
     externalStoreUrlPlaceholder: "https://mystore.com",
+    visiblePublic: "Public",
+    visibleHidden: "Private",
+    visibilityHint: "Controls whether this appears on your public profile page.",
     externalStoreUrlHint: "Already selling on your own online store? Paste its address and buyers will see a \"Visit External Store\" link on your profile.",
     externalStoreUrlInvalid: "Enter a valid store address, for example https://mystore.com",
     activateSupplierSpace: "Complete Your Profile",
@@ -240,8 +245,12 @@ const localT = {
     descriptionLabel: "Description",
     businessEmailLabel: "E-mail professionnel",
     whatsappNumberLabel: "Numéro WhatsApp",
+    phoneNumberLabel: "Numéro de téléphone",
     externalStoreUrlLabel: "Lien de la boutique externe",
     externalStoreUrlPlaceholder: "https://maboutique.com",
+    visiblePublic: "Public",
+    visibleHidden: "Privé",
+    visibilityHint: "Contrôle si cette information apparaît sur votre profil public.",
     externalStoreUrlHint: "Vous vendez déjà sur votre propre boutique en ligne ? Collez son adresse et les acheteurs verront un lien « Visiter la boutique externe » sur votre profil.",
     externalStoreUrlInvalid: "Saisissez une adresse de boutique valide, par exemple https://maboutique.com",
     activateSupplierSpace: "Compléter votre profil",
@@ -350,8 +359,12 @@ const localT = {
     descriptionLabel: "الوصف",
     businessEmailLabel: "البريد الإلكتروني للأعمال",
     whatsappNumberLabel: "رقم واتساب",
+    phoneNumberLabel: "رقم الهاتف",
     externalStoreUrlLabel: "رابط المتجر الخارجي",
     externalStoreUrlPlaceholder: "https://mystore.com",
+    visiblePublic: "عام",
+    visibleHidden: "خاص",
+    visibilityHint: "يتحكم بظهور هالمعلومة بصفحة بروفايلك العامة.",
     externalStoreUrlHint: "هل تبيع بالفعل عبر متجرك الإلكتروني الخاص؟ الصق عنوانه وسيرى المشترون رابط «زيارة المتجر الخارجي» في ملفك.",
     externalStoreUrlInvalid: "أدخل عنوان متجر صالحًا، مثال https://mystore.com",
     activateSupplierSpace: "أكمل ملفك الشخصي",
@@ -446,6 +459,39 @@ const localT = {
     addBtn: "إضافة عنصر",
     noMedia: "لم يتم تحميل أي ملفات وسائط بعد."
   }
+}
+
+/**
+ * Compact on/off switch for "show this field on my public profile" —
+ * paired with a field input, not a standalone settings screen. Whatever it
+ * controls is nulled out server-side (see companies_public view), not just
+ * hidden client-side, so this toggle is the real enforcement point, not a
+ * cosmetic label.
+ */
+function VisibilityToggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean
+  onChange: (next: boolean) => void
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      aria-pressed={checked}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold transition-colors ${
+        checked
+          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+          : "border-border bg-secondary/40 text-muted-foreground"
+      }`}
+    >
+      {checked ? <Eye className="size-3" /> : <EyeOff className="size-3" />}
+      {label}
+    </button>
+  )
 }
 
 function AccountScreen() {
@@ -551,7 +597,13 @@ function AccountScreen() {
     instagramUrl: "",
     tiktokUrl: "",
     linkedinUrl: "",
-    youtubeUrl: ""
+    youtubeUrl: "",
+    websiteVisible: true,
+    socialVisible: true,
+    companySizeVisible: true,
+    phoneVisible: false,
+    whatsappVisible: false,
+    addressVisible: false
   })
 
   // Onboarding Wizard states
@@ -667,7 +719,13 @@ function AccountScreen() {
           instagramUrl: companyData.instagramUrl || "",
           tiktokUrl: companyData.tiktokUrl || "",
           linkedinUrl: companyData.linkedinUrl || "",
-          youtubeUrl: companyData.youtubeUrl || ""
+          youtubeUrl: companyData.youtubeUrl || "",
+          websiteVisible: companyData.websiteVisible,
+          socialVisible: companyData.socialVisible,
+          companySizeVisible: companyData.companySizeVisible,
+          phoneVisible: companyData.phoneVisible,
+          whatsappVisible: companyData.whatsappVisible,
+          addressVisible: companyData.addressVisible
         })
       } else {
         // FIX (was): this branch used to fabricate a fake "mock-company-123"
@@ -1680,13 +1738,70 @@ function AccountScreen() {
                           />
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold text-muted-foreground">{dict.whatsappNumberLabel}</label>
+                          <div className="flex items-center justify-between gap-2">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.whatsappNumberLabel}</label>
+                            <VisibilityToggle
+                              checked={companyForm.whatsappVisible}
+                              onChange={(next) => setCompanyForm({...companyForm, whatsappVisible: next})}
+                              label={companyForm.whatsappVisible ? dict.visiblePublic : dict.visibleHidden}
+                            />
+                          </div>
                           <input
                             type="text"
                             value={companyForm.whatsappNumber}
                             onChange={(e) => setCompanyForm({...companyForm, whatsappNumber: e.target.value})}
                             className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
                           />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.phoneNumberLabel}</label>
+                            <VisibilityToggle
+                              checked={companyForm.phoneVisible}
+                              onChange={(next) => setCompanyForm({...companyForm, phoneVisible: next})}
+                              label={companyForm.phoneVisible ? dict.visiblePublic : dict.visibleHidden}
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={companyForm.phoneNumber}
+                            onChange={(e) => setCompanyForm({...companyForm, phoneNumber: e.target.value})}
+                            className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 rounded-xl border border-border/60 p-3.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-black text-foreground">{dict.streetAddress} / {dict.postalCode}</span>
+                          <VisibilityToggle
+                            checked={companyForm.addressVisible}
+                            onChange={(next) => setCompanyForm({...companyForm, addressVisible: next})}
+                            label={companyForm.addressVisible ? dict.visiblePublic : dict.visibleHidden}
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.streetAddress}</label>
+                            <input
+                              type="text"
+                              value={companyForm.streetAddress}
+                              onChange={(e) => setCompanyForm({...companyForm, streetAddress: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground">{dict.postalCode}</label>
+                            <input
+                              type="text"
+                              value={companyForm.postalCode}
+                              onChange={(e) => setCompanyForm({...companyForm, postalCode: e.target.value})}
+                              className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary focus:bg-card focus:outline-none transition-all"
+                            />
+                          </div>
                         </div>
                       </div>
 
@@ -1712,7 +1827,14 @@ function AccountScreen() {
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                              <label className="text-xs font-bold text-muted-foreground">Website URL</label>
+                              <div className="flex items-center justify-between gap-2">
+                                <label className="text-xs font-bold text-muted-foreground">Website URL</label>
+                                <VisibilityToggle
+                                  checked={companyForm.websiteVisible}
+                                  onChange={(next) => setCompanyForm({...companyForm, websiteVisible: next})}
+                                  label={companyForm.websiteVisible ? dict.visiblePublic : dict.visibleHidden}
+                                />
+                              </div>
                               <input
                                 type="text"
                                 value={companyForm.websiteUrl}
@@ -1769,25 +1891,62 @@ function AccountScreen() {
                             />
                           </div>
 
-                          {/* Social handles */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-bold text-muted-foreground">Facebook URL</label>
-                              <input
-                                type="text"
-                                value={companyForm.facebookUrl}
-                                onChange={(e) => setCompanyForm({...companyForm, facebookUrl: e.target.value})}
-                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                          {/* Social handles — one visibility toggle covers all five */}
+                          <div className="space-y-4 rounded-xl border border-border/60 p-3.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-black text-foreground">{dict.socialLinks}</span>
+                              <VisibilityToggle
+                                checked={companyForm.socialVisible}
+                                onChange={(next) => setCompanyForm({...companyForm, socialVisible: next})}
+                                label={companyForm.socialVisible ? dict.visiblePublic : dict.visibleHidden}
                               />
                             </div>
-                            <div className="space-y-1.5">
-                              <label className="text-xs font-bold text-muted-foreground">Instagram URL</label>
-                              <input
-                                type="text"
-                                value={companyForm.instagramUrl}
-                                onChange={(e) => setCompanyForm({...companyForm, instagramUrl: e.target.value})}
-                                className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
-                              />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground">Facebook URL</label>
+                                <input
+                                  type="text"
+                                  value={companyForm.facebookUrl}
+                                  onChange={(e) => setCompanyForm({...companyForm, facebookUrl: e.target.value})}
+                                  className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground">Instagram URL</label>
+                                <input
+                                  type="text"
+                                  value={companyForm.instagramUrl}
+                                  onChange={(e) => setCompanyForm({...companyForm, instagramUrl: e.target.value})}
+                                  className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground">LinkedIn URL</label>
+                                <input
+                                  type="text"
+                                  value={companyForm.linkedinUrl}
+                                  onChange={(e) => setCompanyForm({...companyForm, linkedinUrl: e.target.value})}
+                                  className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground">TikTok URL</label>
+                                <input
+                                  type="text"
+                                  value={companyForm.tiktokUrl}
+                                  onChange={(e) => setCompanyForm({...companyForm, tiktokUrl: e.target.value})}
+                                  className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                                />
+                              </div>
+                              <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground">YouTube URL</label>
+                                <input
+                                  type="text"
+                                  value={companyForm.youtubeUrl}
+                                  onChange={(e) => setCompanyForm({...companyForm, youtubeUrl: e.target.value})}
+                                  className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1802,7 +1961,14 @@ function AccountScreen() {
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                              <label className="text-xs font-bold text-muted-foreground">Company Size (Employees)</label>
+                              <div className="flex items-center justify-between gap-2">
+                                <label className="text-xs font-bold text-muted-foreground">Company Size (Employees)</label>
+                                <VisibilityToggle
+                                  checked={companyForm.companySizeVisible}
+                                  onChange={(next) => setCompanyForm({...companyForm, companySizeVisible: next})}
+                                  label={companyForm.companySizeVisible ? dict.visiblePublic : dict.visibleHidden}
+                                />
+                              </div>
                               <input
                                 type="text"
                                 value={companyForm.companySize}
