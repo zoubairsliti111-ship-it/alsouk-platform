@@ -60,14 +60,11 @@ export function LiveActivity() {
     }
   }, [t])
 
+  // No live or upcoming sessions right now — the section below (LiveMarketplace)
+  // already renders the honest "no live sessions" empty state, so this ticker
+  // simply stays hidden rather than showing a second, contradictory message.
   if (items !== null && items.length === 0) {
-    return (
-      <section aria-label={t.home.activityTitle} className="border-y border-border/60 bg-secondary/30">
-        <div className="mx-auto max-w-7xl px-6 py-3.5 text-center text-sm font-medium text-muted-foreground">
-          {t.home.liveComingSoon}
-        </div>
-      </section>
-    )
+    return null
   }
 
   // Duplicate for a seamless marquee loop.

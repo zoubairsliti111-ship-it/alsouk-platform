@@ -284,7 +284,6 @@ type Dict = {
     activitySubtitle: string
     isLiveNow: string
     hasScheduled: string
-    liveComingSoon: string
     listed: string
     joined: string
     requested: string
@@ -805,7 +804,6 @@ export const translations: Record<Lang, Dict> = {
       activitySubtitle: "Verified suppliers and buyers trading across the region right now.",
       isLiveNow: "is live now",
       hasScheduled: "has scheduled a live session",
-      liveComingSoon: "Live streaming isn't available yet — we're building it. Stay tuned.",
       listed: "listed new products",
       joined: "is now a verified supplier",
       requested: "posted a new buying request",
@@ -1338,7 +1336,6 @@ export const translations: Record<Lang, Dict> = {
       activitySubtitle: "Fournisseurs vérifiés et acheteurs qui commercent dans la région en ce moment.",
       isLiveNow: "est en direct",
       hasScheduled: "a programmé une session en direct",
-      liveComingSoon: "La diffusion en direct n'est pas encore disponible — nous la préparons. Restez à l'écoute.",
       listed: "a publié de nouveaux produits",
       joined: "est désormais un fournisseur vérifié",
       requested: "a publié une nouvelle demande d'achat",
@@ -1871,7 +1868,6 @@ export const translations: Record<Lang, Dict> = {
       activitySubtitle: "موردون موثّقون ومشترون يتاجرون في المنطقة الآن.",
       isLiveNow: "يبثّ مباشرة الآن",
       hasScheduled: "جدول جلسة بث مباشر",
-      liveComingSoon: "البث المباشر غير متاح بعد — نحن نعمل عليه. ترقّبوا الجديد.",
       listed: "أضاف منتجات جديدة",
       joined: "أصبح الآن مورّداً موثّقاً",
       requested: "نشر طلب شراء جديد",
