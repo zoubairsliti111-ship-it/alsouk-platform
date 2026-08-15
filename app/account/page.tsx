@@ -632,8 +632,8 @@ function AccountScreen() {
             name: r.name,
             slug: r.slug,
             price: r.price === null ? null : Number(r.price),
-            currency: r.currency || "USD",
-            minOrderQuantity: Number(r.min_order_quantity) || 1,
+            currency: r.currency || "TND",
+            minOrderQuantity: r.min_order_quantity === null ? null : Number(r.min_order_quantity),
             unit: r.unit || null,
             primaryImage: img ? { id: img.id, url: img.url, storageBucket: img.storage_bucket || "product-images", storagePath: img.storage_path, alt: img.alt, isPrimary: Boolean(img.is_primary), position: Number(img.position) || 0 } : null,
           }

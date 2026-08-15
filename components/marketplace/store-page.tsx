@@ -163,7 +163,7 @@ export function StorePage({ slug }: { slug: string }) {
 
     // 3. MOQ filter
     if (maxMoq !== null) {
-      list = list.filter(p => p.minOrderQuantity <= maxMoq)
+      list = list.filter(p => p.minOrderQuantity !== null && p.minOrderQuantity <= maxMoq)
     }
 
     // 4. Sorting

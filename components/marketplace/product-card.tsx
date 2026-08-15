@@ -51,10 +51,12 @@ export function ProductCard({ product }: { product: ProductSummary }) {
           </p>
         </div>
 
-        <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-          <Package className="size-3.5" aria-hidden="true" />
-          {m.moq}: <span className="font-medium text-foreground">{formatNumber(product.minOrderQuantity, lang)}</span>
-        </p>
+        {product.minOrderQuantity !== null && (
+          <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+            <Package className="size-3.5" aria-hidden="true" />
+            {m.moq}: <span className="font-medium text-foreground">{formatNumber(product.minOrderQuantity, lang)}</span>
+          </p>
+        )}
       </div>
     </article>
   )

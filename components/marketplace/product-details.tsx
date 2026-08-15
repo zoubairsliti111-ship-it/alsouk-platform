@@ -149,7 +149,13 @@ export function ProductDetailsView({ id }: { id: string }) {
               {m.specifications}
             </h2>
             <dl className="mt-2 divide-y divide-border rounded-2xl border border-border bg-card text-sm">
-              <Row icon={<Boxes className="size-4" />} label={m.moq} value={`${formatNumber(p.minOrderQuantity, lang)}${p.unit ? ` ${p.unit}` : ""}`} />
+              {p.minOrderQuantity !== null && (
+                <Row
+                  icon={<Boxes className="size-4" />}
+                  label={m.moq}
+                  value={`${formatNumber(p.minOrderQuantity, lang)}${p.unit ? ` ${p.unit}` : ""}`}
+                />
+              )}
               <Row icon={<Package className="size-4" />} label={m.stock} value={inStock ? m.inStock : m.outOfStock} />
               {p.sku && <Row icon={<Tag className="size-4" />} label={m.sku} value={p.sku} />}
             </dl>
