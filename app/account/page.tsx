@@ -123,8 +123,6 @@ const localT = {
     statProducts: "Products",
     statRfqsMatching: "RFQs Matching",
     statUpdatesPosted: "Updates Posted",
-    statExhibitions: "Exhibitions",
-    statBuyerReviews: "Buyer Reviews",
     editBusinessParams: "Edit Business Parameters",
     editBusinessParamsDesc: "Adjust your trade classifications and regional parameters based on level",
     companyNameLabel: "Company Name",
@@ -235,8 +233,6 @@ const localT = {
     statProducts: "Produits",
     statRfqsMatching: "Demandes correspondantes",
     statUpdatesPosted: "Publications",
-    statExhibitions: "Expositions",
-    statBuyerReviews: "Avis acheteurs",
     editBusinessParams: "Modifier les paramètres commerciaux",
     editBusinessParamsDesc: "Ajustez vos classifications commerciales et paramètres régionaux selon votre niveau",
     companyNameLabel: "Nom de l'entreprise",
@@ -347,8 +343,6 @@ const localT = {
     statProducts: "المنتجات",
     statRfqsMatching: "طلبات مطابقة",
     statUpdatesPosted: "المنشورات",
-    statExhibitions: "المعارض",
-    statBuyerReviews: "تقييمات المشترين",
     editBusinessParams: "تعديل بيانات العمل",
     editBusinessParamsDesc: "اضبط تصنيفاتك التجارية وبياناتك الإقليمية حسب مستوى حسابك",
     companyNameLabel: "اسم الشركة",
@@ -1454,16 +1448,19 @@ function AccountScreen() {
           </div>
         </div>
 
-        {/* 3. B2B Profile Statistics Dashboard */}
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2 py-4 my-4 border-b border-border/60">
+        {/* 3. B2B Profile Statistics Dashboard.
+            statExhibitions and statBuyerReviews were removed: the former was
+            a platform-wide exhibitions count (not this company's), and the
+            latter a hardcoded 0 with no reviews table behind it at all —
+            both looked like real per-company measurements next to the
+            genuinely live stats below but weren't. */}
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 py-4 my-4 border-b border-border/60">
           {[
             { label: dict.statFollowers, val: followersCount + (isFollowing ? 1 : 0), icon: Users, color: "text-blue-500 bg-blue-500/5" },
             { label: dict.statFollowing, val: followingCount, icon: Users, color: "text-amber-500 bg-amber-500/5" },
             { label: dict.statProducts, val: productsCount, icon: Box, color: "text-purple-500 bg-purple-500/5" },
             { label: dict.statRfqsMatching, val: rfqsCount, icon: FileText, color: "text-emerald-500 bg-emerald-500/5" },
             { label: dict.statUpdatesPosted, val: updatesPostedCount, icon: Sparkles, color: "text-indigo-500 bg-indigo-500/5" },
-            { label: dict.statExhibitions, val: exhibitions.length, icon: Briefcase, color: "text-rose-500 bg-rose-500/5" },
-            { label: dict.statBuyerReviews, val: 0, icon: Award, color: "text-yellow-500 bg-yellow-500/5" }
           ].map((stat, idx) => (
             <div key={idx} className="bg-card border border-border/80 rounded-xl p-2.5 text-center hover:shadow-md transition-all">
               <span className={`inline-flex size-7 items-center justify-center rounded-lg mb-1.5 ${stat.color}`}>
@@ -2315,13 +2312,12 @@ function AccountScreen() {
                       <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">Active Owner</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 bg-secondary/15 rounded-xl border border-border/40 opacity-75">
-                      <div>
-                        <p className="font-bold text-foreground">Trade Agent 1</p>
-                        <p className="text-[10px] text-muted-foreground">Sub-admin representative</p>
-                      </div>
-                      <span className="px-2.5 py-0.5 rounded-full bg-neutral-200 text-neutral-800 text-[10px] font-bold">Simulated Admin</span>
-                    </div>
+                    {/* No team-invite flow exists yet, so this only ever shows the real
+                        owner — previously a fake second "Trade Agent 1" row was rendered
+                        here to make the team look larger than it is. */}
+                    <p className="px-3 py-2 text-[11px] text-muted-foreground italic">
+                      Inviting additional team members isn&apos;t available yet.
+                    </p>
                   </div>
                 </div>
               )}
