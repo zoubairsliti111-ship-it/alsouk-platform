@@ -15,67 +15,22 @@ import {
 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 
+// Decorative category shortcuts on the home page. These link to the general
+// /categories browse page rather than per-category slugs, and intentionally
+// carry no supplier-count number — the real company_categories/product_categories
+// link tables are empty today, so any live count would show 0 for all of them;
+// a fabricated count ("3,200+" etc.) would be worse than showing none.
 const CATEGORIES_DATA = [
-  {
-    id: "food",
-    icon: Utensils,
-    names: { en: "Food", fr: "Alimentation", ar: "أغذية" },
-    count: "3,200+",
-  },
-  {
-    id: "textile",
-    icon: Shirt,
-    names: { en: "Textile", fr: "Textile", ar: "نسيج" },
-    count: "2,800+",
-  },
-  {
-    id: "construction",
-    icon: Building2,
-    names: { en: "Construction", fr: "Construction", ar: "بناء" },
-    count: "1,900+",
-  },
-  {
-    id: "machinery",
-    icon: Cog,
-    names: { en: "Machinery", fr: "Machines", ar: "آلات" },
-    count: "1,500+",
-  },
-  {
-    id: "packaging",
-    icon: Package,
-    names: { en: "Packaging", fr: "Emballage", ar: "تعبئة وتغليف" },
-    count: "920+",
-  },
-  {
-    id: "agriculture",
-    icon: Leaf,
-    names: { en: "Agriculture", fr: "Agriculture", ar: "زراعة" },
-    count: "1,400+",
-  },
-  {
-    id: "furniture",
-    icon: Sofa,
-    names: { en: "Furniture", fr: "Mobilier", ar: "أثاث" },
-    count: "750+",
-  },
-  {
-    id: "electronics",
-    icon: Cpu,
-    names: { en: "Electronics", fr: "Électronique", ar: "إلكترونيات" },
-    count: "1,100+",
-  },
-  {
-    id: "chemicals",
-    icon: FlaskConical,
-    names: { en: "Chemicals", fr: "Produits chimiques", ar: "كيماويات" },
-    count: "680+",
-  },
-  {
-    id: "more",
-    icon: Grid,
-    names: { en: "More", fr: "Plus", ar: "المزيد" },
-    count: "Explore All",
-  },
+  { id: "food", icon: Utensils, names: { en: "Food", fr: "Alimentation", ar: "أغذية" } },
+  { id: "textile", icon: Shirt, names: { en: "Textile", fr: "Textile", ar: "نسيج" } },
+  { id: "construction", icon: Building2, names: { en: "Construction", fr: "Construction", ar: "بناء" } },
+  { id: "machinery", icon: Cog, names: { en: "Machinery", fr: "Machines", ar: "آلات" } },
+  { id: "packaging", icon: Package, names: { en: "Packaging", fr: "Emballage", ar: "تعبئة وتغليف" } },
+  { id: "agriculture", icon: Leaf, names: { en: "Agriculture", fr: "Agriculture", ar: "زراعة" } },
+  { id: "furniture", icon: Sofa, names: { en: "Furniture", fr: "Mobilier", ar: "أثاث" } },
+  { id: "electronics", icon: Cpu, names: { en: "Electronics", fr: "Électronique", ar: "إلكترونيات" } },
+  { id: "chemicals", icon: FlaskConical, names: { en: "Chemicals", fr: "Produits chimiques", ar: "كيماويات" } },
+  { id: "more", icon: Grid, names: { en: "More", fr: "Plus", ar: "المزيد" } },
 ]
 
 export function CategoriesSection() {
@@ -110,9 +65,6 @@ export function CategoriesSection() {
                 <div className="flex flex-col gap-0.5">
                   <span className="line-clamp-2 text-xs font-semibold leading-tight text-foreground transition-colors group-hover:text-primary">
                     {catName}
-                  </span>
-                  <span className="text-[10px] font-medium text-muted-foreground">
-                    {cat.count}
                   </span>
                 </div>
               </Link>
