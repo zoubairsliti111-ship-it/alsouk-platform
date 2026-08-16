@@ -29,12 +29,13 @@ export default function AdminStatisticsPage() {
   const isAr = lang === "ar"
 
   const [exhibitions, setExhibitions] = useState<Exhibition[]>([])
+  const [exhibitionsLoading, setExhibitionsLoading] = useState<boolean>(true)
   const [selectedExhId, setSelectedExhId] = useState<string>("")
   const [range, setRange] = useState<string>("7days")
   const [startDate, setStartDate] = useState<string>("")
   const [endDate, setEndDate] = useState<string>("")
   const [data, setData] = useState<OrganizerAnalytics | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
   // Load exhibitions
@@ -50,8 +51,15 @@ export default function AdminStatisticsPage() {
             setSelectedExhId(json.data[0].id)
           }
         }
+        // No exhibitions yet: the stats effect below never runs (guarded on
+        // selectedExhId), so stop the spinner here instead of hanging forever.
+        setExhibitionsLoading(false)
       })
-      .catch((err) => console.error("Exhibition load stats error:", err))
+      .catch((err) => {
+        console.error("Exhibition load stats error:", err)
+        if (!active) return
+        setExhibitionsLoading(false)
+      })
     return () => {
       active = false
     }
@@ -201,7 +209,16 @@ export default function AdminStatisticsPage() {
         </div>
       </div>
 
-      {loading ? (
+      {exhibitionsLoading ? (
+        <div className="flex flex-col items-center justify-center py-24 gap-3 bg-slate-900/20 border border-slate-800 rounded-2xl">
+          <Loader2 className="size-9 text-teal-400 animate-spin" />
+          <span className="text-xs font-bold text-slate-400">{isAr ? "جاري تحميل المعارض..." : "Loading exhibitions..."}</span>
+        </div>
+      ) : exhibitions.length === 0 ? (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-8 text-center text-xs font-bold text-slate-400">
+          {isAr ? "لا يوجد أي معرض تم إنشاؤه بعد." : "No exhibitions have been created yet."}
+        </div>
+      ) : loading ? (
         <div className="flex flex-col items-center justify-center py-24 gap-3 bg-slate-900/20 border border-slate-800 rounded-2xl">
           <Loader2 className="size-9 text-teal-400 animate-spin" />
           <span className="text-xs font-bold text-slate-400">{isAr ? "جاري إنتاج إحصائيات التوفيق المتقدمة..." : "Generating analytics metrics..."}</span>
@@ -214,8 +231,19 @@ export default function AdminStatisticsPage() {
         <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-8 text-center text-xs font-bold text-slate-400">
           No data recorded.
         </div>
+      ) : !data.hasActivity ? (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-8 text-center text-xs font-bold text-slate-400 space-y-1.5">
+          <p>{isAr ? "لا توجد بيانات مشاركة مسجلة بعد لهذا المعرض." : "No participation data recorded yet for this exhibition."}</p>
+        </div>
       ) : (
         <div className="space-y-8">
+          {data.isSimulated && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-xs font-bold text-amber-400">
+              ⚠️ {isAr
+                ? "أرقام الزيارات، الاجتماعات، طلبات الأسعار، التنزيلات، مسح الرموز، الجغرافيا، واتجاهات الحركة أدناه افتراضية — لا توجد بنية تتبع حقيقية بعد. أعداد الأجنحة والطلبات حقيقية."
+                : "Visitor, meeting, RFQ, download, QR-scan, geography and traffic-trend figures below are simulated — no real tracking infrastructure exists yet. Booth and application counts are real."}
+            </div>
+          )}
           {/* KPI CARDS GRID */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Total Visitors */}

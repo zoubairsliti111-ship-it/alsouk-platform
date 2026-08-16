@@ -45,7 +45,8 @@ const dict = {
     emptyStats: "No participation statistics recorded yet.",
     rank: "Rank",
     company: "Company",
-    boothNo: "Booth"
+    boothNo: "Booth",
+    simulatedViews: "⚠️ Views, contacts and the ranking order below are simulated — no real visitor tracking exists yet. The booth list itself is real."
   },
   fr: {
     title: "Analyses & Statistiques",
@@ -71,7 +72,8 @@ const dict = {
     emptyStats: "Aucune donnée statistique enregistrée.",
     rank: "Rang",
     company: "Entreprise",
-    boothNo: "Stand"
+    boothNo: "Stand",
+    simulatedViews: "⚠️ Les vues, contacts et le classement ci-dessous sont simulés — aucun suivi réel des visiteurs n'existe encore. La liste des stands est réelle."
   },
   ar: {
     title: "تحليلات وإحصاءات المعرض",
@@ -97,7 +99,8 @@ const dict = {
     emptyStats: "لا توجد أي بيانات إحصائية مسجلة حتى الآن.",
     rank: "المرتبة",
     company: "الشركة",
-    boothNo: "الجناح"
+    boothNo: "الجناح",
+    simulatedViews: "⚠️ المشاهدات والتفاعل والترتيب أدناه افتراضية — لا يوجد تتبع حقيقي للزوار بعد. قائمة الأجنحة نفسها حقيقية."
   }
 }
 
@@ -389,6 +392,12 @@ function StatisticsContent() {
             <Award className="size-5 text-primary shrink-0" />
             <span>{d.leaderboardSection}</span>
           </h3>
+
+          {stats.topBoothsViewsSimulated && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-xs font-bold text-amber-700 dark:text-amber-400">
+              {d.simulatedViews}
+            </div>
+          )}
 
           <div className="overflow-x-auto">
             <table className="w-full text-start border-collapse text-xs font-semibold text-muted-foreground">

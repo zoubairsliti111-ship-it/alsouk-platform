@@ -36,12 +36,13 @@ function OrganizerAnalyticsContent() {
   const { t, lang, dir } = useLanguage()
 
   const [exhibitions, setExhibitions] = useState<Exhibition[]>([])
+  const [exhibitionsLoading, setExhibitionsLoading] = useState<boolean>(true)
   const [selectedExhId, setSelectedExhId] = useState<string>("")
   const [range, setRange] = useState<string>("7days")
   const [startDate, setStartDate] = useState<string>("")
   const [endDate, setEndDate] = useState<string>("")
   const [data, setData] = useState<OrganizerAnalytics | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
   // Load initial exhibitions list
@@ -54,10 +55,15 @@ function OrganizerAnalyticsContent() {
         if (list.length > 0) {
           setSelectedExhId(list[0].id)
         }
+        // No exhibitions yet: nothing for the stats effect below to fetch,
+        // so it never runs — stop the spinner here instead of hanging forever.
+        setExhibitionsLoading(false)
       })
       .catch((err) => {
         console.error("Failed to load exhibitions:", err)
+        if (!active) return
         setError("Could not load exhibitions.")
+        setExhibitionsLoading(false)
       })
     return () => {
       active = false
@@ -288,7 +294,16 @@ function OrganizerAnalyticsContent() {
         </div>
 
         {/* Loading and Error States */}
-        {loading ? (
+        {exhibitionsLoading ? (
+          <div className="flex flex-col items-center justify-center py-32 gap-3 bg-card border border-border rounded-[20px]">
+            <Loader2 className="size-10 text-primary animate-spin" />
+            <span className="text-xs font-black text-muted-foreground">Loading exhibitions...</span>
+          </div>
+        ) : exhibitions.length === 0 ? (
+          <div className="p-12 text-center text-muted-foreground font-bold bg-card border border-border rounded-[20px]">
+            No exhibitions have been created yet. Analytics will appear here once one exists.
+          </div>
+        ) : loading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-3 bg-card border border-border rounded-[20px]">
             <Loader2 className="size-10 text-primary animate-spin" />
             <span className="text-xs font-black text-muted-foreground">Generating B2B intelligence data...</span>
@@ -301,8 +316,18 @@ function OrganizerAnalyticsContent() {
           <div className="p-12 text-center text-muted-foreground font-bold bg-card border border-border rounded-[20px]">
             No data available for this range.
           </div>
+        ) : !data.hasActivity ? (
+          <div className="p-12 text-center text-muted-foreground font-bold bg-card border border-border rounded-[20px] space-y-2">
+            <p>No participation data recorded yet for this exhibition.</p>
+            <p className="text-xs font-semibold">Analytics appear once booths are approved or applications come in.</p>
+          </div>
         ) : (
           <div className="space-y-8">
+            {data.isSimulated && (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-xs font-bold text-amber-700 dark:text-amber-400">
+                ⚠️ Visitor, meeting, RFQ, download, QR-scan, geography and traffic-trend figures below are simulated — no real tracking infrastructure exists yet. Show counts and applications counts are real.
+              </div>
+            )}
             {/* KPI metrics cards grid */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {/* Total Exhibitions */}

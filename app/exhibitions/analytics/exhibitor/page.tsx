@@ -23,6 +23,7 @@ import {
 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 import { MarketplaceShell, Breadcrumbs } from "@/components/marketplace/shell"
+import { fetchExhibitions, fetchBoothsByExhibition } from "@/lib/services/exhibitions-client"
 import type { ExhibitorAnalytics } from "@/lib/domains/exhibition/types"
 
 export default function ExhibitorAnalyticsPage() {
@@ -36,22 +37,50 @@ export default function ExhibitorAnalyticsPage() {
 function ExhibitorAnalyticsContent() {
   const { t, lang, dir } = useLanguage()
 
-  const [selectedBoothId, setSelectedBoothId] = useState<string>("booth-medina")
+  const [boothsList, setBoothsList] = useState<{ id: string; name: string }[]>([])
+  const [boothsLoading, setBoothsLoading] = useState<boolean>(true)
+  const [selectedBoothId, setSelectedBoothId] = useState<string>("")
   const [range, setRange] = useState<string>("7days")
   const [startDate, setStartDate] = useState<string>("")
   const [endDate, setEndDate] = useState<string>("")
   const [data, setData] = useState<ExhibitorAnalytics | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
-  const boothsList = [
-    { id: "booth-medina", name: "Medina Olive Co. (Booth A-01)" },
-    { id: "booth-sahara", name: "Sahara Dates Export (Booth A-02)" },
-    { id: "booth-carthage", name: "Carthage Textiles (Booth B-15)" },
-  ]
+  // Load real booths across all exhibitions (was a hardcoded list of three
+  // fake companies that don't exist in the database).
+  useEffect(() => {
+    let active = true
+    fetchExhibitions()
+      .then(async (exhibitions) => {
+        if (!active) return
+        const perExhibition = await Promise.all(
+          exhibitions.map((ex) => fetchBoothsByExhibition(ex.slug).catch(() => []))
+        )
+        if (!active) return
+        const flat = perExhibition.flat().map((b) => ({
+          id: b.id,
+          name: b.company?.name
+            ? `${b.company.name}${b.boothNumber ? ` (Booth ${b.boothNumber})` : ""}`
+            : b.title || "Untitled Booth",
+        }))
+        setBoothsList(flat)
+        if (flat.length > 0) setSelectedBoothId(flat[0].id)
+        setBoothsLoading(false)
+      })
+      .catch((err) => {
+        console.error("Failed to load booths:", err)
+        if (!active) return
+        setBoothsLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [])
 
   // Fetch stats when booth or range changes
   useEffect(() => {
+    if (!selectedBoothId) return
     let active = true
 
     // Set loading asynchronously to prevent react-hooks/set-state-in-effect warning
@@ -272,7 +301,16 @@ function ExhibitorAnalyticsContent() {
         </div>
 
         {/* Loading and Error States */}
-        {loading ? (
+        {boothsLoading ? (
+          <div className="flex flex-col items-center justify-center py-32 gap-3 bg-card border border-border rounded-[20px]">
+            <Loader2 className="size-10 text-emerald-600 animate-spin" />
+            <span className="text-xs font-black text-muted-foreground">Loading your booths...</span>
+          </div>
+        ) : boothsList.length === 0 ? (
+          <div className="p-12 text-center text-muted-foreground font-bold bg-card border border-border rounded-[20px]">
+            No booths found yet. Apply to an exhibition and get approved to see your booth analytics here.
+          </div>
+        ) : loading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-3 bg-card border border-border rounded-[20px]">
             <Loader2 className="size-10 text-emerald-600 animate-spin" />
             <span className="text-xs font-black text-muted-foreground">Aggregating booth tracking data...</span>
@@ -287,6 +325,14 @@ function ExhibitorAnalyticsContent() {
           </div>
         ) : (
           <div className="space-y-8">
+            {/* Simulated data disclosure — no real visitor/click/QR tracking
+                infrastructure exists yet, so these metrics are a plausible
+                preview, not measured activity. */}
+            {data.isSimulated && (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-xs font-bold text-amber-700 dark:text-amber-400">
+                ⚠️ Simulated data — visitor tracking isn&apos;t wired up yet. These numbers are a preview of what analytics will look like, not measured activity.
+              </div>
+            )}
             {/* KPI overview grid */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {/* Booth views */}
