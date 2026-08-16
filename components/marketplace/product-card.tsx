@@ -1,8 +1,11 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ImageIcon, Package } from "lucide-react"
+import { Heart, ImageIcon, Package } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
+import { useAuth } from "@/components/auth-provider"
+import { isProductSaved, saveProduct, unsaveProduct } from "@/lib/services/saved-products-service"
 import { formatNumber, formatPrice } from "@/lib/format"
 import type { ProductSummary } from "@/lib/domains/product/types"
 
@@ -10,6 +13,24 @@ export function ProductCard({ product }: { product: ProductSummary }) {
   const { t, lang } = useLanguage()
   const m = t.marketplace.products
   const image = product.primaryImage
+  const { user: authUser } = useAuth()
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    if (!authUser) return
+    let active = true
+    isProductSaved(authUser.id, product.id).then((result) => {
+      if (active) setSaved(result)
+    })
+    return () => {
+      active = false
+    }
+  }, [authUser, product.id])
+
+  // Not derived-and-forgotten: if the user logs out mid-session, `saved`
+  // (which only meant anything for the previous session) shouldn't still
+  // render as saved.
+  const isSaved = Boolean(authUser) && saved
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
@@ -30,6 +51,27 @@ export function ProductCard({ product }: { product: ProductSummary }) {
           <div className="flex size-full items-center justify-center text-muted-foreground">
             <ImageIcon className="size-8" aria-hidden="true" />
           </div>
+        )}
+        {authUser && (
+          <button
+            type="button"
+            onClick={async (e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              if (isSaved) {
+                setSaved(false)
+                if (!(await unsaveProduct(authUser.id, product.id))) setSaved(true)
+              } else {
+                setSaved(true)
+                if (!(await saveProduct(authUser.id, product.id))) setSaved(false)
+              }
+            }}
+            aria-pressed={isSaved}
+            aria-label={isSaved ? m.saved : m.save}
+            className="absolute end-2 top-2 z-10 flex size-8 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/60"
+          >
+            <Heart className={`size-4 ${isSaved ? "fill-primary text-primary" : ""}`} />
+          </button>
         )}
       </div>
 

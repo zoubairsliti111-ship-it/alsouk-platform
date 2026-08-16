@@ -5,7 +5,9 @@ import Link from "next/link"
 import { ArrowRight, Boxes, Heart, Layers, MessageSquare, Package, Store, Tag } from "lucide-react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useLanguage } from "@/components/language-provider"
+import { useAuth } from "@/components/auth-provider"
 import { fetchProductById, fetchProducts } from "@/lib/services/products-client"
+import { isProductSaved, saveProduct, unsaveProduct } from "@/lib/services/saved-products-service"
 import { formatNumber, formatPrice } from "@/lib/format"
 import type { ProductDetails, ProductSummary } from "@/lib/domains/product/types"
 import { Breadcrumbs, MessageState } from "@/components/marketplace/shell"
@@ -24,6 +26,7 @@ export function ProductDetailsView({ id }: { id: string }) {
   })
   const [related, setRelated] = useState<ProductSummary[]>([])
   const [saved, setSaved] = useState(false)
+  const { user: authUser } = useAuth()
 
   useEffect(() => {
     let active = true
@@ -46,6 +49,24 @@ export function ProductDetailsView({ id }: { id: string }) {
       active = false
     }
   }, [id])
+
+  // Hydrate from the real saved state — a fresh useState(false) would make
+  // an already-saved product look unsaved on every reload.
+  useEffect(() => {
+    if (!authUser) return
+    let active = true
+    isProductSaved(authUser.id, id).then((result) => {
+      if (active) setSaved(result)
+    })
+    return () => {
+      active = false
+    }
+  }, [authUser, id])
+
+  // Not derived-and-forgotten: if the user logs out mid-session, `saved`
+  // (which only meant anything for the previous session) shouldn't still
+  // render as saved.
+  const isSaved = Boolean(authUser) && saved
 
   const status: Status = state.id === id ? state.status : "loading"
   const product = state.id === id ? state.product : null
@@ -91,15 +112,24 @@ export function ProductDetailsView({ id }: { id: string }) {
   const saveButton = (
     <button
       type="button"
-      onClick={() => setSaved((v) => !v)}
-      aria-pressed={saved}
-      aria-label={saved ? m.saved : m.save}
+      onClick={async () => {
+        if (!authUser) return
+        if (isSaved) {
+          setSaved(false)
+          if (!(await unsaveProduct(authUser.id, p.id))) setSaved(true)
+        } else {
+          setSaved(true)
+          if (!(await saveProduct(authUser.id, p.id))) setSaved(false)
+        }
+      }}
+      aria-pressed={isSaved}
+      aria-label={isSaved ? m.saved : m.save}
       className={`inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2.5 text-sm font-semibold transition-colors active:scale-95 ${
-        saved ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-foreground hover:bg-secondary"
+        isSaved ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-foreground hover:bg-secondary"
       }`}
     >
-      <Heart className={`size-4 ${saved ? "fill-primary" : ""}`} />
-      <span className="hidden sm:inline">{saved ? m.saved : m.save}</span>
+      <Heart className={`size-4 ${isSaved ? "fill-primary" : ""}`} />
+      <span className="hidden sm:inline">{isSaved ? m.saved : m.save}</span>
     </button>
   )
 
