@@ -124,6 +124,10 @@ export type Supplier = {
   description: string | null
   /** Optional hero/logo image URL; falls back to the monogram when absent. */
   logoUrl: string | null
+  /** The owner-chosen cover photo (companies.banner_url), set via Account.
+   *  Takes priority over coverPhotoUrl, which is just whichever gallery
+   *  photo happened to be returned first. */
+  bannerUrl: string | null
   profileViews: number
   coverPhotoUrl: string | null
   /** The merchant's own online store hosted outside ALSOUK, when set. */
