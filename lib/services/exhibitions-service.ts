@@ -1503,11 +1503,14 @@ export async function loadStatistics(exhibitionId: string, client: SupabaseClien
     count,
   }))
 
-  // 5. Top/Most Viewed Booths (Using some beautiful placeholder distributions with real company names)
+  // The booths themselves and the ranking below are real — but there's no
+  // real view/contact tracking yet, so those two per-booth numbers are a
+  // simulated preview (topBoothsViewsSimulated flag, surfaced in the UI),
+  // not a real "most viewed" ranking.
   const topBooths = booths.map((b, i) => ({
     id: b.id,
-    companyName: b.title || b.company?.name || "Premium Exhibitor",
-    boothNumber: b.boothNumber || "A-01",
+    companyName: b.title || b.company?.name || "Exhibitor",
+    boothNumber: b.boothNumber || "—",
     views: 1240 - i * 350 > 100 ? 1240 - i * 350 : 120,
     contacts: 85 - i * 25 > 10 ? 85 - i * 25 : 8,
   })).sort((a, b) => b.views - a.views)
@@ -1528,6 +1531,7 @@ export async function loadStatistics(exhibitionId: string, client: SupabaseClien
     countries,
     categories,
     topBooths,
+    topBoothsViewsSimulated: topBooths.length > 0,
   }
 }
 
@@ -1775,11 +1779,19 @@ export async function getOrganizerAnalytics(
   const exhibitions = await getExhibitions()
   const totalExhibitions = exhibitions.length
 
-  // 2. Fetch booths for this exhibition
-  const ex = exhibitions.find((e) => e.id === exhibitionId) || exhibitions[0]
-  const slug = ex?.slug || "tunisia-food-expo-2026"
-  const boothsMap = getMockBooths()
-  const booths = boothsMap[slug] || []
+  // 2. Fetch REAL booths for this exhibition (was reading getMockBooths() —
+  // always empty/fake for real exhibitions, so totalBooths/activeBooths and
+  // the "top performing" list never matched what the organizer actually has).
+  let booths: ExhibitionBooth[] = []
+  try {
+    const select = `id,exhibition_id,company_id,banner_url,description,is_archived,booth_number,category,status,title,short_description,companies(*)`
+    const rows = await restGet<ExhibitionBoothRow>(
+      `exhibition_booths?select=${select}&exhibition_id=eq.${encodeURIComponent(exhibitionId)}`
+    )
+    booths = rows.map(mapExhibitionBooth)
+  } catch (err) {
+    console.warn("[exhibitions-service] getOrganizerAnalytics booth fetch failed:", err)
+  }
   const totalBooths = booths.length
   const activeBooths = booths.filter((b) => b.status === "Published").length
 
@@ -1790,18 +1802,27 @@ export async function getOrganizerAnalytics(
   const approvedApplications = apps.filter((a) => a.status === "Approved").length
   const rejectedApplications = apps.filter((a) => a.status === "Rejected").length
 
-  // 4. Generate dynamic visitor & interactive metrics
-  const multiplier = filter === "today" ? 1 : filter === "7days" ? 6 : filter === "30days" ? 25 : 12
-  const totalVisitors = Math.floor(250 + seed() * 500) * multiplier
-  const uniqueVisitors = Math.floor(150 + seed() * 300) * multiplier
-  const totalMeetings = Math.floor(10 + seed() * 25) * multiplier
-  const completedMeetings = Math.floor(totalMeetings * (0.6 + seed() * 0.2))
-  const totalRfqs = Math.floor(15 + seed() * 30) * multiplier
-  const totalCatalogDownloads = Math.floor(40 + seed() * 80) * multiplier
-  const qrScans = Math.floor(30 + seed() * 60) * multiplier
-  const averageSessionDuration = Math.floor(180 + seed() * 360) // in seconds
+  // No real visitor/traffic/QR/meeting tracking exists yet (verified: no
+  // page-view or click-tracking table in the schema). Rather than fabricate
+  // activity for an exhibition that has none, only generate the simulated
+  // preview numbers when there's at least one real booth or application to
+  // hang them on — otherwise report hasActivity:false and let the UI show
+  // an honest empty state.
+  const hasActivity = totalBooths > 0 || apps.length > 0
 
-  // Top Performing Booths
+  const multiplier = filter === "today" ? 1 : filter === "7days" ? 6 : filter === "30days" ? 25 : 12
+  const totalVisitors = hasActivity ? Math.floor(250 + seed() * 500) * multiplier : 0
+  const uniqueVisitors = hasActivity ? Math.floor(150 + seed() * 300) * multiplier : 0
+  const totalMeetings = hasActivity ? Math.floor(10 + seed() * 25) * multiplier : 0
+  const completedMeetings = hasActivity ? Math.floor(totalMeetings * (0.6 + seed() * 0.2)) : 0
+  const totalRfqs = hasActivity ? Math.floor(15 + seed() * 30) * multiplier : 0
+  const totalCatalogDownloads = hasActivity ? Math.floor(40 + seed() * 80) * multiplier : 0
+  const qrScans = hasActivity ? Math.floor(30 + seed() * 60) * multiplier : 0
+  const averageSessionDuration = hasActivity ? Math.floor(180 + seed() * 360) : 0
+
+  // Top Performing Booths: the booths themselves and their names/numbers are
+  // real; only the views/contacts/rating are simulated (isSimulated flag
+  // covers this at the UI layer).
   const topPerformingBooths = booths.map((b) => {
     const bSeed = seedRandom(b.id + filter)
     const views = Math.floor(40 + bSeed() * 120) * multiplier
@@ -1809,79 +1830,83 @@ export async function getOrganizerAnalytics(
     const rating = Math.round((4.2 + bSeed() * 0.8) * 10) / 10
     return {
       id: b.id,
-      companyName: b.title || b.company?.name || "Premium Exhibitor",
-      boothNumber: b.boothNumber || "A-01",
+      companyName: b.title || b.company?.name || "Exhibitor",
+      boothNumber: b.boothNumber || "—",
       views,
       contacts,
       rating,
     }
   }).sort((a, b) => b.views - a.views).slice(0, 5)
 
-  // Top Categories
-  const topCategories = [
-    { name: "Food & Agriculture", count: Math.floor(50 + seed() * 100) },
-    { name: "Textiles & Apparel", count: Math.floor(30 + seed() * 70) },
-    { name: "Handicrafts & Ceramics", count: Math.floor(20 + seed() * 40) },
-    { name: "Agri-Food Tech", count: Math.floor(15 + seed() * 30) },
-  ].map((c, i, arr) => {
-    const total = arr.reduce((acc, curr) => acc + curr.count, 0)
-    return {
-      name: c.name,
-      count: c.count,
-      percentage: Math.round((c.count / total) * 100),
-    }
-  }).sort((a, b) => b.count - a.count)
+  // Top Categories: real distribution of the exhibition's actual booth
+  // categories (was a hardcoded fake list unrelated to this exhibition).
+  const categoryCounts: Record<string, number> = {}
+  booths.forEach((b) => {
+    const cat = b.category || "Uncategorized"
+    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1
+  })
+  const topCategories = Object.entries(categoryCounts)
+    .map(([name, count]) => ({ name, count, percentage: Math.round((count / Math.max(1, totalBooths)) * 100) }))
+    .sort((a, b) => b.count - a.count)
 
-  // Visitor Countries
-  const visitorCountries = [
-    { code: "TN", name: "Tunisia", count: Math.floor(120 + seed() * 200) },
-    { code: "FR", name: "France", count: Math.floor(40 + seed() * 80) },
-    { code: "IT", name: "Italy", count: Math.floor(20 + seed() * 50) },
-    { code: "DZ", name: "Algeria", count: Math.floor(30 + seed() * 60) },
-    { code: "LY", name: "Libya", count: Math.floor(15 + seed() * 40) },
-  ].map((c, i, arr) => {
-    const total = arr.reduce((acc, curr) => acc + curr.count, 0)
-    return {
-      code: c.code,
-      name: c.name,
-      count: c.count,
-      percentage: Math.round((c.count / total) * 100),
-    }
-  }).sort((a, b) => b.count - a.count)
+  // Visitor Countries: no real geography tracking exists — only simulate
+  // when there's real activity to attach a plausible shape to.
+  const visitorCountries = hasActivity
+    ? [
+        { code: "TN", name: "Tunisia", count: Math.floor(120 + seed() * 200) },
+        { code: "FR", name: "France", count: Math.floor(40 + seed() * 80) },
+        { code: "IT", name: "Italy", count: Math.floor(20 + seed() * 50) },
+        { code: "DZ", name: "Algeria", count: Math.floor(30 + seed() * 60) },
+        { code: "LY", name: "Libya", count: Math.floor(15 + seed() * 40) },
+      ].map((c, i, arr) => {
+        const total = arr.reduce((acc, curr) => acc + curr.count, 0)
+        return { code: c.code, name: c.name, count: c.count, percentage: Math.round((c.count / total) * 100) }
+      }).sort((a, b) => b.count - a.count)
+    : []
 
   // Traffic trends data
-  const trafficTrends = labels.map((label, index) => {
-    const tSeed = seedRandom(exhibitionId + filter + label)
-    const base = filter === "today" ? 15 : filter === "7days" ? 80 : 350
-    const visitorsVal = Math.floor(base + tSeed() * (base * 0.8))
-    const uniqueVal = Math.floor(visitorsVal * (0.6 + tSeed() * 0.2))
-    return {
-      label,
-      visitors: visitorsVal,
-      uniqueVisitors: uniqueVal,
-    }
-  })
+  const trafficTrends = hasActivity
+    ? labels.map((label) => {
+        const tSeed = seedRandom(exhibitionId + filter + label)
+        const base = filter === "today" ? 15 : filter === "7days" ? 80 : 350
+        const visitorsVal = Math.floor(base + tSeed() * (base * 0.8))
+        const uniqueVal = Math.floor(visitorsVal * (0.6 + tSeed() * 0.2))
+        return { label, visitors: visitorsVal, uniqueVisitors: uniqueVal }
+      })
+    : labels.map((label) => ({ label, visitors: 0, uniqueVisitors: 0 }))
 
   // Daily, Weekly, Monthly traffic formats
-  const dailyTraffic = labels.map((label) => ({
-    date: label,
-    visitors: Math.floor(80 + seed() * 100),
-    uniqueVisitors: Math.floor(50 + seed() * 60),
-  }))
+  const dailyTraffic = hasActivity
+    ? labels.map((label) => ({
+        date: label,
+        visitors: Math.floor(80 + seed() * 100),
+        uniqueVisitors: Math.floor(50 + seed() * 60),
+      }))
+    : labels.map((label) => ({ date: label, visitors: 0, uniqueVisitors: 0 }))
 
-  const weeklyTraffic = Array.from({ length: 4 }).map((_, i) => ({
-    week: `Week ${i + 1}`,
-    visitors: Math.floor(500 + seed() * 400),
-    uniqueVisitors: Math.floor(300 + seed() * 200),
-  }))
+  const weeklyTraffic = hasActivity
+    ? Array.from({ length: 4 }).map((_, i) => ({
+        week: `Week ${i + 1}`,
+        visitors: Math.floor(500 + seed() * 400),
+        uniqueVisitors: Math.floor(300 + seed() * 200),
+      }))
+    : Array.from({ length: 4 }).map((_, i) => ({ week: `Week ${i + 1}`, visitors: 0, uniqueVisitors: 0 }))
 
-  const monthlyTraffic = Array.from({ length: 3 }).map((_, i) => ({
-    month: ["April", "May", "June"][i] || `Month ${i + 1}`,
-    visitors: Math.floor(2000 + seed() * 1500),
-    uniqueVisitors: Math.floor(1200 + seed() * 800),
-  }))
+  const monthlyTraffic = hasActivity
+    ? Array.from({ length: 3 }).map((_, i) => ({
+        month: ["April", "May", "June"][i] || `Month ${i + 1}`,
+        visitors: Math.floor(2000 + seed() * 1500),
+        uniqueVisitors: Math.floor(1200 + seed() * 800),
+      }))
+    : Array.from({ length: 3 }).map((_, i) => ({
+        month: ["April", "May", "June"][i] || `Month ${i + 1}`,
+        visitors: 0,
+        uniqueVisitors: 0,
+      }))
 
   return {
+    hasActivity,
+    isSimulated: true,
     totalExhibitions,
     totalBooths,
     activeBooths,
@@ -1972,6 +1997,7 @@ export async function getExhibitorAnalytics(
   })
 
   return {
+    isSimulated: true,
     boothViews,
     uniqueVisitors,
     exhibitViews,

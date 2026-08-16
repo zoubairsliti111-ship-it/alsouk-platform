@@ -181,6 +181,10 @@ export interface ExhibitionVisitorNote {
 // ===========================================================================
 
 export interface OrganizerAnalytics {
+  /** False when the exhibition has zero real booths and zero real applications — nothing worth visualizing yet. */
+  hasActivity: boolean
+  /** True on every response today: totalVisitors/qrScans/traffic/geography/ratings have no real tracking source yet. */
+  isSimulated: boolean
   totalExhibitions: number
   totalBooths: number
   activeBooths: number
@@ -225,6 +229,8 @@ export interface OrganizerAnalytics {
 }
 
 export interface ExhibitorAnalytics {
+  /** True on every response today: no real per-booth visitor/click tracking exists yet. */
+  isSimulated: boolean
   boothViews: number
   uniqueVisitors: number
   exhibitViews: number
