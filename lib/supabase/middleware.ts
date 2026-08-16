@@ -30,6 +30,21 @@ async function isAdmin(userId: string): Promise<boolean> {
  * Uses middleware-friendly cookies from Request/Response.
  */
 export async function updateSession(request: NextRequest) {
+  // TEMPORARY diagnostic for the /admin "Access denied" investigation —
+  // reveals only booleans/lengths, never secret values. Removed once the
+  // root cause is confirmed.
+  if (request.nextUrl.pathname === "/api/_diag/edge-env") {
+    const serviceKeyVar = firstDefined(SERVICE_KEY_VARS)
+    const urlVar = firstDefined(URL_VARS)
+    return NextResponse.json({
+      hasUrl: Boolean(urlVar.value),
+      urlVarName: urlVar.name || null,
+      hasServiceKey: Boolean(serviceKeyVar.value),
+      serviceKeyVarName: serviceKeyVar.name || null,
+      serviceKeyLength: serviceKeyVar.value?.length || 0,
+    })
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
