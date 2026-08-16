@@ -1,4 +1,5 @@
 import { restGet, getRestConfig } from "@/lib/supabase/rest"
+import type { SupabaseClient } from "@supabase/supabase-js"
 import type { ExhibitionMedia, ExhibitionDocument } from "@/lib/domains/exhibition/types"
 import {
   mapExhibitionMedia,
@@ -62,6 +63,30 @@ export function getMockDocs(): Record<string, ExhibitionDocument[]> {
 /**
  * Loads all media items (images/videos) attached to a booth.
  */
+/** Resolves a media row's booth_id (public read) so its owner can be looked up. */
+export async function getMediaBoothId(mediaId: string): Promise<string | null> {
+  try {
+    const rows = await restGet<{ booth_id: string }>(
+      `exhibition_media?select=booth_id&id=eq.${encodeURIComponent(mediaId)}&limit=1`
+    )
+    return rows[0]?.booth_id || null
+  } catch {
+    return null
+  }
+}
+
+/** Resolves a document row's booth_id (public read) so its owner can be looked up. */
+export async function getDocumentBoothId(documentId: string): Promise<string | null> {
+  try {
+    const rows = await restGet<{ booth_id: string }>(
+      `exhibition_documents?select=booth_id&id=eq.${encodeURIComponent(documentId)}&limit=1`
+    )
+    return rows[0]?.booth_id || null
+  } catch {
+    return null
+  }
+}
+
 export async function getMediaForBooth(boothId: string): Promise<ExhibitionMedia[]> {
   try {
     const cfg = getRestConfig()
@@ -87,25 +112,9 @@ export async function getMediaForBooth(boothId: string): Promise<ExhibitionMedia
  * Creates a new media item (image or video).
  */
 export async function createMediaItem(
-  data: Omit<ExhibitionMedia, "id">
+  data: Omit<ExhibitionMedia, "id">,
+  client: SupabaseClient
 ): Promise<ExhibitionMedia> {
-  const cfg = getRestConfig()
-  const boothId = data.boothId
-
-  if (!cfg || boothId.startsWith("booth-")) {
-    const list = getMockMedia()
-    if (!list[boothId]) {
-      list[boothId] = []
-    }
-    const newMedia: ExhibitionMedia = {
-      ...data,
-      id: `media-${Math.random().toString(36).slice(2, 11)}`,
-      createdAt: new Date().toISOString(),
-    }
-    list[boothId].push(newMedia)
-    return newMedia
-  }
-
   const record = {
     booth_id: data.boothId,
     media_type: data.mediaType,
@@ -116,31 +125,14 @@ export async function createMediaItem(
     is_cover: Boolean(data.isCover),
   }
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_media`, {
-    method: "POST",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client.from("exhibition_media").insert(record).select().single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to create media item: ${res.status} ${text}`)
-  }
-
-  const rows = await res.json()
-  const row = rows[0]
-  if (!row) {
-    throw new Error("No media row returned from database insert.")
+  if (error || !row) {
+    throw new Error(`Failed to create media item: ${error?.message || "no row returned"}`)
   }
 
   return {
-    ...mapExhibitionMedia(row),
+    ...mapExhibitionMedia(row as ExhibitionMediaRow),
     isCover: row.is_cover !== undefined ? Boolean(row.is_cover) : false
   }
 }
@@ -150,32 +142,9 @@ export async function createMediaItem(
  */
 export async function updateMediaItem(
   id: string,
-  data: Partial<ExhibitionMedia>
+  data: Partial<ExhibitionMedia>,
+  client: SupabaseClient
 ): Promise<ExhibitionMedia> {
-  const cfg = getRestConfig()
-
-  if (!cfg || id.startsWith("media-")) {
-    const list = getMockMedia()
-    let found: ExhibitionMedia | null = null
-    for (const bId in list) {
-      const idx = list[bId].findIndex((m) => m.id === id)
-      if (idx !== -1) {
-        const existing = list[bId][idx]
-        const updated: ExhibitionMedia = {
-          ...existing,
-          ...data,
-        }
-        list[bId][idx] = updated
-        found = updated
-        break
-      }
-    }
-    if (!found) {
-      throw new Error(`Mock media item not found: ${id}`)
-    }
-    return found
-  }
-
   const record: Record<string, any> = {}
   if (data.caption !== undefined) record.caption = data.caption
   if (data.url !== undefined) record.url = data.url
@@ -183,31 +152,19 @@ export async function updateMediaItem(
   if (data.sortOrder !== undefined) record.sort_order = Number(data.sortOrder)
   if (data.isCover !== undefined) record.is_cover = Boolean(data.isCover)
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_media?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client
+    .from("exhibition_media")
+    .update(record)
+    .eq("id", id)
+    .select()
+    .single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to update media item: ${res.status} ${text}`)
-  }
-
-  const rows = await res.json()
-  const row = rows[0]
-  if (!row) {
-    throw new Error(`No media row returned after update for ID ${id}`)
+  if (error || !row) {
+    throw new Error(`Failed to update media item ${id}: ${error?.message || "no row returned"}`)
   }
 
   return {
-    ...mapExhibitionMedia(row),
+    ...mapExhibitionMedia(row as ExhibitionMediaRow),
     isCover: row.is_cover !== undefined ? Boolean(row.is_cover) : false
   }
 }
@@ -215,30 +172,9 @@ export async function updateMediaItem(
 /**
  * Deletes a media item.
  */
-export async function deleteMediaItem(id: string): Promise<boolean> {
-  const cfg = getRestConfig()
-
-  if (!cfg || id.startsWith("media-")) {
-    const list = getMockMedia()
-    for (const bId in list) {
-      const idx = list[bId].findIndex((m) => m.id === id)
-      if (idx !== -1) {
-        list[bId].splice(idx, 1)
-        return true
-      }
-    }
-    return false
-  }
-
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_media?id=eq.${encodeURIComponent(id)}`, {
-    method: "DELETE",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-    },
-  })
-
-  return res.ok
+export async function deleteMediaItem(id: string, client: SupabaseClient): Promise<boolean> {
+  const { error } = await client.from("exhibition_media").delete().eq("id", id)
+  return !error
 }
 
 /**
@@ -246,34 +182,11 @@ export async function deleteMediaItem(id: string): Promise<boolean> {
  */
 export async function updateMediaSortOrder(
   boothId: string,
-  orderedIds: string[]
+  orderedIds: string[],
+  client: SupabaseClient
 ): Promise<boolean> {
-  const cfg = getRestConfig()
-
-  if (!cfg || boothId.startsWith("booth-")) {
-    const list = getMockMedia()
-    const boothMedia = list[boothId] || []
-    orderedIds.forEach((id, idx) => {
-      const foundIdx = boothMedia.findIndex((m) => m.id === id)
-      if (foundIdx !== -1) {
-        boothMedia[foundIdx].sortOrder = idx + 1
-      }
-    })
-    return true
-  }
-
   for (let i = 0; i < orderedIds.length; i++) {
-    const id = orderedIds[i]
-    await fetch(`${cfg.url}/rest/v1/exhibition_media?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      headers: {
-        apikey: cfg.key,
-        Authorization: `Bearer ${cfg.key}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ sort_order: i + 1 }),
-      cache: "no-store",
-    })
+    await client.from("exhibition_media").update({ sort_order: i + 1 }).eq("id", orderedIds[i])
   }
 
   return true
@@ -286,77 +199,27 @@ export async function updateMediaSortOrder(
  */
 export async function setBoothCoverImage(
   boothId: string,
-  mediaId: string
+  mediaId: string,
+  client: SupabaseClient
 ): Promise<boolean> {
-  const cfg = getRestConfig()
-
-  if (!cfg || boothId.startsWith("booth-")) {
-    const list = getMockMedia()
-    const boothMedia = list[boothId] || []
-    let targetUrl = ""
-    boothMedia.forEach((m) => {
-      m.isCover = m.id === mediaId
-      if (m.isCover) targetUrl = m.url
-    })
-
-    if (targetUrl) {
-      const mockBooths = getMockBooths()
-      for (const slug in mockBooths) {
-        const idx = mockBooths[slug].findIndex((b) => b.id === boothId)
-        if (idx !== -1) {
-          mockBooths[slug][idx].bannerUrl = targetUrl
-          break
-        }
-      }
-    }
-    return true
-  }
-
-  // Real Database updates:
   // 1. Clear previous covers
-  await fetch(`${cfg.url}/rest/v1/exhibition_media?booth_id=eq.${encodeURIComponent(boothId)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({ is_cover: false }),
-    cache: "no-store",
-  })
+  await client.from("exhibition_media").update({ is_cover: false }).eq("booth_id", boothId)
 
   // 2. Mark target media as cover and fetch its URL
-  const resMedia = await fetch(`${cfg.url}/rest/v1/exhibition_media?id=eq.${encodeURIComponent(mediaId)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify({ is_cover: true }),
-    cache: "no-store",
-  })
+  const { data: mediaRow, error } = await client
+    .from("exhibition_media")
+    .update({ is_cover: true })
+    .eq("id", mediaId)
+    .select()
+    .single()
 
-  if (!resMedia.ok) {
-    const text = await resMedia.text()
-    throw new Error(`Failed to set media cover flag: ${resMedia.status} ${text}`)
+  if (error || !mediaRow) {
+    throw new Error(`Failed to set media cover flag: ${error?.message || "no row returned"}`)
   }
 
-  const mediaRows = await resMedia.json()
-  const mediaRow = mediaRows[0]
-  if (mediaRow && mediaRow.url) {
+  if (mediaRow.url) {
     // 3. Update booth's banner_url to match the cover URL
-    await fetch(`${cfg.url}/rest/v1/exhibition_booths?id=eq.${encodeURIComponent(boothId)}`, {
-      method: "PATCH",
-      headers: {
-        apikey: cfg.key,
-        Authorization: `Bearer ${cfg.key}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ banner_url: mediaRow.url }),
-      cache: "no-store",
-    })
+    await client.from("exhibition_booths").update({ banner_url: mediaRow.url }).eq("id", boothId)
   }
 
   return true
@@ -391,25 +254,9 @@ export async function getDocumentsForBooth(boothId: string): Promise<ExhibitionD
  * Creates/uploads a new document.
  */
 export async function createDocumentItem(
-  data: Omit<ExhibitionDocument, "id">
+  data: Omit<ExhibitionDocument, "id">,
+  client: SupabaseClient
 ): Promise<ExhibitionDocument> {
-  const cfg = getRestConfig()
-  const boothId = data.boothId
-
-  if (!cfg || boothId.startsWith("booth-")) {
-    const list = getMockDocs()
-    if (!list[boothId]) {
-      list[boothId] = []
-    }
-    const newDoc: ExhibitionDocument = {
-      ...data,
-      id: `doc-${Math.random().toString(36).slice(2, 11)}`,
-      createdAt: new Date().toISOString(),
-    }
-    list[boothId].push(newDoc)
-    return newDoc
-  }
-
   const record = {
     booth_id: data.boothId,
     name: data.name,
@@ -420,57 +267,19 @@ export async function createDocumentItem(
     description: data.description || null,
   }
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_documents`, {
-    method: "POST",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client.from("exhibition_documents").insert(record).select().single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to create document item: ${res.status} ${text}`)
+  if (error || !row) {
+    throw new Error(`Failed to create document item: ${error?.message || "no row returned"}`)
   }
 
-  const rows = await res.json()
-  const row = rows[0]
-  if (!row) {
-    throw new Error("No document row returned from database insert.")
-  }
-
-  return mapExhibitionDocument(row)
+  return mapExhibitionDocument(row as ExhibitionDocumentRow)
 }
 
 /**
  * Deletes a document.
  */
-export async function deleteDocumentItem(id: string): Promise<boolean> {
-  const cfg = getRestConfig()
-
-  if (!cfg || id.startsWith("doc-")) {
-    const list = getMockDocs()
-    for (const bId in list) {
-      const idx = list[bId].findIndex((d) => d.id === id)
-      if (idx !== -1) {
-        list[bId].splice(idx, 1)
-        return true
-      }
-    }
-    return false
-  }
-
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_documents?id=eq.${encodeURIComponent(id)}`, {
-    method: "DELETE",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-    },
-  })
-
-  return res.ok
+export async function deleteDocumentItem(id: string, client: SupabaseClient): Promise<boolean> {
+  const { error } = await client.from("exhibition_documents").delete().eq("id", id)
+  return !error
 }

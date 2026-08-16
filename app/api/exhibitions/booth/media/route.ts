@@ -6,7 +6,9 @@ import {
   deleteMediaItem,
   updateMediaSortOrder,
   setBoothCoverImage,
+  getMediaBoothId,
 } from "@/lib/services/booth-media-service"
+import { authorizeBoothOwner } from "@/lib/exhibitions/server"
 
 export const dynamic = "force-dynamic"
 
@@ -45,6 +47,9 @@ export async function POST(request: Request) {
       )
     }
 
+    const authz = await authorizeBoothOwner(boothId)
+    if (!authz.ok) return authz.response
+
     const newItem = await createMediaItem({
       boothId,
       mediaType,
@@ -53,7 +58,7 @@ export async function POST(request: Request) {
       sortOrder: Number(sortOrder) || 0,
       thumbnailUrl: thumbnailUrl || null,
       isCover: Boolean(isCover),
-    })
+    }, authz.auth.client)
 
     return NextResponse.json({ success: true, data: newItem })
   } catch (err: any) {
@@ -77,7 +82,9 @@ export async function PATCH(request: Request) {
           { status: 400 }
         )
       }
-      await updateMediaSortOrder(boothId, orderedIds)
+      const authz = await authorizeBoothOwner(boothId)
+      if (!authz.ok) return authz.response
+      await updateMediaSortOrder(boothId, orderedIds, authz.auth.client)
       return NextResponse.json({ success: true })
     }
 
@@ -88,7 +95,9 @@ export async function PATCH(request: Request) {
           { status: 400 }
         )
       }
-      await setBoothCoverImage(boothId, id)
+      const authz = await authorizeBoothOwner(boothId)
+      if (!authz.ok) return authz.response
+      await setBoothCoverImage(boothId, id, authz.auth.client)
       return NextResponse.json({ success: true })
     }
 
@@ -99,7 +108,10 @@ export async function PATCH(request: Request) {
           { status: 400 }
         )
       }
-      const updated = await updateMediaItem(id, data)
+      const mediaBoothId = await getMediaBoothId(id)
+      const authz = await authorizeBoothOwner(mediaBoothId)
+      if (!authz.ok) return authz.response
+      const updated = await updateMediaItem(id, data, authz.auth.client)
       return NextResponse.json({ success: true, data: updated })
     }
 
@@ -128,7 +140,11 @@ export async function DELETE(request: Request) {
       )
     }
 
-    const success = await deleteMediaItem(id)
+    const mediaBoothId = await getMediaBoothId(id)
+    const authz = await authorizeBoothOwner(mediaBoothId)
+    if (!authz.ok) return authz.response
+
+    const success = await deleteMediaItem(id, authz.auth.client)
     return NextResponse.json({ success })
   } catch (err: any) {
     console.error("[API/exhibitions/booth/media DELETE] Error:", err)

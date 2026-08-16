@@ -5,6 +5,7 @@ import {
   rejectApplication,
   updateApplicationReviewNotes,
 } from "@/lib/services/exhibitions-service"
+import { authorizeAdmin } from "@/lib/admin/server"
 
 export const dynamic = "force-dynamic"
 
@@ -13,8 +14,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const { id } = await params
-    const application = await getExhibitionApplicationById(id)
+    const application = await getExhibitionApplicationById(id, authz.auth.service)
 
     if (!application) {
       return NextResponse.json(
@@ -38,6 +42,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const { id } = await params
     let body: any
     try {
@@ -62,7 +69,7 @@ export async function POST(
 
     switch (action) {
       case "Approve":
-        result = await approveApplication(id, reviewNotes)
+        result = await approveApplication(id, reviewNotes, authz.auth.service)
         break
       case "Reject":
         if (!reviewNotes || !reviewNotes.trim()) {
@@ -71,10 +78,10 @@ export async function POST(
             { status: 400 }
           )
         }
-        result = await rejectApplication(id, reviewNotes.trim())
+        result = await rejectApplication(id, reviewNotes.trim(), authz.auth.service)
         break
       case "UpdateNotes":
-        result = await updateApplicationReviewNotes(id, reviewNotes || "")
+        result = await updateApplicationReviewNotes(id, reviewNotes || "", authz.auth.service)
         break
       default:
         return NextResponse.json(

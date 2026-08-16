@@ -4,6 +4,7 @@ import {
   createExhibit,
   updateExhibitsSortOrder,
 } from "@/lib/services/exhibitions-service"
+import { authorizeBoothOwner } from "@/lib/exhibitions/server"
 
 export const dynamic = "force-dynamic"
 
@@ -55,6 +56,9 @@ export async function POST(request: Request) {
       )
     }
 
+    const authz = await authorizeBoothOwner(boothId)
+    if (!authz.ok) return authz.response
+
     const newExhibit = await createExhibit({
       boothId,
       name,
@@ -68,7 +72,7 @@ export async function POST(request: Request) {
       sortOrder: Number(sortOrder) || 0,
       category: category || null,
       status: status || "Draft",
-    })
+    }, authz.auth.client)
 
     return NextResponse.json({ success: true, data: newExhibit })
   } catch (err: any) {
@@ -92,7 +96,10 @@ export async function PATCH(request: Request) {
       )
     }
 
-    const success = await updateExhibitsSortOrder(boothId, orderedIds)
+    const authz = await authorizeBoothOwner(boothId)
+    if (!authz.ok) return authz.response
+
+    const success = await updateExhibitsSortOrder(boothId, orderedIds, authz.auth.client)
     return NextResponse.json({ success })
   } catch (err: any) {
     console.error("[API/exhibits PATCH/REORDER] Error:", err)

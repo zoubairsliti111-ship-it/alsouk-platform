@@ -6,11 +6,15 @@ import {
   mapExhibitionBooth,
   updateBoothStatus,
 } from "@/lib/services/exhibitions-service"
+import { authorizeAdmin } from "@/lib/admin/server"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(request: Request) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const { searchParams } = new URL(request.url)
     const exhibitions = await getExhibitions()
 
@@ -48,6 +52,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const body = await request.json()
     const { action, boothId, status } = body
 
@@ -65,7 +72,7 @@ export async function POST(request: Request) {
           { status: 400 }
         )
       }
-      const updated = await updateBoothStatus(boothId, status)
+      const updated = await updateBoothStatus(boothId, status, authz.auth.service)
       return NextResponse.json({ success: true, data: updated })
     }
 

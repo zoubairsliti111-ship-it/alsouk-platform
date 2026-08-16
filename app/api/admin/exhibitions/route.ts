@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getExhibitions, createExhibition } from "@/lib/services/exhibitions-service"
+import { authorizeAdmin } from "@/lib/admin/server"
 
 export const dynamic = "force-dynamic"
 
@@ -18,6 +19,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const body = await request.json()
     const {
       name,
@@ -56,7 +60,7 @@ export async function POST(request: Request) {
       contactEmail,
       contactPhone,
       website
-    })
+    }, authz.auth.service)
 
     return NextResponse.json({ success: true, data: created })
   } catch (err: any) {

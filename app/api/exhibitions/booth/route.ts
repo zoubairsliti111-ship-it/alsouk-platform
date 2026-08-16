@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getBoothDetails, saveBoothDraft } from "@/lib/services/exhibitions-service"
+import { authorizeBoothOwner } from "@/lib/exhibitions/server"
 
 export const dynamic = "force-dynamic"
 
@@ -45,6 +46,9 @@ export async function POST(request: Request) {
       )
     }
 
+    const authz = await authorizeBoothOwner(id)
+    if (!authz.ok) return authz.response
+
     const updated = await saveBoothDraft(id, {
       title,
       shortDescription,
@@ -53,7 +57,7 @@ export async function POST(request: Request) {
       logoUrl,
       category,
       status,
-    })
+    }, authz.auth.client)
 
     return NextResponse.json({ success: true, data: updated })
   } catch (err: any) {

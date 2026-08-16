@@ -4,9 +4,11 @@ import {
   deleteExhibit,
   duplicateExhibit,
   mapExhibitionExhibit,
+  getExhibitBoothId,
 } from "@/lib/services/exhibitions-service"
 import { restGet } from "@/lib/supabase/rest"
 import type { ExhibitionItemRow } from "@/lib/services/exhibitions-service"
+import { authorizeBoothOwner } from "@/lib/exhibitions/server"
 
 export const dynamic = "force-dynamic"
 
@@ -68,8 +70,12 @@ export async function PATCH(
       )
     }
 
+    const boothId = await getExhibitBoothId(id)
+    const authz = await authorizeBoothOwner(boothId)
+    if (!authz.ok) return authz.response
+
     if (action === "duplicate") {
-      const copied = await duplicateExhibit(id)
+      const copied = await duplicateExhibit(id, authz.auth.client)
       return NextResponse.json({ success: true, data: copied })
     }
 
@@ -81,7 +87,7 @@ export async function PATCH(
         )
       }
 
-      const updated = await updateExhibit(id, data)
+      const updated = await updateExhibit(id, data, authz.auth.client)
       return NextResponse.json({ success: true, data: updated })
     }
 
@@ -106,7 +112,11 @@ export async function DELETE(
     const params = await props.params
     const id = params.id
 
-    const success = await deleteExhibit(id)
+    const boothId = await getExhibitBoothId(id)
+    const authz = await authorizeBoothOwner(boothId)
+    if (!authz.ok) return authz.response
+
+    const success = await deleteExhibit(id, authz.auth.client)
     if (!success) {
       return NextResponse.json(
         { success: false, error: "Exhibit not found or deletion failed" },

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { updateExhibition, updateExhibitionStatus } from "@/lib/services/exhibitions-service"
+import { authorizeAdmin } from "@/lib/admin/server"
 
 export const dynamic = "force-dynamic"
 
@@ -8,6 +9,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const { id } = await params
     const body = await request.json()
     const {
@@ -30,7 +34,7 @@ export async function PATCH(
     let updated
 
     if (status !== undefined) {
-      updated = await updateExhibitionStatus(id, status)
+      updated = await updateExhibitionStatus(id, status, authz.auth.service)
     } else {
       updated = await updateExhibition(id, {
         name,
@@ -46,7 +50,7 @@ export async function PATCH(
         contactEmail,
         contactPhone,
         website,
-      })
+      }, authz.auth.service)
     }
 
     return NextResponse.json({ success: true, data: updated })

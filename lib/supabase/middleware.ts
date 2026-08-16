@@ -1,6 +1,29 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
-import { KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
+import { KEY_VARS, URL_VARS, SERVICE_KEY_VARS, firstDefined } from "@/lib/supabase/env"
+
+/**
+ * Checks `admin_users` directly via PostgREST using the service-role key.
+ * The table has zero RLS policies, so this is the only way to read it —
+ * Edge-safe since it's a plain fetch, mirroring lib/supabase/rest.ts.
+ */
+async function isAdmin(userId: string): Promise<boolean> {
+  const url = firstDefined(URL_VARS).value
+  const key = firstDefined(SERVICE_KEY_VARS).value
+  if (!url || !key) return false
+
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/admin_users?select=id&id=eq.${encodeURIComponent(userId)}&limit=1`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: "no-store" },
+    )
+    if (!res.ok) return false
+    const rows = await res.json()
+    return Array.isArray(rows) && rows.length > 0
+  } catch {
+    return false
+  }
+}
 
 /**
  * Restores and refreshes the Supabase Auth session for incoming requests.
@@ -44,7 +67,19 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: DO NOT remove/change other headers.
   // Refresh the session by calling getUser().
-  await supabase.auth.getUser()
+  const { data } = await supabase.auth.getUser()
+  const user = data?.user
+
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    if (!user) {
+      const loginUrl = new URL("/login", request.url)
+      loginUrl.searchParams.set("redirect", request.nextUrl.pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    if (!(await isAdmin(user.id))) {
+      return new NextResponse("Access denied.", { status: 403 })
+    }
+  }
 
   return response
 }

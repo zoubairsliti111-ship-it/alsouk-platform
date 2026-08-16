@@ -3,7 +3,9 @@ import {
   getDocumentsForBooth,
   createDocumentItem,
   deleteDocumentItem,
+  getDocumentBoothId,
 } from "@/lib/services/booth-media-service"
+import { authorizeBoothOwner } from "@/lib/exhibitions/server"
 
 export const dynamic = "force-dynamic"
 
@@ -42,6 +44,9 @@ export async function POST(request: Request) {
       )
     }
 
+    const authz = await authorizeBoothOwner(boothId)
+    if (!authz.ok) return authz.response
+
     const newItem = await createDocumentItem({
       boothId,
       name,
@@ -50,7 +55,7 @@ export async function POST(request: Request) {
       sortOrder: Number(sortOrder) || 0,
       language: language || null,
       description: description || null,
-    })
+    }, authz.auth.client)
 
     return NextResponse.json({ success: true, data: newItem })
   } catch (err: any) {
@@ -74,7 +79,11 @@ export async function DELETE(request: Request) {
       )
     }
 
-    const success = await deleteDocumentItem(id)
+    const boothId = await getDocumentBoothId(id)
+    const authz = await authorizeBoothOwner(boothId)
+    if (!authz.ok) return authz.response
+
+    const success = await deleteDocumentItem(id, authz.auth.client)
     return NextResponse.json({ success })
   } catch (err: any) {
     console.error("[API/exhibitions/booth/documents DELETE] Error:", err)
