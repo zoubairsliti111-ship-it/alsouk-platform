@@ -1,7 +1,23 @@
 import { NextResponse } from "next/server"
 import { KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
-import { SUPPLIERS_TABLE } from "@/lib/supabase/suppliers-service"
 import { normalizeRfq, validateRfq, type RfqInput } from "@/lib/supabase/rfq-service"
+
+// The public read surface for `companies` — see supabase/migrations/0046 and
+// 0047. Base `companies` SELECT is member-only since 0047; this route only
+// ever holds the anon key (never a real user session), so a direct
+// `companies` lookup silently returns zero rows and drops company_id to
+// null. companies_public is exactly the view built for anon-safe company
+// reads. It deliberately does NOT expose `supplier_id` (an internal linkage
+// column, never meant to be public — see 0046's column allowlist), which is
+// why the legacy-supplier fallback below reads the real `suppliers` table
+// instead, not this view.
+const COMPANIES_PUBLIC_TABLE = "companies_public"
+
+// The real legacy supplier directory (see 0000_create_suppliers.sql —
+// id/company_name, publicly readable). Currently empty in production, kept
+// only for backward compatibility with any pre-companies-era supplierId
+// that might still be in circulation.
+const LEGACY_SUPPLIERS_TABLE = "suppliers"
 
 export const dynamic = "force-dynamic"
 
@@ -61,32 +77,41 @@ export async function POST(request: Request) {
   const headers = { apikey: key, Authorization: `Bearer ${key}` }
 
   // When directed at a specific supplier/company, confirm it exists and resolve its company_id.
+  // finalSupplierId is deliberately NOT defaulted to the raw incoming id:
+  // rfqs.supplier_id has a foreign key to the *legacy* `suppliers` table
+  // (see 0000_create_suppliers.sql), and every real caller today
+  // (components/directory/supplier-profile.tsx) passes a `companies.id` —
+  // defaulting finalSupplierId to that value used to violate
+  // rfqs_supplier_id_fkey on every directed RFQ (companies.id never exists
+  // in the empty `suppliers` table), failing the insert outright with a 409
+  // instead of merely leaving company_id null.
   let supplierName: string | null = null
   let companyId: string | null = null
-  let finalSupplierId: string | null = supplierId || null
+  let finalSupplierId: string | null = null
 
   if (supplierId) {
     try {
-      // 1. Try to look up as Company first
+      // 1. Try to look up as a real Company (the common case for every
+      // current caller) via companies_public.
       const compLookup = await fetch(
-        `${url}/rest/v1/companies?select=id,name,supplier_id&id=eq.${encodeURIComponent(supplierId)}&limit=1`,
+        `${url}/rest/v1/${COMPANIES_PUBLIC_TABLE}?select=id,name&id=eq.${encodeURIComponent(supplierId)}&limit=1`,
         { headers, cache: "no-store" },
       )
       if (compLookup.ok) {
-        const compRows = (await compLookup.json()) as { id: string; name: string; supplier_id: string | null }[]
+        const compRows = (await compLookup.json()) as { id: string; name: string }[]
         if (compRows && compRows[0]) {
           companyId = compRows[0].id
           supplierName = compRows[0].name
-          if (compRows[0].supplier_id) {
-            finalSupplierId = compRows[0].supplier_id
-          }
         }
       }
 
-      // 2. If not found, try to look up as Supplier
+      // 2. If not found, try to look up as a legacy Supplier row directly
+      // (LEGACY_SUPPLIERS_TABLE is the real `suppliers` table, not
+      // companies_public — confirmed empty in production today, so this
+      // is currently a no-op, kept only for backward compatibility).
       if (!companyId) {
         const lookup = await fetch(
-          `${url}/rest/v1/${SUPPLIERS_TABLE}?select=company_name,id&id=eq.${encodeURIComponent(supplierId)}&limit=1`,
+          `${url}/rest/v1/${LEGACY_SUPPLIERS_TABLE}?select=company_name,id&id=eq.${encodeURIComponent(supplierId)}&limit=1`,
           { headers, cache: "no-store" },
         )
         if (lookup.ok) {
@@ -95,17 +120,13 @@ export async function POST(request: Request) {
             supplierName = rows[0].company_name
             finalSupplierId = rows[0].id
 
-            // Now find linked company
-            const companyLookup = await fetch(
-              `${url}/rest/v1/companies?select=id&supplier_id=eq.${encodeURIComponent(finalSupplierId)}&limit=1`,
-              { headers, cache: "no-store" },
-            )
-            if (companyLookup.ok) {
-              const compRows = (await companyLookup.json()) as { id: string }[]
-              if (compRows && compRows[0]) {
-                companyId = compRows[0].id
-              }
-            }
+            // Now find the company linked to this legacy supplier, if any.
+            // companies_public deliberately doesn't expose `supplier_id`
+            // (internal linkage column, never public — see 0046), so this
+            // specific lookup can't go through the view; it's only ever
+            // reached when a genuine `suppliers` row exists (none do today)
+            // and stays unresolved (companyId left null) until this route
+            // is given a service-role path for that one internal column.
           }
         }
       }
