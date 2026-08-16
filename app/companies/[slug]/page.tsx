@@ -17,7 +17,7 @@ export default function CompanyPage({ params }: { params: Promise<{ slug: string
     let active = true
     const supabase = createClient()
     supabase
-      .from("companies")
+      .from("companies_public")
       .select("id")
       .eq("slug", slug)
       .maybeSingle()
