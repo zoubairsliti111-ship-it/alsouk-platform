@@ -30,35 +30,6 @@ async function isAdmin(userId: string): Promise<boolean> {
  * Uses middleware-friendly cookies from Request/Response.
  */
 export async function updateSession(request: NextRequest) {
-  // TEMPORARY diagnostic for the /admin "Access denied" investigation —
-  // reveals only booleans/lengths, never secret values. Removed once the
-  // root cause is confirmed.
-  if (request.nextUrl.pathname === "/api/_diag/edge-env") {
-    const serviceKeyVar = firstDefined(SERVICE_KEY_VARS)
-    const urlVar = firstDefined(URL_VARS)
-    const diag: Record<string, unknown> = {
-      hasUrl: Boolean(urlVar.value),
-      urlVarName: urlVar.name || null,
-      hasServiceKey: Boolean(serviceKeyVar.value),
-      serviceKeyVarName: serviceKeyVar.name || null,
-      serviceKeyLength: serviceKeyVar.value?.length || 0,
-    }
-    if (urlVar.value && serviceKeyVar.value) {
-      try {
-        const res = await fetch(
-          `${urlVar.value}/rest/v1/admin_users?select=id&id=eq.72e7437b-6251-4fa9-83ec-9afac9b5890d&limit=1`,
-          { headers: { apikey: serviceKeyVar.value, Authorization: `Bearer ${serviceKeyVar.value}` }, cache: "no-store" },
-        )
-        diag.probeStatus = res.status
-        diag.probeOk = res.ok
-        diag.probeBody = await res.text()
-      } catch (e: any) {
-        diag.probeError = String(e?.message || e)
-      }
-    }
-    return NextResponse.json(diag)
-  }
-
   let response = NextResponse.next({
     request: {
       headers: request.headers,
