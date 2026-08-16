@@ -34,7 +34,7 @@ function mapMessage(row: MessageRow): MessageItem {
  */
 export async function resolveParticipant(supabase: any, userId: string): Promise<MessageParticipant> {
   const { data: company } = await supabase
-    .from("companies")
+    .from("companies_public")
     .select("name, slug, logo_url")
     .eq("owner_id", userId)
     .maybeSingle()
