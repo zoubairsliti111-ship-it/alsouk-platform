@@ -140,6 +140,8 @@ const localT = {
     externalStoreUrlHint: "Already selling on your own online store? Paste its address and buyers will see a \"Visit External Store\" link on your profile.",
     externalStoreUrlInvalid: "Enter a valid store address, for example https://mystore.com",
     activateSupplierSpace: "Complete Your Profile",
+    noCompanyCtaTitle: "Set Up Your Company First",
+    noCompanyCtaDesc: "You need to complete your company profile before you can post updates, add products, or use Studio.",
     tabBuyerReviews: "Buyer Reviews",
     verifiedReviewsTitle: "Verified Buyer Reviews",
     verifiedReviewsDesc: "Authentic comments, ratings, and feedback from regional partners",
@@ -256,6 +258,8 @@ const localT = {
     externalStoreUrlHint: "Vous vendez déjà sur votre propre boutique en ligne ? Collez son adresse et les acheteurs verront un lien « Visiter la boutique externe » sur votre profil.",
     externalStoreUrlInvalid: "Saisissez une adresse de boutique valide, par exemple https://maboutique.com",
     activateSupplierSpace: "Compléter votre profil",
+    noCompanyCtaTitle: "Configurez d'abord votre entreprise",
+    noCompanyCtaDesc: "Vous devez compléter le profil de votre entreprise avant de pouvoir publier des mises à jour, ajouter des produits ou utiliser Studio.",
     tabBuyerReviews: "Avis acheteurs",
     verifiedReviewsTitle: "Avis vérifiés des acheteurs",
     verifiedReviewsDesc: "Commentaires, notes et retours authentiques de partenaires régionaux",
@@ -372,6 +376,8 @@ const localT = {
     externalStoreUrlHint: "هل تبيع بالفعل عبر متجرك الإلكتروني الخاص؟ الصق عنوانه وسيرى المشترون رابط «زيارة المتجر الخارجي» في ملفك.",
     externalStoreUrlInvalid: "أدخل عنوان متجر صالحًا، مثال https://mystore.com",
     activateSupplierSpace: "أكمل ملفك الشخصي",
+    noCompanyCtaTitle: "أنشئ ملف شركتك أولًا",
+    noCompanyCtaDesc: "يلزم إكمال ملف شركتك قبل ما تقدر تنشر تحديثات، تضيف منتجات، أو تستخدم Studio.",
     tabBuyerReviews: "تقييمات المشترين",
     verifiedReviewsTitle: "تقييمات المشترين الموثَّقة",
     verifiedReviewsDesc: "تعليقات وتقييمات وآراء حقيقية من شركاء إقليميين",
@@ -615,6 +621,14 @@ function AccountScreen() {
   })
 
   // Onboarding Wizard states
+  // DEAD CODE: this state, handleOnboardingSubmit below, and every
+  // onboardingForm field are never rendered in any JSX — no wizard step UI
+  // exists to set them. Company creation for a brand-new account actually
+  // goes through the unconditionally-rendered "About" tab form
+  // (company-edit-form / handleUpdateCompanyProfile) instead. Left as-is,
+  // out of scope for the current fix (Posts/Products/Studio "no company"
+  // CTA) — flagged here rather than removed so it's a deliberate future
+  // cleanup, not a rediscovery.
   const [onboardingStep, setOnboardingStep] = useState(1)
   const [onboardingForm, setOnboardingForm] = useState({
     name: "",
@@ -1353,6 +1367,30 @@ function AccountScreen() {
     setIsEditingCompany(true)
     setTimeout(() => document.getElementById("company-edit-form")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100)
   }
+
+  // Posts/Products/Studio each go silent (nothing renders, no explanation)
+  // when there's no company yet, since every widget in them is gated
+  // behind `{company && ...}` — a brand-new account just sees "0 posts" /
+  // "No Products Active" / an empty Studio with no clue why. Same
+  // scroll-to-form CTA already used for "Edit Profile" and the completion
+  // checklist.
+  const noCompanyCta = (
+    <div className="rounded-[20px] border border-dashed border-border p-12 text-center max-w-md mx-auto space-y-4">
+      <Building2 className="size-12 text-muted-foreground mx-auto" />
+      <div>
+        <h4 className="text-sm font-black text-foreground">{dict.noCompanyCtaTitle}</h4>
+        <p className="text-xs text-muted-foreground leading-normal mt-1">{dict.noCompanyCtaDesc}</p>
+      </div>
+      <button
+        type="button"
+        onClick={() => openCompanyEditForm("about")}
+        className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-primary text-xs font-black text-white hover:opacity-95 shadow-xs cursor-pointer"
+      >
+        <Edit2 className="size-3.5" />
+        <span>{dict.activateSupplierSpace}</span>
+      </button>
+    </div>
+  )
 
   const missingChecklist = useMemo(() => {
     if (!company) return []
@@ -2204,10 +2242,12 @@ function AccountScreen() {
             <div className="space-y-8 max-w-2xl mx-auto">
 
               {/* If owner/authenticated, allow instant posting */}
-              {company && (
+              {company ? (
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-xs">
                   <MerchantPosts companyId={company.id} lang={lang} />
                 </div>
+              ) : (
+                noCompanyCta
               )}
 
 
@@ -2217,7 +2257,7 @@ function AccountScreen() {
           {/* Tab 3: Featured Products catalog */}
           {activeTabResolved === "studio" && (
             <div className="space-y-6">
-              {company && <StudioPanel company={{ id: company.id, name: company.name, logo_url: company.logoUrl }} />}
+              {company ? <StudioPanel company={{ id: company.id, name: company.name, logo_url: company.logoUrl }} /> : noCompanyCta}
             </div>
           )}
 
@@ -2238,6 +2278,8 @@ function AccountScreen() {
                   </button>
                 )}
               </div>
+
+              {!company && noCompanyCta}
 
               {showAddProductModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
@@ -2293,20 +2335,22 @@ function AccountScreen() {
                 </div>
               )}
 
-              {products.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {products.map((prod) => (
-                    <ProductCard key={prod.id} product={prod} />
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-[20px] border border-dashed border-border p-12 text-center max-w-md mx-auto space-y-4">
-                  <Box className="size-12 text-muted-foreground mx-auto" />
-                  <div>
-                    <h4 className="text-sm font-black text-foreground">No Products Active</h4>
-                    <p className="text-xs text-muted-foreground leading-normal mt-1">Register organic products to list them here on your public partner profile.</p>
+              {company && (
+                products.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {products.map((prod) => (
+                      <ProductCard key={prod.id} product={prod} />
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="rounded-[20px] border border-dashed border-border p-12 text-center max-w-md mx-auto space-y-4">
+                    <Box className="size-12 text-muted-foreground mx-auto" />
+                    <div>
+                      <h4 className="text-sm font-black text-foreground">No Products Active</h4>
+                      <p className="text-xs text-muted-foreground leading-normal mt-1">Register organic products to list them here on your public partner profile.</p>
+                    </div>
+                  </div>
+                )
               )}
             </div>
           )}
