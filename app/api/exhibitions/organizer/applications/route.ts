@@ -5,11 +5,15 @@ import {
   rejectApplication,
   assignBoothDetails,
 } from "@/lib/services/exhibitions-service"
+import { authorizeAdmin } from "@/lib/admin/server"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(request: Request) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status") || "all"
     const search = searchParams.get("search") || ""
@@ -19,7 +23,7 @@ export async function GET(request: Request) {
       status,
       search,
       sort,
-    })
+    }, authz.auth.service)
 
     return NextResponse.json({ success: true, data: applications })
   } catch (err: any) {
@@ -33,6 +37,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const body = await request.json()
     const { action, id, reviewNotes, boothNumber, category } = body
 
@@ -44,7 +51,7 @@ export async function POST(request: Request) {
     }
 
     if (action === "approve") {
-      const app = await approveApplication(id, reviewNotes)
+      const app = await approveApplication(id, reviewNotes, authz.auth.service)
       return NextResponse.json({ success: true, data: app })
     }
 
@@ -55,12 +62,12 @@ export async function POST(request: Request) {
           { status: 400 }
         )
       }
-      const app = await rejectApplication(id, reviewNotes.trim())
+      const app = await rejectApplication(id, reviewNotes.trim(), authz.auth.service)
       return NextResponse.json({ success: true, data: app })
     }
 
     if (action === "assign-booth") {
-      const booth = await assignBoothDetails(id, { boothNumber, category })
+      const booth = await assignBoothDetails(id, { boothNumber, category }, authz.auth.service)
       return NextResponse.json({ success: true, data: booth })
     }
 

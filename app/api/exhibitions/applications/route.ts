@@ -4,6 +4,7 @@ import {
   checkDuplicateApplication,
   getApplicationsList,
 } from "@/lib/services/exhibitions-service"
+import { authorizeAdmin } from "@/lib/admin/server"
 
 export const dynamic = "force-dynamic"
 
@@ -12,6 +13,9 @@ const PHONE_RE = /^[+]?[\d\s().-]{6,20}$/
 
 export async function GET(request: Request) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status") || "all"
     const search = searchParams.get("search") || ""
@@ -21,7 +25,7 @@ export async function GET(request: Request) {
       status,
       search,
       sort,
-    })
+    }, authz.auth.service)
 
     return NextResponse.json({ success: true, data: applications })
   } catch (err: any) {

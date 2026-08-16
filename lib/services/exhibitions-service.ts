@@ -1,4 +1,6 @@
 import { restGet, getRestConfig } from "@/lib/supabase/rest"
+import { getServiceClient } from "@/lib/supabase/service"
+import type { SupabaseClient } from "@supabase/supabase-js"
 import type {
   Exhibition,
   ExhibitionBooth,
@@ -659,6 +661,37 @@ export async function getBoothsByExhibitionSlug(slug: string): Promise<Exhibitio
 /**
  * Returns a specific booth with full details (joined exhibits, media, documents, and company).
  */
+/**
+ * Resolves a booth's owning company_id (public read — booths are publicly
+ * readable). Used by the booth self-service routes to authorize the caller
+ * via authorizeCompanyManager before writing.
+ */
+export async function getBoothCompanyId(boothId: string): Promise<string | null> {
+  try {
+    const rows = await restGet<{ company_id: string }>(
+      `exhibition_booths?select=company_id&id=eq.${encodeURIComponent(boothId)}&limit=1`
+    )
+    return rows[0]?.company_id || null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Resolves the booth_id an exhibit/media/document row belongs to (public
+ * read), so its owning company can be looked up in turn.
+ */
+export async function getExhibitBoothId(exhibitId: string): Promise<string | null> {
+  try {
+    const rows = await restGet<{ booth_id: string }>(
+      `exhibition_items?select=booth_id&id=eq.${encodeURIComponent(exhibitId)}&limit=1`
+    )
+    return rows[0]?.booth_id || null
+  } catch {
+    return null
+  }
+}
+
 export async function getBoothDetails(id: string): Promise<ExhibitionBooth | null> {
   try {
     const mockData = getMockBooths()
@@ -785,20 +818,18 @@ export async function createExhibitionApplication(
 /**
  * Returns an exhibition application by ID.
  */
-export async function getExhibitionApplicationById(id: string): Promise<ExhibitionApplication | null> {
+export async function getExhibitionApplicationById(
+  id: string,
+  client: SupabaseClient
+): Promise<ExhibitionApplication | null> {
   try {
-    const cfg = getRestConfig()
-    if (!cfg) {
-      const mockApp = getMockApplications().find((a) => a.id === id)
-      return mockApp || null
-    }
-
-    const selectQuery = "*,exhibitions(*)"
-    const rows = await restGet<ExhibitionApplicationRow>(
-      `exhibition_applications?select=${selectQuery}&id=eq.${encodeURIComponent(id)}&limit=1`
-    )
-    if (!rows || rows.length === 0) return null
-    return mapExhibitionApplication(rows[0])
+    const { data: row, error } = await client
+      .from("exhibition_applications")
+      .select("*,exhibitions(*)")
+      .eq("id", id)
+      .maybeSingle()
+    if (error || !row) return null
+    return mapExhibitionApplication(row as ExhibitionApplicationRow)
   } catch (err) {
     console.warn(`[exhibitions-service] Failed to fetch application ID ${id}:`, err)
     return null
@@ -808,17 +839,18 @@ export async function getExhibitionApplicationById(id: string): Promise<Exhibiti
 /**
  * Lists all exhibition applications for a specific exhibition.
  */
-export async function getExhibitionApplicationsByExhibitionId(exhibitionId: string): Promise<ExhibitionApplication[]> {
+export async function getExhibitionApplicationsByExhibitionId(
+  exhibitionId: string,
+  client: SupabaseClient
+): Promise<ExhibitionApplication[]> {
   try {
-    const cfg = getRestConfig()
-    if (!cfg) {
-      return getMockApplications().filter((a) => a.exhibitionId === exhibitionId)
-    }
-
-    const rows = await restGet<ExhibitionApplicationRow>(
-      `exhibition_applications?select=*,exhibitions(*)&exhibition_id=eq.${encodeURIComponent(exhibitionId)}&order=created_at.desc`
-    )
-    return rows.map(mapExhibitionApplication)
+    const { data: rows, error } = await client
+      .from("exhibition_applications")
+      .select("*,exhibitions(*)")
+      .eq("exhibition_id", exhibitionId)
+      .order("created_at", { ascending: false })
+    if (error || !rows) return []
+    return (rows as ExhibitionApplicationRow[]).map(mapExhibitionApplication)
   } catch (err) {
     console.warn(`[exhibitions-service] Failed to fetch applications for exhibition ${exhibitionId}:`, err)
     return []
@@ -827,6 +859,9 @@ export async function getExhibitionApplicationsByExhibitionId(exhibitionId: stri
 
 /**
  * Checks for a duplicate application under the same email or company ID for a specific exhibition.
+ * Uses the service-role key internally (bypassing the now-locked-down SELECT
+ * policy) since this only needs to run for the public "apply" form and only
+ * ever returns a boolean — never raw application data — to the caller.
  */
 export async function checkDuplicateApplication(
   exhibitionId: string,
@@ -834,27 +869,21 @@ export async function checkDuplicateApplication(
   companyId?: string | null
 ): Promise<boolean> {
   try {
-    const cfg = getRestConfig()
-    if (!cfg) {
-      const match = getMockApplications().some(
-        (a) =>
-          a.exhibitionId === exhibitionId &&
-          (a.email.toLowerCase() === email.toLowerCase() || (companyId && a.companyId === companyId))
-      )
-      return match
-    }
+    const service = getServiceClient()
+    if (!service) return false
 
-    const emailQuery = `email=eq.${encodeURIComponent(email.toLowerCase())}`
-    const companyQuery = companyId ? `company_id=eq.${encodeURIComponent(companyId)}` : null
+    let query = service
+      .from("exhibition_applications")
+      .select("id")
+      .eq("exhibition_id", exhibitionId)
 
-    let orClause = `and=(exhibition_id=eq.${encodeURIComponent(exhibitionId)},or=(${emailQuery}`
-    if (companyQuery) {
-      orClause += `,${companyQuery}`
-    }
-    orClause += "))"
+    query = companyId
+      ? query.or(`email.eq.${email.toLowerCase()},company_id.eq.${companyId}`)
+      : query.eq("email", email.toLowerCase())
 
-    const rows = await restGet<ExhibitionApplicationRow>(`exhibition_applications?select=id&${orClause}&limit=1`)
-    return rows && rows.length > 0
+    const { data: rows, error } = await query.limit(1)
+    if (error) return false
+    return Boolean(rows && rows.length > 0)
   } catch (err) {
     console.warn("[exhibitions-service] Failed to check for duplicate applications:", err)
     return false
@@ -874,45 +903,18 @@ export async function saveBoothDraft(
     logoUrl?: string | null
     category?: string | null
     status?: "Draft" | "Submitted" | "Published" | "Archived"
-  }
+  },
+  client: SupabaseClient
 ): Promise<ExhibitionBooth> {
-  const cfg = getRestConfig()
+  // Only the booth's owning company calls this (see authorizeCompanyManager
+  // in the route). Publishing/archiving is an admin-only decision made via
+  // updateBoothStatus, so an owner can only ever move their booth between
+  // Draft and Submitted here.
+  const allowedStatus = data.status === "Submitted" ? "Submitted" : "Draft"
 
-  if (!cfg || id.startsWith("booth-")) {
-    // Modify mock data
-    const mockData = getMockBooths()
-    let foundBooth: ExhibitionBooth | null = null
-    for (const slug in mockData) {
-      const idx = mockData[slug].findIndex((b) => b.id === id)
-      if (idx !== -1) {
-        const existing = mockData[slug][idx]
-        const updated: ExhibitionBooth = {
-          ...existing,
-          title: data.title !== undefined ? data.title : existing.title,
-          shortDescription: data.shortDescription !== undefined ? data.shortDescription : existing.shortDescription,
-          description: data.description !== undefined && data.description !== null ? data.description : existing.description,
-          bannerUrl: data.bannerUrl !== undefined ? data.bannerUrl : existing.bannerUrl,
-          logoUrl: data.logoUrl !== undefined ? data.logoUrl : existing.logoUrl,
-          category: data.category !== undefined && data.category !== null ? data.category : existing.category,
-          status: data.status !== undefined ? data.status : "Draft",
-          updatedAt: new Date().toISOString(),
-        }
-        mockData[slug][idx] = updated
-        foundBooth = updated
-        break
-      }
-    }
-
-    if (!foundBooth) {
-      throw new Error(`Mock booth not found with ID ${id}`)
-    }
-    return foundBooth
-  }
-
-  // Real database PostgREST update
   const record: Record<string, any> = {
     updated_at: new Date().toISOString(),
-    status: data.status !== undefined ? data.status : "Draft",
+    status: allowedStatus,
   }
   if (data.title !== undefined) record.title = data.title
   if (data.shortDescription !== undefined) record.short_description = data.shortDescription
@@ -921,29 +923,18 @@ export async function saveBoothDraft(
   if (data.logoUrl !== undefined) record.logo_url = data.logoUrl
   if (data.category !== undefined) record.category = data.category
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_booths?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client
+    .from("exhibition_booths")
+    .update(record)
+    .eq("id", id)
+    .select()
+    .single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to update booth draft: ${res.status} ${text}`)
+  if (error || !row) {
+    throw new Error(`Failed to update booth draft ${id}: ${error?.message || "no row returned"}`)
   }
 
-  const rows = (await res.json()) as ExhibitionBoothRow[]
-  if (!rows || rows.length === 0) {
-    throw new Error(`No booth row returned after database update for ID ${id}`)
-  }
-
-  return mapExhibitionBooth(rows[0])
+  return mapExhibitionBooth(row as ExhibitionBoothRow)
 }
 
 // ===========================================================================
@@ -987,27 +978,9 @@ export async function getExhibitsForBooth(boothId: string): Promise<ExhibitionEx
  * Creates a new exhibit.
  */
 export async function createExhibit(
-  data: Omit<ExhibitionExhibit, "id">
+  data: Omit<ExhibitionExhibit, "id">,
+  client: SupabaseClient
 ): Promise<ExhibitionExhibit> {
-  const cfg = getRestConfig()
-  const boothId = data.boothId
-
-  if (!cfg || boothId.startsWith("booth-")) {
-    const mockData = getMockExhibits()
-    if (!mockData[boothId]) {
-      mockData[boothId] = []
-    }
-    const newExhibit: ExhibitionExhibit = {
-      ...data,
-      id: `exhibit-${Math.random().toString(36).slice(2, 11)}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-    mockData[boothId].push(newExhibit)
-    return newExhibit
-  }
-
-  // Database insert via PostgREST
   const record = {
     booth_id: data.boothId,
     name: data.name,
@@ -1023,29 +996,17 @@ export async function createExhibit(
     status: data.status || "Draft",
   }
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_items`, {
-    method: "POST",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client
+    .from("exhibition_items")
+    .insert(record)
+    .select()
+    .single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to create exhibit: ${res.status} ${text}`)
+  if (error || !row) {
+    throw new Error(`Failed to create exhibit: ${error?.message || "no row returned"}`)
   }
 
-  const rows = (await res.json()) as ExhibitionItemRow[]
-  if (!rows || rows.length === 0) {
-    throw new Error("No exhibit row returned from database insert.")
-  }
-
-  return mapExhibitionExhibit(rows[0])
+  return mapExhibitionExhibit(row as ExhibitionItemRow)
 }
 
 /**
@@ -1053,34 +1014,9 @@ export async function createExhibit(
  */
 export async function updateExhibit(
   id: string,
-  data: Partial<ExhibitionExhibit>
+  data: Partial<ExhibitionExhibit>,
+  client: SupabaseClient
 ): Promise<ExhibitionExhibit> {
-  const cfg = getRestConfig()
-
-  if (!cfg || id.startsWith("exhibit-")) {
-    const mockData = getMockExhibits()
-    let found: ExhibitionExhibit | null = null
-    for (const bId in mockData) {
-      const idx = mockData[bId].findIndex((e) => e.id === id)
-      if (idx !== -1) {
-        const existing = mockData[bId][idx]
-        const updated: ExhibitionExhibit = {
-          ...existing,
-          ...data,
-          updatedAt: new Date().toISOString(),
-        }
-        mockData[bId][idx] = updated
-        found = updated
-        break
-      }
-    }
-    if (!found) {
-      throw new Error(`Mock exhibit not found with ID ${id}`)
-    }
-    return found
-  }
-
-  // Database update
   const record: Record<string, any> = {
     updated_at: new Date().toISOString(),
   }
@@ -1096,137 +1032,66 @@ export async function updateExhibit(
   if (data.category !== undefined) record.category = data.category
   if (data.status !== undefined) record.status = data.status
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_items?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client
+    .from("exhibition_items")
+    .update(record)
+    .eq("id", id)
+    .select()
+    .single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to update exhibit: ${res.status} ${text}`)
+  if (error || !row) {
+    throw new Error(`Failed to update exhibit ${id}: ${error?.message || "no row returned"}`)
   }
 
-  const rows = (await res.json()) as ExhibitionItemRow[]
-  if (!rows || rows.length === 0) {
-    throw new Error(`No exhibit row returned after update for ID ${id}`)
-  }
-
-  return mapExhibitionExhibit(rows[0])
+  return mapExhibitionExhibit(row as ExhibitionItemRow)
 }
 
 /**
  * Deletes an exhibit.
  */
-export async function deleteExhibit(id: string): Promise<boolean> {
-  const cfg = getRestConfig()
-
-  if (!cfg || id.startsWith("exhibit-")) {
-    const mockData = getMockExhibits()
-    for (const bId in mockData) {
-      const idx = mockData[bId].findIndex((e) => e.id === id)
-      if (idx !== -1) {
-        mockData[bId].splice(idx, 1)
-        return true
-      }
-    }
-    return false
-  }
-
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_items?id=eq.${encodeURIComponent(id)}`, {
-    method: "DELETE",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-    },
-  })
-
-  return res.ok
+export async function deleteExhibit(id: string, client: SupabaseClient): Promise<boolean> {
+  const { error } = await client.from("exhibition_items").delete().eq("id", id)
+  return !error
 }
 
 /**
  * Duplicates an exhibit.
  */
-export async function duplicateExhibit(id: string): Promise<ExhibitionExhibit> {
-  const cfg = getRestConfig()
-
-  if (!cfg || id.startsWith("exhibit-")) {
-    const mockData = getMockExhibits()
-    let src: ExhibitionExhibit | null = null
-    let bIdKey: string = ""
-    for (const bId in mockData) {
-      const found = mockData[bId].find((e) => e.id === id)
-      if (found) {
-        src = found
-        bIdKey = bId
-        break
-      }
-    }
-
-    if (!src) throw new Error(`Exhibit to duplicate not found: ${id}`)
-
-    const copy: ExhibitionExhibit = {
-      ...src,
-      id: `exhibit-${Math.random().toString(36).slice(2, 11)}`,
-      name: `${src.name} (Copy)`,
-      sortOrder: src.sortOrder + 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      status: "Draft",
-    }
-    mockData[bIdKey].push(copy)
-    return copy
-  }
-
-  // Real Database Duplication
-  const rows = await restGet<ExhibitionItemRow>(`exhibition_items?select=*&id=eq.${encodeURIComponent(id)}&limit=1`)
-  const srcRow = rows[0]
-  if (!srcRow) throw new Error(`Exhibit to duplicate not found in database: ${id}`)
+export async function duplicateExhibit(id: string, client: SupabaseClient): Promise<ExhibitionExhibit> {
+  const { data: srcRow, error: srcError } = await client
+    .from("exhibition_items")
+    .select("*")
+    .eq("id", id)
+    .single()
+  if (srcError || !srcRow) throw new Error(`Exhibit to duplicate not found: ${id}`)
+  const src = srcRow as ExhibitionItemRow
 
   const record = {
-    booth_id: srcRow.booth_id,
-    name: `${srcRow.name} (Copy)`,
-    short_description: srcRow.short_description || null,
-    description: srcRow.description,
-    images: srcRow.images || [],
-    videos: srcRow.videos || [],
-    pdf_url: srcRow.pdf_url || null,
-    brochure_url: srcRow.brochure_url || null,
-    is_featured: Boolean(srcRow.is_featured),
-    sort_order: (Number(srcRow.sort_order) || 0) + 1,
-    category: srcRow.category || null,
+    booth_id: src.booth_id,
+    name: `${src.name} (Copy)`,
+    short_description: src.short_description || null,
+    description: src.description,
+    images: src.images || [],
+    videos: src.videos || [],
+    pdf_url: src.pdf_url || null,
+    brochure_url: src.brochure_url || null,
+    is_featured: Boolean(src.is_featured),
+    sort_order: (Number(src.sort_order) || 0) + 1,
+    category: src.category || null,
     status: "Draft",
   }
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_items`, {
-    method: "POST",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client
+    .from("exhibition_items")
+    .insert(record)
+    .select()
+    .single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to duplicate database exhibit: ${res.status} ${text}`)
+  if (error || !row) {
+    throw new Error(`Failed to duplicate exhibit: ${error?.message || "no row returned"}`)
   }
 
-  const resultRows = (await res.json()) as ExhibitionItemRow[]
-  if (!resultRows || resultRows.length === 0) {
-    throw new Error("No duplicated row returned from database insert.")
-  }
-
-  return mapExhibitionExhibit(resultRows[0])
+  return mapExhibitionExhibit(row as ExhibitionItemRow)
 }
 
 /**
@@ -1234,35 +1099,11 @@ export async function duplicateExhibit(id: string): Promise<ExhibitionExhibit> {
  */
 export async function updateExhibitsSortOrder(
   boothId: string,
-  orderedIds: string[]
+  orderedIds: string[],
+  client: SupabaseClient
 ): Promise<boolean> {
-  const cfg = getRestConfig()
-
-  if (!cfg || boothId.startsWith("booth-")) {
-    const mockData = getMockExhibits()
-    const list = mockData[boothId] || []
-    orderedIds.forEach((id, index) => {
-      const idx = list.findIndex((e) => e.id === id)
-      if (idx !== -1) {
-        list[idx].sortOrder = index + 1
-      }
-    })
-    return true
-  }
-
-  // Update in DB (sequentially)
   for (let i = 0; i < orderedIds.length; i++) {
-    const id = orderedIds[i]
-    await fetch(`${cfg.url}/rest/v1/exhibition_items?id=eq.${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      headers: {
-        apikey: cfg.key,
-        Authorization: `Bearer ${cfg.key}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ sort_order: i + 1 }),
-      cache: "no-store",
-    })
+    await client.from("exhibition_items").update({ sort_order: i + 1 }).eq("id", orderedIds[i])
   }
 
   return true
@@ -1275,53 +1116,27 @@ export async function updateExhibitsSortOrder(
 /**
  * Gets the list of exhibition applications with search, status filtering, and sorting.
  */
-export async function getApplicationsList(params: {
-  search?: string
-  status?: string
-  sort?: "newest" | "oldest"
-}): Promise<ExhibitionApplication[]> {
+export async function getApplicationsList(
+  params: {
+    search?: string
+    status?: string
+    sort?: "newest" | "oldest"
+  },
+  client: SupabaseClient
+): Promise<ExhibitionApplication[]> {
   try {
-    const cfg = getRestConfig()
-    if (!cfg) {
-      // Offline/Mock Filter and Sort
-      let list = [...getMockApplications()]
-
-      if (params.status && params.status !== "all") {
-        list = list.filter((a) => a.status.toLowerCase() === params.status?.toLowerCase())
-      }
-
-      if (params.search) {
-        const query = params.search.toLowerCase()
-        list = list.filter(
-          (a) =>
-            a.companyName.toLowerCase().includes(query) ||
-            a.contactPerson.toLowerCase().includes(query) ||
-            a.email.toLowerCase().includes(query) ||
-            a.businessCategory.toLowerCase().includes(query)
-        )
-      }
-
-      if (params.sort === "oldest") {
-        list.sort((a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime())
-      } else {
-        list.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
-      }
-
-      return list
-    }
-
-    // Build PostgREST query
-    let queryStr = "select=*,exhibitions(*)"
+    let query = client.from("exhibition_applications").select("*,exhibitions(*)")
     if (params.status && params.status !== "all") {
-      queryStr += `&status=eq.${encodeURIComponent(params.status)}`
+      query = query.eq("status", params.status)
     }
 
-    // Perform fetch
-    let rows = await restGet<ExhibitionApplicationRow>(`exhibition_applications?${queryStr}`)
+    const { data: rows, error } = await query
+    if (error || !rows) return []
 
+    let filtered = rows as ExhibitionApplicationRow[]
     if (params.search) {
       const q = params.search.toLowerCase()
-      rows = rows.filter(
+      filtered = filtered.filter(
         (r) =>
           r.company_name.toLowerCase().includes(q) ||
           r.contact_person.toLowerCase().includes(q) ||
@@ -1330,7 +1145,7 @@ export async function getApplicationsList(params: {
       )
     }
 
-    const list = rows.map(mapExhibitionApplication)
+    const list = filtered.map(mapExhibitionApplication)
 
     if (params.sort === "oldest") {
       list.sort((a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime())
@@ -1350,138 +1165,28 @@ export async function getApplicationsList(params: {
  */
 export async function approveApplication(
   id: string,
-  reviewNotes?: string
+  reviewNotes: string | undefined,
+  client: SupabaseClient
 ): Promise<ExhibitionApplication> {
-  const cfg = getRestConfig()
   const now = new Date().toISOString()
 
-  if (!cfg || id.startsWith("app-mock-")) {
-    const list = getMockApplications()
-    const idx = list.findIndex((a) => a.id === id)
-    if (idx === -1) {
-      throw new Error(`Application not found: ${id}`)
-    }
+  const { data: appRow, error: appError } = await client
+    .from("exhibition_applications")
+    .update({ status: "Approved", review_notes: reviewNotes || null, reviewed_at: now })
+    .eq("id", id)
+    .select("*, exhibitions(*)")
+    .single()
 
-    const app = list[idx]
-    const updated: ExhibitionApplication = {
-      ...app,
-      status: "Approved",
-      reviewNotes: reviewNotes || null,
-      reviewedAt: now,
-    }
-    list[idx] = updated
-
-    // Generate and provision a corresponding empty booth inside MOCK_BOOTHS
-    const mockBooths = getMockBooths()
-    const companyId = app.companyId || `comp-${Math.random().toString(36).slice(2, 11)}`
-    const boothId = `booth-${Math.random().toString(36).slice(2, 11)}`
-
-    const newBooth: ExhibitionBooth = {
-      id: boothId,
-      exhibitionId: app.exhibitionId,
-      companyId: companyId,
-      description: `Welcome to our virtual booth pavilion for ${app.companyName}. We showcase premium ${app.businessCategory} solutions.`,
-      isArchived: false,
-      status: "Draft",
-      boothNumber: `C-${Math.floor(Math.random() * 80) + 10}`,
-      category: app.businessCategory,
-      isFeatured: false,
-      title: app.companyName,
-      shortDescription: app.shortDescription,
-      contactPerson: app.contactPerson,
-      contactPhone: app.phone,
-      contactEmail: app.email,
-      logoUrl: null,
-      bannerUrl: null,
-      company: {
-        profileViews: 0,
-        id: companyId,
-        profileLevel: "starter",
-        name: app.companyName,
-        slug: app.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-        description: app.shortDescription,
-        logoUrl: null,
-        bannerUrl: null,
-        tagline: null,
-        facebookUrl: null,
-        instagramUrl: null,
-        tiktokUrl: null,
-        linkedinUrl: null,
-        youtubeUrl: null,
-        website: null,
-        websiteUrl: null,
-        externalStoreUrl: null,
-        websiteMode: "alsouk",
-        businessEmail: app.email,
-        phoneNumber: app.phone,
-        whatsappNumber: null,
-        primaryIndustry: app.businessCategory.toLowerCase().includes("food") ? "food" : "textiles",
-        city: "tunis",
-        country: "TN",
-        postalCode: null,
-        streetAddress: null,
-        verified: false,
-        verificationTier: "basic",
-        verifiedAt: null,
-        licenseDocumentUrl: null,
-        profileCompletion: 20,
-        taxIdentifier: "",
-        businessType: "manufacturer",
-        yearEstablished: 2026,
-        companySize: "10-19",
-        supportedLanguages: ["en", "fr"],
-        exportMarkets: ["eu"],
-        metadata: {},
-      }
-    }
-
-    // Determine the correct exhibition bucket slug
-    const exhibitions = await getExhibitions()
-    const exh = exhibitions.find((e) => e.id === app.exhibitionId)
-    const exhSlug = exh?.slug || "tunisia-food-expo-2026"
-
-    if (!mockBooths[exhSlug]) {
-      mockBooths[exhSlug] = []
-    }
-    mockBooths[exhSlug].push(newBooth)
-
-    return updated
+  if (appError || !appRow) {
+    throw new Error(`Failed to approve application ${id}: ${appError?.message || "no row returned"}`)
   }
 
-  // 1. Update the application status in the database
-  const resApp = await fetch(`${cfg.url}/rest/v1/exhibition_applications?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify({
-      status: "Approved",
-      review_notes: reviewNotes || null,
-      reviewed_at: now,
-    }),
-    cache: "no-store",
-  })
+  const application = mapExhibitionApplication(appRow as ExhibitionApplicationRow)
 
-  if (!resApp.ok) {
-    const text = await resApp.text()
-    throw new Error(`Failed to approve application: ${resApp.status} ${text}`)
-  }
-
-  const appRows = (await resApp.json()) as ExhibitionApplicationRow[]
-  if (!appRows || appRows.length === 0) {
-    throw new Error("No application returned after approving.")
-  }
-
-  const application = mapExhibitionApplication(appRows[0])
-
-  // 2. Automatically create an empty booth in the database
-  // Resolve unique companyId (generate a fallback if none exists)
+  // Automatically create an empty draft booth for the newly-approved exhibitor.
   const resolvedCompanyId = application.companyId || "00000000-0000-0000-0000-000000000000"
 
-  const recordBooth = {
+  const { error: boothError } = await client.from("exhibition_booths").insert({
     exhibition_id: application.exhibitionId,
     company_id: resolvedCompanyId,
     description: `Welcome to our virtual booth pavilion for ${application.companyName}. We showcase premium ${application.businessCategory} solutions.`,
@@ -1494,22 +1199,10 @@ export async function approveApplication(
     contact_email: application.email,
     is_archived: false,
     is_featured: false,
-  }
-
-  const resBooth = await fetch(`${cfg.url}/rest/v1/exhibition_booths`, {
-    method: "POST",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(recordBooth),
-    cache: "no-store",
   })
 
-  if (!resBooth.ok) {
-    const text = await resBooth.text()
-    console.warn("[exhibitions-service] Auto draft booth creation warning:", text)
+  if (boothError) {
+    console.warn("[exhibitions-service] Auto draft booth creation warning:", boothError.message)
   }
 
   return application
@@ -1520,56 +1213,23 @@ export async function approveApplication(
  */
 export async function rejectApplication(
   id: string,
-  reviewNotes: string
+  reviewNotes: string,
+  client: SupabaseClient
 ): Promise<ExhibitionApplication> {
-  const cfg = getRestConfig()
   const now = new Date().toISOString()
 
-  if (!cfg || id.startsWith("app-mock-")) {
-    const list = getMockApplications()
-    const idx = list.findIndex((a) => a.id === id)
-    if (idx === -1) {
-      throw new Error(`Application not found: ${id}`)
-    }
+  const { data: row, error } = await client
+    .from("exhibition_applications")
+    .update({ status: "Rejected", review_notes: reviewNotes || null, reviewed_at: now })
+    .eq("id", id)
+    .select("*, exhibitions(*)")
+    .single()
 
-    const app = list[idx]
-    const updated: ExhibitionApplication = {
-      ...app,
-      status: "Rejected",
-      reviewNotes: reviewNotes || null,
-      reviewedAt: now,
-    }
-    list[idx] = updated
-    return updated
+  if (error || !row) {
+    throw new Error(`Failed to reject application ${id}: ${error?.message || "no row returned"}`)
   }
 
-  const resApp = await fetch(`${cfg.url}/rest/v1/exhibition_applications?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify({
-      status: "Rejected",
-      review_notes: reviewNotes || null,
-      reviewed_at: now,
-    }),
-    cache: "no-store",
-  })
-
-  if (!resApp.ok) {
-    const text = await resApp.text()
-    throw new Error(`Failed to reject application: ${resApp.status} ${text}`)
-  }
-
-  const appRows = (await resApp.json()) as ExhibitionApplicationRow[]
-  if (!appRows || appRows.length === 0) {
-    throw new Error("No application returned after rejecting.")
-  }
-
-  return mapExhibitionApplication(appRows[0])
+  return mapExhibitionApplication(row as ExhibitionApplicationRow)
 }
 
 // ===========================================================================
@@ -1581,28 +1241,9 @@ export async function rejectApplication(
  */
 export async function updateExhibition(
   id: string,
-  data: Partial<Omit<Exhibition, "id" | "slug">>
+  data: Partial<Omit<Exhibition, "id" | "slug">>,
+  client: SupabaseClient
 ): Promise<Exhibition> {
-  const cfg = getRestConfig()
-
-  if (!cfg || id.startsWith("exh-")) {
-    const list = getMockExhibitions()
-    const idx = list.findIndex((e) => e.id === id)
-    if (idx === -1) {
-      throw new Error(`Exhibition not found: ${id}`)
-    }
-
-    const updated: Exhibition = {
-      ...list[idx],
-      ...data,
-      categories: data.categories || list[idx].categories,
-      updatedAt: new Date().toISOString(),
-    }
-    list[idx] = updated
-    return updated
-  }
-
-  // Database update via PostgREST
   const record: Record<string, any> = {
     updated_at: new Date().toISOString(),
   }
@@ -1620,53 +1261,28 @@ export async function updateExhibition(
   if (data.contactPhone !== undefined) record.contact_phone = data.contactPhone
   if (data.website !== undefined) record.website = data.website
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibitions?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client
+    .from("exhibitions")
+    .update(record)
+    .eq("id", id)
+    .select()
+    .single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to update exhibition: ${res.status} ${text}`)
+  if (error || !row) {
+    throw new Error(`Failed to update exhibition ${id}: ${error?.message || "no row returned"}`)
   }
 
-  const rows = (await res.json()) as ExhibitionRow[]
-  if (!rows || rows.length === 0) {
-    throw new Error(`No exhibition row returned after update for ID ${id}`)
-  }
-
-  return mapExhibition(rows[0])
+  return mapExhibition(row as ExhibitionRow)
 }
 
 /**
  * Creates a brand new exhibition.
  */
 export async function createExhibition(
-  input: Omit<Exhibition, "id" | "slug">
+  input: Omit<Exhibition, "id" | "slug">,
+  client: SupabaseClient
 ): Promise<Exhibition> {
-  const cfg = getRestConfig()
   const slug = input.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")
-  const id = `exh-${Math.random().toString(36).slice(2, 11)}`
-
-  if (!cfg) {
-    const list = getMockExhibitions()
-    const newExh: Exhibition = {
-      ...input,
-      id,
-      slug,
-      categories: input.categories || [],
-      status: "Published",
-    }
-    list.push(newExh)
-    return newExh
-  }
 
   const record = {
     name: input.name,
@@ -1685,29 +1301,17 @@ export async function createExhibition(
     website: input.website || null,
   }
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibitions`, {
-    method: "POST",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client
+    .from("exhibitions")
+    .insert(record)
+    .select()
+    .single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to create exhibition: ${res.status} ${text}`)
+  if (error || !row) {
+    throw new Error(`Failed to create exhibition: ${error?.message || "no row returned"}`)
   }
 
-  const rows = (await res.json()) as ExhibitionRow[]
-  if (!rows || rows.length === 0) {
-    throw new Error("No exhibition row returned from insert.")
-  }
-
-  return mapExhibition(rows[0])
+  return mapExhibition(row as ExhibitionRow)
 }
 
 /**
@@ -1715,50 +1319,28 @@ export async function createExhibition(
  */
 export async function updateExhibitionStatus(
   id: string,
-  status: "Draft" | "Published" | "Archived" | "Open" | "Closed"
+  status: "Draft" | "Published" | "Archived" | "Open" | "Closed",
+  client: SupabaseClient
 ): Promise<Exhibition> {
-  const cfg = getRestConfig()
+  const { data: row, error } = await client
+    .from("exhibitions")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single()
 
-  if (!cfg || id.startsWith("exh-")) {
-    const list = getMockExhibitions()
-    const idx = list.findIndex((e) => e.id === id)
-    if (idx === -1) {
-      throw new Error(`Exhibition not found to update status: ${id}`)
-    }
-    list[idx] = { ...list[idx], status, updatedAt: new Date().toISOString() }
-    return list[idx]
+  if (error || !row) {
+    throw new Error(`Failed to update exhibition status ${id}: ${error?.message || "no row returned"}`)
   }
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibitions?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify({ status, updated_at: new Date().toISOString() }),
-    cache: "no-store",
-  })
-
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to update exhibition status: ${res.status} ${text}`)
-  }
-
-  const rows = (await res.json()) as ExhibitionRow[]
-  if (!rows || rows.length === 0) {
-    throw new Error(`Exhibition not found to update status: ${id}`)
-  }
-
-  return mapExhibition(rows[0])
+  return mapExhibition(row as ExhibitionRow)
 }
 
 /**
  * Retrieves stats for the organizer dashboard.
  */
-export async function getOrganizerDashboardStats(exhibitionId: string) {
-  const apps = await getExhibitionApplicationsByExhibitionId(exhibitionId)
+export async function getOrganizerDashboardStats(exhibitionId: string, client: SupabaseClient) {
+  const apps = await getExhibitionApplicationsByExhibitionId(exhibitionId, client)
 
   // To load booths, we need the exhibition slug to search in mocks
   const exhibitions = await getExhibitions()
@@ -1805,64 +1387,27 @@ export async function assignBoothDetails(
   data: {
     boothNumber?: string | null
     category?: string | null
-  }
+  },
+  client: SupabaseClient
 ): Promise<ExhibitionBooth> {
-  const cfg = getRestConfig()
-
-  if (!cfg || boothId.startsWith("booth-")) {
-    const mockData = getMockBooths()
-    let foundBooth: ExhibitionBooth | null = null
-    for (const slug in mockData) {
-      const idx = mockData[slug].findIndex((b) => b.id === boothId)
-      if (idx !== -1) {
-        const existing = mockData[slug][idx]
-        const updated: ExhibitionBooth = {
-          ...existing,
-          boothNumber: data.boothNumber !== undefined ? (data.boothNumber || "") : existing.boothNumber,
-          category: data.category !== undefined ? (data.category || "") : existing.category,
-          updatedAt: new Date().toISOString(),
-        }
-        mockData[slug][idx] = updated
-        foundBooth = updated
-        break
-      }
-    }
-    if (!foundBooth) {
-      throw new Error(`Booth not found with ID ${boothId}`)
-    }
-    return foundBooth
-  }
-
-  // Database update
   const record: Record<string, any> = {
     updated_at: new Date().toISOString(),
   }
   if (data.boothNumber !== undefined) record.booth_number = data.boothNumber
   if (data.category !== undefined) record.category = data.category
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_booths?id=eq.${encodeURIComponent(boothId)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client
+    .from("exhibition_booths")
+    .update(record)
+    .eq("id", boothId)
+    .select()
+    .single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to assign booth details: ${res.status} ${text}`)
+  if (error || !row) {
+    throw new Error(`Failed to assign booth details for ${boothId}: ${error?.message || "no row returned"}`)
   }
 
-  const rows = (await res.json()) as ExhibitionBoothRow[]
-  if (!rows || rows.length === 0) {
-    throw new Error(`No booth row returned after update for ID ${boothId}`)
-  }
-
-  return mapExhibitionBooth(rows[0])
+  return mapExhibitionBooth(row as ExhibitionBoothRow)
 }
 
 /**
@@ -1870,35 +1415,9 @@ export async function assignBoothDetails(
  */
 export async function updateBoothStatus(
   boothId: string,
-  status: "Draft" | "Submitted" | "Published" | "Archived"
+  status: "Draft" | "Submitted" | "Published" | "Archived",
+  client: SupabaseClient
 ): Promise<ExhibitionBooth> {
-  const cfg = getRestConfig()
-
-  if (!cfg || boothId.startsWith("booth-")) {
-    const mockData = getMockBooths()
-    let foundBooth: ExhibitionBooth | null = null
-    for (const slug in mockData) {
-      const idx = mockData[slug].findIndex((b) => b.id === boothId)
-      if (idx !== -1) {
-        const existing = mockData[slug][idx]
-        const updated: ExhibitionBooth = {
-          ...existing,
-          status,
-          isArchived: status === "Archived" ? true : existing.isArchived,
-          updatedAt: new Date().toISOString(),
-        }
-        mockData[slug][idx] = updated
-        foundBooth = updated
-        break
-      }
-    }
-    if (!foundBooth) {
-      throw new Error(`Booth not found with ID ${boothId}`)
-    }
-    return foundBooth
-  }
-
-  // Database update
   const record: Record<string, any> = {
     status,
     updated_at: new Date().toISOString(),
@@ -1909,36 +1428,25 @@ export async function updateBoothStatus(
     record.is_archived = false
   }
 
-  const res = await fetch(`${cfg.url}/rest/v1/exhibition_booths?id=eq.${encodeURIComponent(boothId)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify(record),
-    cache: "no-store",
-  })
+  const { data: row, error } = await client
+    .from("exhibition_booths")
+    .update(record)
+    .eq("id", boothId)
+    .select()
+    .single()
 
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Failed to update booth status: ${res.status} ${text}`)
+  if (error || !row) {
+    throw new Error(`Failed to update booth status for ${boothId}: ${error?.message || "no row returned"}`)
   }
 
-  const rows = (await res.json()) as ExhibitionBoothRow[]
-  if (!rows || rows.length === 0) {
-    throw new Error(`No booth row returned after update for ID ${boothId}`)
-  }
-
-  return mapExhibitionBooth(rows[0])
+  return mapExhibitionBooth(row as ExhibitionBoothRow)
 }
 
 /**
  * Loads analytics statistics for the exhibition.
  */
-export async function loadStatistics(exhibitionId: string) {
-  const apps = await getExhibitionApplicationsByExhibitionId(exhibitionId)
+export async function loadStatistics(exhibitionId: string, client: SupabaseClient) {
+  const apps = await getExhibitionApplicationsByExhibitionId(exhibitionId, client)
 
   const exhibitions = await getExhibitions()
   const exh = exhibitions.find((e) => e.id === exhibitionId)
@@ -2028,51 +1536,21 @@ export async function loadStatistics(exhibitionId: string) {
  */
 export async function updateApplicationReviewNotes(
   id: string,
-  reviewNotes: string
+  reviewNotes: string,
+  client: SupabaseClient
 ): Promise<ExhibitionApplication> {
-  const cfg = getRestConfig()
+  const { data: row, error } = await client
+    .from("exhibition_applications")
+    .update({ review_notes: reviewNotes })
+    .eq("id", id)
+    .select("*, exhibitions(*)")
+    .single()
 
-  if (!cfg || id.startsWith("app-mock-")) {
-    const list = getMockApplications()
-    const idx = list.findIndex((a) => a.id === id)
-    if (idx === -1) {
-      throw new Error(`Application not found: ${id}`)
-    }
-
-    const app = list[idx]
-    const updated: ExhibitionApplication = {
-      ...app,
-      reviewNotes,
-    }
-    list[idx] = updated
-    return updated
+  if (error || !row) {
+    throw new Error(`Failed to update review notes for ${id}: ${error?.message || "no row returned"}`)
   }
 
-  const resApp = await fetch(`${cfg.url}/rest/v1/exhibition_applications?id=eq.${encodeURIComponent(id)}`, {
-    method: "PATCH",
-    headers: {
-      apikey: cfg.key,
-      Authorization: `Bearer ${cfg.key}`,
-      "content-type": "application/json",
-      Prefer: "return=representation",
-    },
-    body: JSON.stringify({
-      review_notes: reviewNotes,
-    }),
-    cache: "no-store",
-  })
-
-  if (!resApp.ok) {
-    const text = await resApp.text()
-    throw new Error(`Failed to update review notes: ${resApp.status} ${text}`)
-  }
-
-  const appRows = (await resApp.json()) as ExhibitionApplicationRow[]
-  if (!appRows || appRows.length === 0) {
-    throw new Error("No application returned after updating review notes.")
-  }
-
-  return mapExhibitionApplication(appRows[0])
+  return mapExhibitionApplication(row as ExhibitionApplicationRow)
 }
 
 // ===========================================================================
@@ -2306,7 +1784,8 @@ export async function getOrganizerAnalytics(
   const activeBooths = booths.filter((b) => b.status === "Published").length
 
   // 3. Fetch applications for this exhibition
-  const apps = await getExhibitionApplicationsByExhibitionId(exhibitionId)
+  const service = getServiceClient()
+  const apps = service ? await getExhibitionApplicationsByExhibitionId(exhibitionId, service) : []
   const pendingApplications = apps.filter((a) => a.status === "Pending").length
   const approvedApplications = apps.filter((a) => a.status === "Approved").length
   const rejectedApplications = apps.filter((a) => a.status === "Rejected").length

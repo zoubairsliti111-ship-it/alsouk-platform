@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server"
 import { getExhibitions, getOrganizerDashboardStats } from "@/lib/services/exhibitions-service"
+import { authorizeAdmin } from "@/lib/admin/server"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(request: Request) {
   try {
+    const authz = await authorizeAdmin()
+    if (!authz.ok) return authz.response
+
     const { searchParams } = new URL(request.url)
     const exhibitions = await getExhibitions()
 
@@ -16,7 +20,7 @@ export async function GET(request: Request) {
     const exhibitionId = searchParams.get("exhibitionId") || defaultId
 
     const exhibition = exhibitions.find((e) => e.id === exhibitionId) || exhibitions[0]
-    const stats = await getOrganizerDashboardStats(exhibition.id)
+    const stats = await getOrganizerDashboardStats(exhibition.id, authz.auth.service)
 
     return NextResponse.json({
       success: true,

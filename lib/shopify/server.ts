@@ -6,10 +6,9 @@
  * SERVER ONLY — the service-role key bypasses RLS.
  */
 
-import { createClient as createServiceClient, type SupabaseClient } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 import { createClient as createUserClient } from "@/lib/supabase/server"
-import { SERVICE_KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
+import { getServiceClient } from "@/lib/supabase/service"
 
 export const INTEGRATIONS_TABLE = "company_store_integrations"
 export const PROVIDER = "shopify"
@@ -22,17 +21,7 @@ export function jsonError(error: string, status: number) {
   return NextResponse.json({ error }, { status, headers: NO_STORE })
 }
 
-/**
- * Service-role Supabase client, or null when the server isn't configured.
- * Used to read/write `access_token` (revoked for anon/authenticated) and to
- * upload imported images to Storage.
- */
-export function getServiceClient(): SupabaseClient | null {
-  const url = firstDefined(URL_VARS).value
-  const key = firstDefined(SERVICE_KEY_VARS).value
-  if (!url || !key || !/^https?:\/\//.test(url)) return null
-  return createServiceClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } })
-}
+export { getServiceClient }
 
 export type Authorized = { userId: string; companyId: string }
 
