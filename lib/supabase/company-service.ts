@@ -192,7 +192,13 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
 
   const completion = calculateProfileCompletion(companyInput)
 
+  // Generated client-side (rather than left to the column's gen_random_uuid()
+  // default) so the row can be looked up deterministically after insert —
+  // see the RLS note below.
+  const newCompanyId = crypto.randomUUID()
+
   const insertData = {
+    id: newCompanyId,
     owner_id: userId,
     name: companyInput.name || "My Company",
     // FIX: legacy `company_name` column is NOT NULL with no default in
@@ -232,20 +238,40 @@ export async function createCompany(userId: string, companyInput: Partial<Compan
     metadata: companyInput.metadata || {},
   }
 
-  const { data: company, error: compError } = await supabase
+  // Deliberately not using `.select().single()` here (which sends
+  // `Prefer: return=representation`, asking PostgREST to INSERT ... RETURNING).
+  // The companies table's SELECT policy is `is_company_member(id)`, and
+  // Postgres re-checks that policy against the new row as part of RETURNING —
+  // a self-referential check that fails with a 42501 RLS error even for the
+  // row's own real owner_id, because the row isn't visible to that recheck
+  // yet within the same command. Confirmed live: the same insert succeeds
+  // immediately with `return=minimal`, and the row is then readable via a
+  // separate, later SELECT (is_company_member(id) evaluates true once it's
+  // no longer the same INSERT command). Splitting into insert-then-select
+  // sidesteps the self-reference entirely.
+  const { error: compError } = await supabase.from("companies").insert(insertData)
+
+  if (compError) {
+    // Full error logged for debugging (Vercel/server console); the
+    // user-facing message stays generic so raw Postgres/RLS internals
+    // (e.g. "new row violates row-level security policy for table ...")
+    // never reach the UI. There's no shared error-sanitizing helper
+    // elsewhere in this codebase to reuse — other call sites still throw
+    // raw `error.message` (e.g. updateCompany below) — so this is scoped
+    // to createCompany only, not a project-wide pattern.
+    console.error("Error creating company:", compError)
+    throw new Error("Failed to create company. Please try again in a moment.")
+  }
+
+  const { data: company, error: fetchError } = await supabase
     .from("companies")
-    .insert(insertData)
-    .select()
+    .select("*")
+    .eq("id", newCompanyId)
     .single()
 
-  if (compError || !company) {
-    console.error("Error creating company:", compError)
-    // FIX: was silently returning null, forcing the caller to show a
-    // generic "Failed to persist..." message with no way to diagnose the
-    // real cause (this is exactly how the missing company_name NOT NULL
-    // column went unnoticed). Now the real database error reaches the
-    // user-visible error message.
-    throw new Error(compError?.message || "Failed to create company")
+  if (fetchError || !company) {
+    console.error("Error fetching newly created company:", fetchError)
+    throw new Error("Failed to create company. Please try again in a moment.")
   }
 
   // Link the creator user as the 'owner' in company_members
