@@ -45,6 +45,7 @@ type MediaRow = {
   media_type: "factory_photo" | "product_gallery" | "video" | "certificate"
   url: string
   caption: string | null
+  created_at: string
 }
 
 const TAB_IDS = ["overview", "products", "media", "reviews"] as const
@@ -124,8 +125,9 @@ function SupplierProfileContent({ id }: { id: string }) {
     const supabase = createClient()
     supabase
       .from("company_media")
-      .select("id,media_type,url,caption")
+      .select("id,media_type,url,caption,created_at")
       .eq("company_id", id)
+      .order("created_at", { ascending: true })
       .then((result: { data: MediaRow[] | null; error: unknown }) => {
         const { data, error } = result
         if (!active) return
@@ -186,7 +188,11 @@ function SupplierProfileContent({ id }: { id: string }) {
   const photos = media.filter((m) => m.media_type === "factory_photo" || m.media_type === "product_gallery")
   const videos = media.filter((m) => m.media_type === "video")
   const certificates = media.filter((m) => m.media_type === "certificate")
-  const coverUrl = photos[0]?.url || COVER_IMAGE
+  // The owner's deliberate choice (Account > Cover Photo) takes priority
+  // over whichever gallery photo happens to sort first — that's a fallback
+  // for companies that haven't set one, not a substitute for it.
+  const coverUrl = s.bannerUrl || photos[0]?.url || COVER_IMAGE
+  const hasRealCoverPhoto = Boolean(s.bannerUrl || photos[0]?.url)
 
   const hasCompanyInfo = Boolean(
     s.websiteUrl || s.phoneNumber || s.whatsappNumber || s.streetAddress || s.postalCode || s.companySize ||
@@ -252,7 +258,7 @@ function SupplierProfileContent({ id }: { id: string }) {
       {/* Cover */}
       <section className="relative">
         <div className="relative h-40 w-full overflow-hidden sm:h-56">
-          {photos[0]?.url ? (
+          {hasRealCoverPhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={coverUrl} alt={s.name} className="absolute inset-0 size-full object-cover" />
           ) : (

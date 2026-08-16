@@ -63,6 +63,7 @@ export type SupplierRow = {
   verified: boolean
   year_established: number | null
   logo_url: string | null
+  banner_url: string | null
   description: string | null
   tagline: string | null
   created_at: string
@@ -84,7 +85,7 @@ export type SupplierRow = {
 }
 
 export const SUPPLIER_COLUMNS =
-  "id,owner_id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,description,tagline,created_at,profile_views,external_store_url," +
+  "id,owner_id,name,business_type,primary_industry,country,city,verified,year_established,logo_url,banner_url,description,tagline,created_at,profile_views,external_store_url," +
   "website_url,facebook_url,instagram_url,tiktok_url,linkedin_url,youtube_url,phone_number,whatsapp_number,street_address,postal_code,company_size"
 
 export const SORT_COLUMNS: Record<SupplierSort, string> = {
@@ -128,6 +129,7 @@ export function mapRow(row: SupplierRow): Supplier | null {
     categories: (row.primary_industry ? [row.primary_industry] : []) as CategoryKey[],
     description: row.description?.trim() || row.tagline?.trim() || null,
     logoUrl: row.logo_url?.trim() || null,
+    bannerUrl: row.banner_url?.trim() || null,
     profileViews: Number(row.profile_views) || 0,
     coverPhotoUrl: row.cover_photo_url?.trim() || null,
     externalStoreUrl: safeExternalStoreUrl(row.external_store_url),

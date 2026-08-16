@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition, useMemo, useCallback } from "react"
+import { useEffect, useState, useTransition, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { StudioPanel } from "@/components/studio/studio-panel"
@@ -201,7 +201,9 @@ const localT = {
     tagline: "Tagline / Pitch",
     description: "Company Description",
     logoUrl: "Logo Image URL",
-    bannerUrl: "Banner Image URL",
+    bannerUrl: "Cover Photo",
+    changeBanner: "Change cover photo",
+    uploadingBanner: "Uploading…",
     websiteUrl: "Website URL",
     websiteMode: "Website Strategy",
     businessEmail: "Business Email",
@@ -315,7 +317,9 @@ const localT = {
     tagline: "Slogan / Présentation",
     description: "Description de l'entreprise",
     logoUrl: "URL du logo",
-    bannerUrl: "URL de la bannière",
+    bannerUrl: "Photo de couverture",
+    changeBanner: "Changer la photo de couverture",
+    uploadingBanner: "Téléversement…",
     websiteUrl: "URL du site Web",
     websiteMode: "Mode du site Web",
     businessEmail: "Email professionnel",
@@ -429,7 +433,9 @@ const localT = {
     tagline: "شعار / عرض سريع",
     description: "وصف الشركة",
     logoUrl: "رابط شعار الشركة",
-    bannerUrl: "رابط غلاف الشركة",
+    bannerUrl: "صورة الغلاف",
+    changeBanner: "تغيير صورة الغلاف",
+    uploadingBanner: "جاري الرفع…",
     websiteUrl: "رابط الموقع الإلكتروني",
     websiteMode: "استراتيجية الموقع",
     businessEmail: "البريد الإلكتروني للعمل",
@@ -559,6 +565,8 @@ function AccountScreen() {
   // successful save.
   const [isEditingCompany, setIsEditingCompany] = useState(false)
   const [isFollowing, setIsFollowing] = useState(false)
+  const [uploadingBanner, setUploadingBanner] = useState(false)
+  const bannerFileInputRef = useRef<HTMLInputElement>(null)
   const { user: authUser } = useAuth()
 
   // Likes & Comments Simulator State for posts
@@ -1038,6 +1046,36 @@ function AccountScreen() {
     }
   }
 
+  // Same storage bucket + path pattern Studio already uses for company
+  // photos (app/studio/page.tsx submitPost) — no new bucket, no new upload
+  // mechanism. Only sets the local form value; it's persisted like every
+  // other field, when the form is saved, not as a separate write here.
+  const handleBannerFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !company) return
+    setUploadingBanner(true)
+    setCompanyError("")
+    try {
+      const supabase = createClient()
+      const bucket = "company-photos"
+      const ext = file.name.split(".").pop() || "jpg"
+      const path = `${company.id}/banner-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(path, file, { cacheControl: "3600", upsert: false })
+      if (uploadError) {
+        console.error("Error uploading banner:", uploadError)
+        setCompanyError("Failed to upload the banner image. Please try again.")
+        return
+      }
+      const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path)
+      setCompanyForm((prev) => ({ ...prev, bannerUrl: urlData.publicUrl }))
+    } finally {
+      setUploadingBanner(false)
+      if (bannerFileInputRef.current) bannerFileInputRef.current.value = ""
+    }
+  }
+
   // Onboarding direct launch
   const handleOnboardingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -1305,6 +1343,15 @@ function AccountScreen() {
     navigator.clipboard.writeText(url)
     setCopiedLink(true)
     setTimeout(() => setCopiedLink(false), 2000)
+  }
+
+  // Same navigation the "Edit Profile" button already used — the checklist
+  // items below stored a `tab` per item but nothing ever read it, so
+  // clicking one did nothing. This actually takes you to the edit form.
+  const openCompanyEditForm = (tab: typeof activeProfileTab) => {
+    setActiveProfileTab(tab)
+    setIsEditingCompany(true)
+    setTimeout(() => document.getElementById("company-edit-form")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100)
   }
 
   const missingChecklist = useMemo(() => {
@@ -1694,6 +1741,51 @@ function AccountScreen() {
                       </div>
                     )}
 
+                    {/* Cover photo — writes to companies.banner_url via the
+                        same "company-photos" storage bucket Studio already
+                        uses for media uploads. The public profile page now
+                        reads this real value first (see
+                        components/directory/supplier-profile.tsx), instead
+                        of whichever gallery photo happened to load first. */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-muted-foreground">{dict.bannerUrl}</label>
+                      <div className="relative h-32 w-full overflow-hidden rounded-xl border border-border bg-secondary/20">
+                        {companyForm.bannerUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={companyForm.bannerUrl} alt="" className="size-full object-cover" />
+                        ) : (
+                          <div className="flex size-full items-center justify-center text-muted-foreground">
+                            <ImagePlus className="size-6" />
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => bannerFileInputRef.current?.click()}
+                          disabled={uploadingBanner}
+                          className="absolute bottom-2 end-2 inline-flex items-center gap-1.5 rounded-lg bg-black/60 px-3 py-2 text-[11px] font-bold text-white backdrop-blur hover:bg-black/75 disabled:opacity-70"
+                        >
+                          {uploadingBanner ? (
+                            <>
+                              <Loader2 className="size-3.5 animate-spin" />
+                              {dict.uploadingBanner}
+                            </>
+                          ) : (
+                            <>
+                              <ImagePlus className="size-3.5" />
+                              {dict.changeBanner}
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <input
+                        ref={bannerFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBannerFileSelected}
+                        className="hidden"
+                      />
+                    </div>
+
                     <div className="space-y-4">
                       {/* STARTER FIELDS (Level 1+) */}
                       <div className="space-y-1.5">
@@ -2067,10 +2159,15 @@ function AccountScreen() {
                       <div className="space-y-2 pt-2 border-t border-border">
                         <p className="text-[10px] font-bold text-muted-foreground uppercase">{t.profile.recommendedNextSteps}</p>
                         {missingChecklist.map((item) => (
-                          <div key={item.key} className="flex items-start gap-2 text-[11px] text-foreground font-semibold">
+                          <button
+                            key={item.key}
+                            type="button"
+                            onClick={() => openCompanyEditForm(item.tab)}
+                            className="flex w-full items-start gap-2 text-[11px] text-foreground font-semibold text-start hover:text-primary transition-colors"
+                          >
                             <AlertCircle className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
                             <span>{item.label}</span>
-                          </div>
+                          </button>
                         ))}
                       </div>
                     )}
