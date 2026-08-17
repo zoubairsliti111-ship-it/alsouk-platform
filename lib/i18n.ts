@@ -386,6 +386,9 @@ type Dict = {
     resetSuccess: string
     passwordRecoveryTitle: string
     passwordRecoveryDesc: string
+    phoneAlreadyRegistered: string
+    emailAlreadyRegistered: string
+    signupRateLimited: string
     phoneTab: string
     emailTab: string
     phonePlaceholder: string
@@ -921,6 +924,9 @@ export const translations: Record<Lang, Dict> = {
       resetSuccess: "Your password has been successfully reset!",
       passwordRecoveryTitle: "Set a new password",
       passwordRecoveryDesc: "You followed a password reset link. Choose a new password to finish and continue to your account.",
+      phoneAlreadyRegistered: "An account with this phone number already exists. Try signing in, or use \"Forgot password\" if it's yours.",
+      emailAlreadyRegistered: "An account with this email already exists. Try signing in, or use \"Forgot password\" if it's yours.",
+      signupRateLimited: "Too many signup attempts. Please try again later.",
       phoneTab: "Phone Number",
       emailTab: "Email Address",
       phonePlaceholder: "21345678",
@@ -1454,6 +1460,9 @@ export const translations: Record<Lang, Dict> = {
       resetSuccess: "Votre mot de passe a été réinitialisé avec succès !",
       passwordRecoveryTitle: "Définir un nouveau mot de passe",
       passwordRecoveryDesc: "Vous avez suivi un lien de réinitialisation. Choisissez un nouveau mot de passe pour continuer vers votre compte.",
+      phoneAlreadyRegistered: "Un compte existe déjà avec ce numéro de téléphone. Essayez de vous connecter, ou utilisez \"Mot de passe oublié\" si c'est le vôtre.",
+      emailAlreadyRegistered: "Un compte existe déjà avec cet e-mail. Essayez de vous connecter, ou utilisez \"Mot de passe oublié\" si c'est le vôtre.",
+      signupRateLimited: "Trop de tentatives d'inscription. Veuillez réessayer plus tard.",
       phoneTab: "Numéro de téléphone",
       emailTab: "Adresse e-mail",
       phonePlaceholder: "21345678",
@@ -1987,6 +1996,9 @@ export const translations: Record<Lang, Dict> = {
       resetSuccess: "تم إعادة تعيين كلمة المرور بنجاح!",
       passwordRecoveryTitle: "عيّن كلمة مرور جديدة",
       passwordRecoveryDesc: "لقد اتبعت رابط إعادة تعيين كلمة المرور. اختر كلمة مرور جديدة للمتابعة إلى حسابك.",
+      phoneAlreadyRegistered: "يوجد حساب مسجّل بهذا الرقم مسبقًا. جرّب تسجيل الدخول، أو استخدم \"نسيت كلمة المرور\" إذا كان الرقم لك.",
+      emailAlreadyRegistered: "يوجد حساب مسجّل بهذا البريد الإلكتروني مسبقًا. جرّب تسجيل الدخول، أو استخدم \"نسيت كلمة المرور\" إذا كان البريد لك.",
+      signupRateLimited: "محاولات تسجيل كثيرة جدًا. حاول مرة أخرى لاحقًا.",
       phoneTab: "رقم الهاتف",
       emailTab: "البريد الإلكتروني",
       phonePlaceholder: "21345678",
