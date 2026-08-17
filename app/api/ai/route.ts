@@ -7,11 +7,17 @@ import {
   type ChatRole,
 } from "@/lib/ai/provider"
 import { search } from "@/lib/services/search-service"
+import { checkRateLimit } from "@/lib/rate-limit/api"
 
 export const dynamic = "force-dynamic"
 
 const MAX_MESSAGES = 20
 const MAX_CONTENT = 2000
+
+// A real chat session sends several messages; this caps abuse (scripted
+// hammering of the shared Groq quota) without interrupting normal use.
+const RATE_LIMIT_MAX = 20
+const RATE_LIMIT_WINDOW_SECONDS = 600
 
 /** Reports whether the assistant is available (so the UI can render state). */
 export async function GET() {
@@ -74,6 +80,14 @@ async function buildGroundingContext(messages: ChatMessage[]): Promise<string | 
 export async function POST(request: Request) {
   if (!isAiConfigured()) {
     return NextResponse.json({ enabled: false, reason: "disabled" }, { status: 503 })
+  }
+
+  const allowed = await checkRateLimit(request, "ai", RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SECONDS)
+  if (!allowed) {
+    return NextResponse.json(
+      { error: true, reason: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(RATE_LIMIT_WINDOW_SECONDS) } },
+    )
   }
 
   let body: { messages?: unknown }
