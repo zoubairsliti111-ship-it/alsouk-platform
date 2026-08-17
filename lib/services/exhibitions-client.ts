@@ -477,7 +477,14 @@ export async function saveFavorite(visitorId: string, targetType: "booth" | "exh
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ visitorId, targetType, targetId }),
     })
-    if (!res.ok) return { data: null, notFound: false, error: true }
+    if (!res.ok) {
+      // notFound (not error) when the target isn't a real, live
+      // booth/exhibit yet (e.g. a legacy demo id) — reuses this field for
+      // its actual meaning rather than adding a new one to the shared
+      // ItemResult shape.
+      const json = await res.json().catch(() => null)
+      return { data: null, notFound: json?.error === "target_not_found", error: json?.error !== "target_not_found" }
+    }
     const json = await res.json()
     return { data: json.data, notFound: !json.data, error: false }
   } catch (err) {
@@ -537,7 +544,10 @@ export async function submitMeeting(
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ visitorId, ...input }),
     })
-    if (!res.ok) return { data: null, notFound: false, error: true }
+    if (!res.ok) {
+      const json = await res.json().catch(() => null)
+      return { data: null, notFound: json?.error === "target_not_found", error: json?.error !== "target_not_found" }
+    }
     const json = await res.json()
     return { data: json.data, notFound: !json.data, error: false }
   } catch (err) {
@@ -600,7 +610,10 @@ export async function savePrivateNote(visitorId: string, boothId: string, noteTe
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ visitorId, boothId, noteText, tags }),
     })
-    if (!res.ok) return { data: null, notFound: false, error: true }
+    if (!res.ok) {
+      const json = await res.json().catch(() => null)
+      return { data: null, notFound: json?.error === "target_not_found", error: json?.error !== "target_not_found" }
+    }
     const json = await res.json()
     return { data: json.data, notFound: !json.data, error: false }
   } catch (err) {

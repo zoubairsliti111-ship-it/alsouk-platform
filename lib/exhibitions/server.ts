@@ -43,3 +43,20 @@ export async function authorizeBoothOwner(
 
   return { ok: true, auth: { userId: user.id, companyId, client } }
 }
+
+/**
+ * Resolves the real signed-in visitor for the exhibitions visitor
+ * features (favorites/notes/meetings — migration 0054). Any authenticated
+ * user is a valid visitor; unlike authorizeBoothOwner there's no
+ * ownership check. Returns the real, cookie-verified user id — callers
+ * must never trust a client-supplied visitorId for identity.
+ */
+export async function authorizeVisitor(): Promise<
+  { ok: true; userId: string } | { ok: false; response: NextResponse }
+> {
+  const client = await createUserClient()
+  const { data } = await client.auth.getUser()
+  const user = data?.user
+  if (!user) return { ok: false, response: jsonError("You must be signed in.", 401) }
+  return { ok: true, userId: user.id }
+}

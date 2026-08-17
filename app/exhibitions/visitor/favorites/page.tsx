@@ -10,6 +10,7 @@ import {
   Star
 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
+import { useAuth } from "@/components/auth-provider"
 import { VisitorDashboardLayout } from "@/components/exhibition/visitor-layout"
 import { MarketplaceShell } from "@/components/marketplace/shell"
 import { fetchFavorites, removeFavoriteItem } from "@/lib/services/exhibitions-client"
@@ -27,17 +28,17 @@ export default function VisitorFavoritesPage() {
 function VisitorFavoritesContent() {
   const { t, lang } = useLanguage()
   const exT = t.exhibitions
+  const { user, isLoading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [favorites, setFavorites] = useState<ExhibitionFavorite[]>([])
 
-  const visitorId = "visitor-local"
-
   useEffect(() => {
+    if (authLoading || !user) return
     let active = true
 
     async function loadFavs() {
       try {
-        const data = await fetchFavorites(visitorId)
+        const data = await fetchFavorites(user!.id)
         if (!active) return
         setFavorites(data || [])
         setLoading(false)
@@ -51,11 +52,12 @@ function VisitorFavoritesContent() {
     return () => {
       active = false
     }
-  }, [])
+  }, [authLoading, user])
 
   const handleRemove = async (targetType: "booth" | "exhibit", targetId: string) => {
+    if (!user) return
     try {
-      const res = await removeFavoriteItem(visitorId, targetType, targetId)
+      const res = await removeFavoriteItem(user.id, targetType, targetId)
       if (res) {
         setFavorites(prev => prev.filter(f => !(f.targetType === targetType && f.targetId === targetId)))
       }
@@ -66,6 +68,37 @@ function VisitorFavoritesContent() {
 
   const boothFavs = favorites.filter((f) => f.targetType === "booth")
   const exhibitFavs = favorites.filter((f) => f.targetType === "exhibit")
+
+  if (authLoading) {
+    return (
+      <VisitorDashboardLayout>
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <Loader2 className="size-8 text-primary animate-spin" />
+          <span className="text-xs font-bold text-muted-foreground">{t.marketplace.loading}</span>
+        </div>
+      </VisitorDashboardLayout>
+    )
+  }
+
+  if (!user) {
+    return (
+      <VisitorDashboardLayout>
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+          <Bookmark className="size-10 text-muted-foreground" />
+          <p className="text-xs font-bold text-muted-foreground max-w-xs">
+            {lang === "ar"
+              ? "سجّل الدخول لحفظ ومتابعة الأجنحة والمعروضات المفضلة لديك."
+              : lang === "fr"
+              ? "Connectez-vous pour enregistrer et suivre vos stands et produits favoris."
+              : "Sign in to save and track your favorite booths and exhibits."}
+          </p>
+          <Link href="/login" className="mt-1 rounded-full bg-primary px-5 py-2 text-xs font-black text-white">
+            {lang === "ar" ? "تسجيل الدخول" : lang === "fr" ? "Se connecter" : "Sign in"}
+          </Link>
+        </div>
+      </VisitorDashboardLayout>
+    )
+  }
 
   if (loading) {
     return (
