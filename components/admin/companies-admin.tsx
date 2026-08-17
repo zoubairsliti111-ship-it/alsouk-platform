@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { BadgeCheck, Loader2 } from "lucide-react"
+import { AlertCircle, BadgeCheck, Loader2, ShieldAlert } from "lucide-react"
 
 type AdminCompany = {
   id: string
@@ -15,23 +15,24 @@ type AdminCompany = {
   created_at: string
 }
 
-type View = "form" | "loading" | "loaded" | "error" | "unauthorized"
+type View = "loading" | "loaded" | "forbidden" | "error"
 
+/**
+ * Access itself is enforced server-side: the `/admin/*` middleware requires a
+ * signed-in `admin_users` session before this page even renders, and
+ * `/api/admin/companies` re-checks the same thing. No client-side token gate.
+ */
 export function CompaniesAdmin() {
-  const [token, setToken] = useState("")
-  const [view, setView] = useState<View>("form")
+  const [view, setView] = useState<View>("loading")
   const [companies, setCompanies] = useState<AdminCompany[]>([])
   const [busyId, setBusyId] = useState<string | null>(null)
 
-  const load = async (t: string) => {
+  const load = async () => {
     setView("loading")
     try {
-      const res = await fetch("/api/admin/companies", {
-        headers: { authorization: `Bearer ${t}` },
-        cache: "no-store",
-      })
-      if (res.status === 401) {
-        setView("unauthorized")
+      const res = await fetch("/api/admin/companies", { cache: "no-store" })
+      if (res.status === 401 || res.status === 403) {
+        setView("forbidden")
         return
       }
       if (!res.ok) {
@@ -46,13 +47,39 @@ export function CompaniesAdmin() {
     }
   }
 
+  useEffect(() => {
+    let active = true
+    fetch("/api/admin/companies", { cache: "no-store" })
+      .then(async (res) => {
+        if (!active) return
+        if (res.status === 401 || res.status === 403) {
+          setView("forbidden")
+          return
+        }
+        if (!res.ok) {
+          setView("error")
+          return
+        }
+        const json = await res.json()
+        if (!active) return
+        setCompanies(json.companies || [])
+        setView("loaded")
+      })
+      .catch(() => {
+        if (active) setView("error")
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
   const toggleVerified = async (company: AdminCompany) => {
     setBusyId(company.id)
     const next = !company.verified
     try {
       const res = await fetch("/api/admin/companies", {
         method: "PATCH",
-        headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ companyId: company.id, verified: next }),
       })
       if (res.ok) {
@@ -65,38 +92,6 @@ export function CompaniesAdmin() {
     }
   }
 
-  if (view === "form" || view === "unauthorized") {
-    return (
-      <div className="mx-auto max-w-md px-4 py-16 space-y-4">
-        <h1 className="text-xl font-black text-foreground">Admin — Company Verification</h1>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (token.trim()) load(token.trim())
-          }}
-          className="space-y-3"
-        >
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-foreground">Admin token</span>
-            <input
-              type="password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="Paste RFQ_ADMIN_TOKEN"
-              className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-primary"
-            />
-          </label>
-          {view === "unauthorized" && (
-            <p className="text-xs font-bold text-destructive">Wrong token.</p>
-          )}
-          <Button type="submit" disabled={!token.trim()} className="w-full">
-            Load companies
-          </Button>
-        </form>
-      </div>
-    )
-  }
-
   if (view === "loading") {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -105,13 +100,19 @@ export function CompaniesAdmin() {
     )
   }
 
-  if (view === "error") {
+  if (view === "forbidden" || view === "error") {
+    const Icon = view === "forbidden" ? ShieldAlert : AlertCircle
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center space-y-3">
-        <p className="text-sm font-bold text-foreground">Couldn't load companies.</p>
-        <Button variant="outline" onClick={() => load(token)}>
-          Retry
-        </Button>
+        <Icon className="mx-auto size-8 text-destructive" />
+        <p className="text-sm text-muted-foreground">
+          {view === "forbidden" ? "Admin access required." : "Couldn't load companies."}
+        </p>
+        {view === "error" && (
+          <Button variant="outline" onClick={load}>
+            Retry
+          </Button>
+        )}
       </div>
     )
   }
@@ -120,7 +121,7 @@ export function CompaniesAdmin() {
     <div className="mx-auto max-w-3xl px-4 py-8 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-black text-foreground">Company Verification</h1>
-        <Button variant="outline" size="sm" onClick={() => load(token)}>
+        <Button variant="outline" size="sm" onClick={load}>
           Refresh
         </Button>
       </div>

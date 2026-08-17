@@ -221,10 +221,6 @@ type DirectoryDict = {
   admin: {
     title: string
     subtitle: string
-    tokenLabel: string
-    tokenPlaceholder: string
-    unlock: string
-    lockedHint: string
     unauthorized: string
     unconfigured: string
     error: string
@@ -233,7 +229,6 @@ type DirectoryDict = {
     emptyBody: string
     count: (n: number) => string
     refresh: string
-    signOut: string
     colDate: string
     colSupplier: string
     colBuyer: string
@@ -510,19 +505,14 @@ export const directoryT: Record<Lang, DirectoryDict> = {
     admin: {
       title: "RFQ submissions",
       subtitle: "Quote requests submitted by buyers.",
-      tokenLabel: "Admin token",
-      tokenPlaceholder: "Enter admin token",
-      unlock: "View submissions",
-      lockedHint: "Enter the admin token to view submitted quote requests.",
-      unauthorized: "Invalid admin token. Please check and try again.",
-      unconfigured: "The admin view isn't configured on the server yet (missing service key or admin token).",
+      unauthorized: "Admin access required.",
+      unconfigured: "The admin view isn't configured on the server yet (missing service key).",
       error: "Couldn't load submissions. Please try again.",
       loading: "Loading submissions…",
       emptyTitle: "No submissions yet",
       emptyBody: "Quote requests submitted by buyers will appear here.",
       count: (n) => `${n} submission${n === 1 ? "" : "s"}`,
       refresh: "Refresh",
-      signOut: "Lock",
       colDate: "Date",
       colSupplier: "Supplier",
       colBuyer: "Buyer",
@@ -797,19 +787,14 @@ export const directoryT: Record<Lang, DirectoryDict> = {
     admin: {
       title: "Demandes de devis",
       subtitle: "Demandes de devis soumises par les acheteurs.",
-      tokenLabel: "Jeton administrateur",
-      tokenPlaceholder: "Saisir le jeton administrateur",
-      unlock: "Voir les demandes",
-      lockedHint: "Saisissez le jeton administrateur pour voir les demandes de devis soumises.",
-      unauthorized: "Jeton administrateur invalide. Veuillez vérifier et réessayer.",
-      unconfigured: "La vue administrateur n'est pas encore configurée sur le serveur (clé de service ou jeton manquant).",
+      unauthorized: "Accès administrateur requis.",
+      unconfigured: "La vue administrateur n'est pas encore configurée sur le serveur (clé de service manquante).",
       error: "Impossible de charger les demandes. Veuillez réessayer.",
       loading: "Chargement des demandes…",
       emptyTitle: "Aucune demande pour le moment",
       emptyBody: "Les demandes de devis soumises par les acheteurs apparaîtront ici.",
       count: (n) => `${n} demande${n === 1 ? "" : "s"}`,
       refresh: "Actualiser",
-      signOut: "Verrouiller",
       colDate: "Date",
       colSupplier: "Fournisseur",
       colBuyer: "Acheteur",
@@ -1084,19 +1069,14 @@ export const directoryT: Record<Lang, DirectoryDict> = {
     admin: {
       title: "طلبات عروض الأسعار",
       subtitle: "طلبات عروض الأسعار المقدّمة من المشترين.",
-      tokenLabel: "رمز المشرف",
-      tokenPlaceholder: "أدخل رمز المشرف",
-      unlock: "عرض الطلبات",
-      lockedHint: "أدخل رمز المشرف لعرض طلبات عروض الأسعار المقدّمة.",
-      unauthorized: "رمز المشرف غير صالح. يُرجى التحقق والمحاولة مرة أخرى.",
-      unconfigured: "لم تُهيّأ لوحة المشرف على الخادم بعد (مفتاح الخدمة أو رمز المشرف مفقود).",
+      unauthorized: "صلاحية المشرف مطلوبة.",
+      unconfigured: "لم تُهيّأ لوحة المشرف على الخادم بعد (مفتاح الخدمة مفقود).",
       error: "تعذّر تحميل الطلبات. يُرجى المحاولة مرة أخرى.",
       loading: "جارٍ تحميل الطلبات…",
       emptyTitle: "لا توجد طلبات بعد",
       emptyBody: "ستظهر هنا طلبات عروض الأسعار المقدّمة من المشترين.",
       count: (n) => `${n} طلب`,
       refresh: "تحديث",
-      signOut: "قفل",
       colDate: "التاريخ",
       colSupplier: "المورّد",
       colBuyer: "المشتري",

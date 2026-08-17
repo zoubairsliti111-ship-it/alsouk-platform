@@ -1,32 +1,16 @@
-import { timingSafeEqual } from "node:crypto"
 import { NextResponse } from "next/server"
-import { ADMIN_TOKEN_VAR, SERVICE_KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
+import { SERVICE_KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
+import { authorizeAdmin, NO_STORE } from "@/lib/admin/server"
 
 export const dynamic = "force-dynamic"
 
-const NO_STORE = { "Cache-Control": "no-store" } as const
-
-/** Constant-time string comparison to avoid leaking the token via timing. */
-function safeEqual(a: string, b: string): boolean {
-  const bufA = Buffer.from(a)
-  const bufB = Buffer.from(b)
-  if (bufA.length !== bufB.length) return false
-  return timingSafeEqual(bufA, bufB)
-}
-
-function checkAuth(request: Request): { ok: true; url: string; serviceKey: string } | { ok: false; res: NextResponse } {
+function resolveConfig(): { ok: true; url: string; serviceKey: string } | { ok: false; res: NextResponse } {
   const url = firstDefined(URL_VARS).value
   const serviceKey = firstDefined(SERVICE_KEY_VARS).value
-  const adminToken = process.env[ADMIN_TOKEN_VAR]?.trim()
 
-  if (!url || !serviceKey || !adminToken || !/^https?:\/\//.test(url)) {
-    console.error("[api/admin/companies] Not configured (need service key + token).")
+  if (!url || !serviceKey || !/^https?:\/\//.test(url)) {
+    console.error("[api/admin/companies] Not configured (need service key).")
     return { ok: false, res: NextResponse.json({ companies: [], reason: "unconfigured" }, { status: 503, headers: NO_STORE }) }
-  }
-
-  const provided = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim()
-  if (!provided || !safeEqual(provided, adminToken)) {
-    return { ok: false, res: NextResponse.json({ companies: [], reason: "unauthorized" }, { status: 401, headers: NO_STORE }) }
   }
 
   return { ok: true, url, serviceKey }
@@ -34,11 +18,18 @@ function checkAuth(request: Request): { ok: true; url: string; serviceKey: strin
 
 const COMPANY_ADMIN_COLUMNS = "id,name,slug,country,city,verified,verification_tier,created_at"
 
-/** Lists all companies for the admin verification view. Same admin-token pattern as /api/admin/rfqs. */
-export async function GET(request: Request) {
-  const auth = checkAuth(request)
-  if (!auth.ok) return auth.res
-  const { url, serviceKey } = auth
+/**
+ * Lists all companies for the admin verification view. Access is gated by
+ * `authorizeAdmin()` — the caller must be signed in and present in
+ * `admin_users`, same pattern as `/api/admin/rfqs`.
+ */
+export async function GET() {
+  const authz = await authorizeAdmin()
+  if (!authz.ok) return authz.response
+
+  const config = resolveConfig()
+  if (!config.ok) return config.res
+  const { url, serviceKey } = config
 
   try {
     const res = await fetch(
@@ -60,9 +51,12 @@ export async function GET(request: Request) {
 
 /** Toggles a company's verified flag. Body: { companyId, verified } */
 export async function PATCH(request: Request) {
-  const auth = checkAuth(request)
-  if (!auth.ok) return auth.res
-  const { url, serviceKey } = auth
+  const authz = await authorizeAdmin()
+  if (!authz.ok) return authz.response
+
+  const config = resolveConfig()
+  if (!config.ok) return config.res
+  const { url, serviceKey } = config
 
   let body: { companyId?: unknown; verified?: unknown }
   try {
