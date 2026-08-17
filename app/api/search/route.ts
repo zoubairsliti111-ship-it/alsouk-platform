@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server"
 import { search, type SearchResults } from "@/lib/services/search-service"
 import { extractSearchKeywords } from "@/lib/ai/provider"
+import { checkRateLimit } from "@/lib/rate-limit/api"
 
 export const dynamic = "force-dynamic"
+
+// Debounced client-side search (300ms) means an active typing session can
+// fire several requests a minute; this caps scripted abuse of the AI
+// keyword-extraction path without interrupting normal typing.
+const RATE_LIMIT_MAX = 60
+const RATE_LIMIT_WINDOW_SECONDS = 300
 
 // Below this word count, the query is likely already keywords (e.g. "steel
 // pipes") — skip the AI extraction step and search directly to save a round
@@ -35,6 +42,14 @@ export async function GET(req: Request) {
 
   if (!q) {
     return NextResponse.json({ success: true, data: EMPTY })
+  }
+
+  const allowed = await checkRateLimit(req, "search", RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_SECONDS)
+  if (!allowed) {
+    return NextResponse.json(
+      { success: false, data: EMPTY, reason: "rate_limited" },
+      { status: 429, headers: { "Retry-After": String(RATE_LIMIT_WINDOW_SECONDS) } },
+    )
   }
 
   try {
