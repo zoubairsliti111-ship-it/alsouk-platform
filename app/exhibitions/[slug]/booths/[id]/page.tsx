@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   Building2,
   Calendar,
@@ -27,6 +28,7 @@ import {
   Edit2
 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
+import { useAuth } from "@/components/auth-provider"
 import {
   fetchBoothDetails,
   saveFavorite,
@@ -58,15 +60,23 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
   const { t, lang, dir } = useLanguage()
   const exT = t.exhibitions
   const dirT = directoryT[lang] || directoryT.en
+  const router = useRouter()
 
   const [booth, setBooth] = useState<ExhibitionBooth | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
-  // Visitor state
-  const visitorId = "visitor-local"
+  // Visitor state — favorites/notes/meetings require a real signed-in
+  // visitor (see migration 0054); recently-viewed tracking alone stays
+  // anonymous-tolerant since it's still an in-memory, out-of-scope mock.
+  const { user } = useAuth()
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [savedExhibits, setSavedExhibits] = useState<Record<string, boolean>>({})
+  // Set when a favorite/note/meeting action fails because this booth isn't
+  // a real, live exhibition_booths row yet (e.g. a legacy demo id like
+  // "booth-medina") — exhibitions/booths are genuinely empty in production
+  // today, so this is the honest, expected outcome, not an error to hide.
+  const [demoBoothNotice, setDemoBoothNotice] = useState(false)
 
   // Private notepad state
   const [visitorNoteText, setVisitorNoteText] = useState("")
@@ -104,8 +114,10 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
   useEffect(() => {
     let active = true
 
-    // Track recently viewed
-    trackRecentlyViewedItem(visitorId, "booth", id)
+    // Track recently viewed — still the out-of-scope in-memory mock, so an
+    // anonymous fallback id is harmless here (unlike favorites/notes/
+    // meetings, which require the real signed-in user below).
+    trackRecentlyViewedItem(user?.id ?? "visitor-local", "booth", id)
 
     fetchBoothDetails(slug, id).then((res) => {
       if (!active) return
@@ -123,8 +135,10 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
       }
     })
 
+    if (!user) return () => { active = false }
+
     // Fetch existing bookmarks and notes
-    fetchFavorites(visitorId).then((favs: ExhibitionFavorite[]) => {
+    fetchFavorites(user.id).then((favs: ExhibitionFavorite[]) => {
       if (!active) return
       const matchedBooth = favs.some(f => f.targetType === "booth" && f.targetId === id)
       setIsBookmarked(matchedBooth)
@@ -136,7 +150,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
       setSavedExhibits(map)
     })
 
-    fetchVisitorNotes(visitorId, id).then((notes) => {
+    fetchVisitorNotes(user.id, id).then((notes) => {
       if (!active) return
       if (notes && notes.length > 0) {
         setVisitorNoteText(notes[0].noteText)
@@ -147,7 +161,7 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
     return () => {
       active = false
     }
-  }, [slug, id])
+  }, [slug, id, user])
 
   if (loading) {
     return (
@@ -172,15 +186,30 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
   const comp = booth.company
   const compLoc = [comp.city ? (dirT.cities[comp.city] || comp.city) : null, comp.country ? (dirT.countries[comp.country as keyof typeof dirT.countries] || comp.country) : null].filter(Boolean).join(", ")
 
+  // Favorites/notes/meetings all require a real signed-in visitor —
+  // redirects to /login rather than silently no-op'ing.
+  const requireVisitor = (): boolean => {
+    if (!user) {
+      router.push("/login")
+      return false
+    }
+    return true
+  }
+
   // Bookmark Toggle
   const toggleBookmark = async () => {
+    if (!requireVisitor()) return
     try {
       if (isBookmarked) {
-        const success = await removeFavoriteItem(visitorId, "booth", id)
+        const success = await removeFavoriteItem(user!.id, "booth", id)
         if (success) setIsBookmarked(false)
       } else {
-        const res = await saveFavorite(visitorId, "booth", id)
-        if (res.data) setIsBookmarked(true)
+        const res = await saveFavorite(user!.id, "booth", id)
+        if (res.data) {
+          setIsBookmarked(true)
+        } else if (!res.error) {
+          setDemoBoothNotice(true)
+        }
       }
     } catch (err) {
       console.error("Bookmark toggle failure:", err)
@@ -189,17 +218,20 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
 
   // Exhibit Bookmark Toggle
   const toggleExhibitBookmark = async (exhibitId: string) => {
+    if (!requireVisitor()) return
     try {
       const isSaved = savedExhibits[exhibitId]
       if (isSaved) {
-        const success = await removeFavoriteItem(visitorId, "exhibit", exhibitId)
+        const success = await removeFavoriteItem(user!.id, "exhibit", exhibitId)
         if (success) {
           setSavedExhibits(prev => ({ ...prev, [exhibitId]: false }))
         }
       } else {
-        const res = await saveFavorite(visitorId, "exhibit", exhibitId)
+        const res = await saveFavorite(user!.id, "exhibit", exhibitId)
         if (res.data) {
           setSavedExhibits(prev => ({ ...prev, [exhibitId]: true }))
+        } else if (!res.error) {
+          setDemoBoothNotice(true)
         }
       }
     } catch (err) {
@@ -209,13 +241,16 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
 
   // Save private notepad notes
   const handleSavePrivateNotes = async () => {
+    if (!requireVisitor()) return
     setIsSavingNote(true)
     try {
       const tags = visitorTagsText.split(",").map(t => t.trim()).filter(Boolean)
-      const res = await savePrivateNote(visitorId, id, visitorNoteText, tags)
+      const res = await savePrivateNote(user!.id, id, visitorNoteText, tags)
       if (res.data) {
         setNoteSaveSuccess(true)
         setTimeout(() => setNoteSaveSuccess(false), 2000)
+      } else if (!res.error) {
+        setDemoBoothNotice(true)
       }
     } catch (err) {
       console.error("Save private notes failure:", err)
@@ -224,10 +259,11 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
     }
   }
 
-  // Submit Meeting Request to our mock API
+  // Submit Meeting Request
   const handleMeetingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!meetingDate) return
+    if (!requireVisitor()) return
 
     setMeetingSubmitting(true)
     try {
@@ -235,7 +271,6 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          visitorId,
           boothId: booth.id,
           companyId: comp.id,
           preferredDate: meetingDate,
@@ -255,6 +290,8 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
           setMeetingDate("")
           setMeetingNotes("")
         }, 2500)
+      } else if (data.error === "target_not_found") {
+        setDemoBoothNotice(true)
       }
     } catch (err) {
       console.error("Meeting request failure:", err)
@@ -328,6 +365,18 @@ function ExhibitionBoothContent({ slug, id }: { slug: string; id: string }) {
           { label: comp.name },
         ]}
       />
+
+      {demoBoothNotice && (
+        <div className="mx-auto max-w-6xl px-4 pt-4">
+          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs font-bold text-amber-700 dark:text-amber-400">
+            {lang === "ar"
+              ? "هذا جناح تجريبي/عرض توضيحي — الحجز والتفضيل والملاحظات الحقيقية غير متاحة إلا لأجنحة معارض حقيقية منشورة."
+              : lang === "fr"
+              ? "Ceci est un stand de démonstration — la réservation, les favoris et les notes réels ne sont disponibles que pour de vrais stands d'exposition publiés."
+              : "This is a demo/preview booth — real booking, favorites, and notes are only available for a live, published exhibition booth."}
+          </div>
+        </div>
+      )}
 
       {/* Hero Header Area: Booth Cover Banner + Overlapping Logo */}
       <section className="relative bg-card border-b border-border">

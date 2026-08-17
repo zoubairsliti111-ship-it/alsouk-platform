@@ -13,6 +13,7 @@ import {
   Edit2
 } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
+import { useAuth } from "@/components/auth-provider"
 import { VisitorDashboardLayout } from "@/components/exhibition/visitor-layout"
 import { MarketplaceShell } from "@/components/marketplace/shell"
 import { fetchMeetings, patchCancelMeeting, patchRescheduleMeeting } from "@/lib/services/exhibitions-client"
@@ -30,6 +31,7 @@ export default function VisitorMeetingsPage() {
 function VisitorMeetingsContent() {
   const { t, lang } = useLanguage()
   const exT = t.exhibitions
+  const { user, isLoading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [meetings, setMeetings] = useState<ExhibitionMeeting[]>([])
 
@@ -40,14 +42,13 @@ function VisitorMeetingsContent() {
   const [rescheduleNotes, setRescheduleNotes] = useState("")
   const [rescheduleSubmitting, setRescheduleSubmitting] = useState(false)
 
-  const visitorId = "visitor-local"
-
   useEffect(() => {
+    if (authLoading || !user) return
     let active = true
 
     async function loadMeets() {
       try {
-        const data = await fetchMeetings(visitorId)
+        const data = await fetchMeetings(user!.id)
         if (!active) return
         setMeetings(data || [])
         setLoading(false)
@@ -61,7 +62,7 @@ function VisitorMeetingsContent() {
     return () => {
       active = false
     }
-  }, [])
+  }, [authLoading, user])
 
   const handleCancel = async (meetingId: string) => {
     if (!confirm(lang === "ar" ? "هل أنت متأكد من رغبتك في إلغاء هذا اللقاء؟" : "Etes-vous sûr de vouloir annuler ce rendez-vous?")) return
@@ -98,6 +99,37 @@ function VisitorMeetingsContent() {
     } finally {
       setRescheduleSubmitting(false)
     }
+  }
+
+  if (authLoading) {
+    return (
+      <VisitorDashboardLayout>
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <Loader2 className="size-8 text-primary animate-spin" />
+          <span className="text-xs font-bold text-muted-foreground">{t.marketplace.loading}</span>
+        </div>
+      </VisitorDashboardLayout>
+    )
+  }
+
+  if (!user) {
+    return (
+      <VisitorDashboardLayout>
+        <div className="flex flex-col items-center justify-center py-20 gap-3 text-center">
+          <Calendar className="size-10 text-muted-foreground" />
+          <p className="text-xs font-bold text-muted-foreground max-w-xs">
+            {lang === "ar"
+              ? "سجّل الدخول لمتابعة وإدارة مواعيد لقاءاتك مع العارضين."
+              : lang === "fr"
+              ? "Connectez-vous pour suivre et gérer vos réunions avec les exposants."
+              : "Sign in to track and manage your meetings with exhibitors."}
+          </p>
+          <Link href="/login" className="mt-1 rounded-full bg-primary px-5 py-2 text-xs font-black text-white">
+            {lang === "ar" ? "تسجيل الدخول" : lang === "fr" ? "Se connecter" : "Sign in"}
+          </Link>
+        </div>
+      </VisitorDashboardLayout>
+    )
   }
 
   if (loading) {

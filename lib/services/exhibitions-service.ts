@@ -1561,51 +1561,11 @@ export async function updateApplicationReviewNotes(
 // Visitor Experience & B2B Networking Service Layer (TASK 009)
 // ===========================================================================
 
-// Mock global persistence fallbacks for local sandbox development
-const MOCK_FAVORITES: ExhibitionFavorite[] = []
+// Favorites/meetings/notes moved to real tables (migration 0054) — see
+// the functions below. Recently-viewed tracking is unaffected by this
+// fix and stays on this in-memory fallback for now (out of scope; still
+// resets on every cold start/redeploy, same caveat as before).
 const MOCK_RECENTLY_VIEWED: ExhibitionRecentlyViewed[] = []
-const MOCK_MEETINGS: ExhibitionMeeting[] = [
-  {
-    id: "meet-mock-1",
-    visitorId: "visitor-local",
-    boothId: "booth-medina",
-    companyId: "comp-medina",
-    preferredDate: "2026-06-16",
-    preferredTime: "10:00 - 11:00",
-    purpose: "Explore olive oil export contracts",
-    expectedVolume: "5,000 - 10,000 Liters",
-    preferredLanguage: "French",
-    notes: "We want to purchase cold-pressed reserve for EU distribution.",
-    status: "Pending",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "meet-mock-2",
-    visitorId: "visitor-local",
-    boothId: "booth-sahara",
-    companyId: "comp-sahara",
-    preferredDate: "2026-06-17",
-    preferredTime: "15:00 - 16:00",
-    purpose: "Bulk Dates Purchase",
-    expectedVolume: "2 Tons",
-    preferredLanguage: "English",
-    notes: "Discuss packaging options for Sahara Dates.",
-    status: "Accepted",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }
-]
-const MOCK_NOTES: ExhibitionVisitorNote[] = []
-
-export function getMockFavorites(): ExhibitionFavorite[] {
-  if (typeof globalThis !== "undefined") {
-    const g = globalThis as any
-    if (!g.__mockFavorites) g.__mockFavorites = MOCK_FAVORITES
-    return g.__mockFavorites
-  }
-  return MOCK_FAVORITES
-}
 
 export function getMockRecentlyViewed(): ExhibitionRecentlyViewed[] {
   if (typeof globalThis !== "undefined") {
@@ -1616,80 +1576,147 @@ export function getMockRecentlyViewed(): ExhibitionRecentlyViewed[] {
   return MOCK_RECENTLY_VIEWED
 }
 
-export function getMockMeetings(): ExhibitionMeeting[] {
-  if (typeof globalThis !== "undefined") {
-    const g = globalThis as any
-    if (!g.__mockMeetings) g.__mockMeetings = MOCK_MEETINGS
-    return g.__mockMeetings
-  }
-  return MOCK_MEETINGS
+// A favorite/note/meeting request against a legacy demo booth or exhibit
+// id (e.g. "booth-medina", not a real UUID) or any id that isn't a live
+// exhibition_booths/exhibition_items/companies row: exhibitions/booths are
+// genuinely empty in production today, so there is honestly nothing real
+// to attach to yet. Checked up front so the caller gets a clean, distinct
+// reason instead of a raw Postgres cast/FK error.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// 1. Favorites Management — backed by public.exhibition_favorites
+// (migration 0054). visitorId is the caller's real auth.uid(), resolved
+// and verified by the API route before calling into this file — never a
+// client-supplied value.
+type ExhibitionFavoriteRow = {
+  id: string
+  visitor_id: string
+  target_type: "booth" | "exhibit"
+  booth_id: string | null
+  exhibit_id: string | null
+  created_at: string
 }
 
-export function getMockNotes(): ExhibitionVisitorNote[] {
-  if (typeof globalThis !== "undefined") {
-    const g = globalThis as any
-    if (!g.__mockNotes) g.__mockNotes = MOCK_NOTES
-    return g.__mockNotes
+function mapFavoriteRow(row: ExhibitionFavoriteRow): ExhibitionFavorite {
+  return {
+    id: row.id,
+    visitorId: row.visitor_id,
+    targetType: row.target_type,
+    targetId: (row.target_type === "booth" ? row.booth_id : row.exhibit_id) as string,
+    createdAt: row.created_at,
   }
-  return MOCK_NOTES
 }
 
-// 1. Favorites Management
+const BOOTH_SELECT =
+  "id,exhibition_id,company_id,banner_url,logo_url,description,status,title,short_description,contact_person,contact_phone,contact_whatsapp,contact_email,contact_website,companies(*)"
+
 export async function getFavorites(visitorId: string): Promise<ExhibitionFavorite[]> {
-  const mockFavs = getFavoritesWithRelations(getMockFavorites().filter((f) => f.visitorId === visitorId))
-  return mockFavs
+  const service = getServiceClient()
+  if (!service) return []
+  const { data, error } = await service
+    .from("exhibition_favorites")
+    .select("*")
+    .eq("visitor_id", visitorId)
+    .order("created_at", { ascending: false })
+  if (error || !data) return []
+  return getFavoritesWithRelations((data as ExhibitionFavoriteRow[]).map(mapFavoriteRow))
 }
 
-function getFavoritesWithRelations(favorites: ExhibitionFavorite[]): ExhibitionFavorite[] {
-  const boothsMap = getMockBooths()
-  const allBooths: ExhibitionBooth[] = []
-  for (const slug in boothsMap) {
-    allBooths.push(...boothsMap[slug])
+async function getFavoritesWithRelations(favorites: ExhibitionFavorite[]): Promise<ExhibitionFavorite[]> {
+  const boothIds = favorites.filter(f => f.targetType === "booth").map(f => f.targetId)
+  const exhibitIds = favorites.filter(f => f.targetType === "exhibit").map(f => f.targetId)
+
+  const boothsById = new Map<string, ExhibitionBooth>()
+  if (boothIds.length > 0) {
+    const rows = await restGet<ExhibitionBoothRow>(
+      `exhibition_booths?select=${BOOTH_SELECT}&id=in.(${boothIds.map(encodeURIComponent).join(",")})`
+    )
+    rows.forEach(r => boothsById.set(r.id, mapExhibitionBooth(r)))
   }
 
-  return favorites.map(fav => {
-    if (fav.targetType === "booth") {
-      const booth = allBooths.find(b => b.id === fav.targetId) || null
-      return { ...fav, booth }
-    } else {
-      let foundExhibit: ExhibitionExhibit | null = null
-      const exhibitsMap = getMockExhibits()
-      for (const bId in exhibitsMap) {
-        const found = exhibitsMap[bId].find(e => e.id === fav.targetId)
-        if (found) {
-          foundExhibit = found
-          break
-        }
-      }
-      return { ...fav, exhibit: foundExhibit }
-    }
-  })
+  const exhibitsById = new Map<string, ExhibitionExhibit>()
+  if (exhibitIds.length > 0) {
+    const rows = await restGet<ExhibitionItemRow>(
+      `exhibition_items?select=*&id=in.(${exhibitIds.map(encodeURIComponent).join(",")})`
+    )
+    rows.forEach(r => exhibitsById.set(r.id, mapExhibitionExhibit(r)))
+  }
+
+  return favorites.map(fav =>
+    fav.targetType === "booth"
+      ? { ...fav, booth: boothsById.get(fav.targetId) || null }
+      : { ...fav, exhibit: exhibitsById.get(fav.targetId) || null }
+  )
 }
 
 export async function addFavorite(visitorId: string, targetType: "booth" | "exhibit", targetId: string): Promise<ExhibitionFavorite> {
-  const list = getMockFavorites()
-  const existing = list.find(f => f.visitorId === visitorId && f.targetType === targetType && f.targetId === targetId)
-  if (existing) return existing
+  if (!UUID_RE.test(targetId)) throw new Error("target_not_found")
 
-  const newFav: ExhibitionFavorite = {
-    id: `fav-${Math.random().toString(36).slice(2, 11)}`,
-    visitorId,
-    targetType,
-    targetId,
-    createdAt: new Date().toISOString()
+  const service = getServiceClient()
+  if (!service) throw new Error("Service client unavailable")
+
+  const matchCol = targetType === "booth" ? "booth_id" : "exhibit_id"
+
+  const { data: existing } = await service
+    .from("exhibition_favorites")
+    .select("*")
+    .eq("visitor_id", visitorId)
+    .eq("target_type", targetType)
+    .eq(matchCol, targetId)
+    .maybeSingle()
+
+  let row = existing as ExhibitionFavoriteRow | null
+
+  if (!row) {
+    const insertRow = {
+      visitor_id: visitorId,
+      target_type: targetType,
+      booth_id: targetType === "booth" ? targetId : null,
+      exhibit_id: targetType === "exhibit" ? targetId : null,
+    }
+
+    const { data, error } = await service.from("exhibition_favorites").insert(insertRow).select().single()
+
+    if (error) {
+      // 23503 = foreign key violation: targetId isn't a real
+      // exhibition_booths/exhibition_items row (e.g. a legacy demo id
+      // like "booth-medina") — there is genuinely nothing to favorite yet.
+      if (error.code === "23503") throw new Error("target_not_found")
+      // 23505 = another request for the same visitor+target won the race
+      // between our existence check and this insert.
+      if (error.code === "23505") {
+        const { data: refetched } = await service
+          .from("exhibition_favorites")
+          .select("*")
+          .eq("visitor_id", visitorId)
+          .eq("target_type", targetType)
+          .eq(matchCol, targetId)
+          .single()
+        row = refetched as ExhibitionFavoriteRow | null
+      } else {
+        throw new Error(error.message || "Failed to add favorite")
+      }
+    } else {
+      row = data as ExhibitionFavoriteRow
+    }
   }
-  list.push(newFav)
-  return getFavoritesWithRelations([newFav])[0]
+
+  if (!row) throw new Error("Failed to add favorite")
+  const [withRelations] = await getFavoritesWithRelations([mapFavoriteRow(row)])
+  return withRelations
 }
 
 export async function removeFavorite(visitorId: string, targetType: "booth" | "exhibit", targetId: string): Promise<boolean> {
-  const list = getMockFavorites()
-  const idx = list.findIndex(f => f.visitorId === visitorId && f.targetType === targetType && f.targetId === targetId)
-  if (idx !== -1) {
-    list.splice(idx, 1)
-    return true
-  }
-  return false
+  const service = getServiceClient()
+  if (!service) return false
+  const matchCol = targetType === "booth" ? "booth_id" : "exhibit_id"
+  const { error } = await service
+    .from("exhibition_favorites")
+    .delete()
+    .eq("visitor_id", visitorId)
+    .eq("target_type", targetType)
+    .eq(matchCol, targetId)
+  return !error
 }
 
 // ===========================================================================
@@ -2190,106 +2217,213 @@ export async function trackRecentlyViewed(visitorId: string, targetType: "booth"
 }
 
 // 3. Meetings Management
-export async function getMeetings(visitorId: string): Promise<ExhibitionMeeting[]> {
-  const list = getMockMeetings().filter(m => m.visitorId === visitorId)
-  // Sort by date/time
-  list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+type ExhibitionMeetingRow = {
+  id: string
+  visitor_id: string
+  booth_id: string
+  company_id: string
+  preferred_date: string
+  preferred_time: string
+  purpose: string
+  expected_volume: string
+  preferred_language: string
+  notes: string | null
+  status: ExhibitionMeetingStatus
+  created_at: string
+  updated_at: string
+}
 
-  const boothsMap = getMockBooths()
-  const allBooths: ExhibitionBooth[] = []
-  for (const slug in boothsMap) {
-    allBooths.push(...boothsMap[slug])
+function mapMeetingRow(row: ExhibitionMeetingRow): ExhibitionMeeting {
+  return {
+    id: row.id,
+    visitorId: row.visitor_id,
+    boothId: row.booth_id,
+    companyId: row.company_id,
+    preferredDate: row.preferred_date,
+    preferredTime: row.preferred_time,
+    purpose: row.purpose,
+    expectedVolume: row.expected_volume,
+    preferredLanguage: row.preferred_language,
+    notes: row.notes,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }
+}
 
-  return list.map(m => {
-    const booth = allBooths.find(b => b.id === m.boothId) || null
-    return { ...m, booth }
-  })
+async function attachBooths(meetings: ExhibitionMeeting[]): Promise<ExhibitionMeeting[]> {
+  const boothIds = [...new Set(meetings.map(m => m.boothId))]
+  if (boothIds.length === 0) return meetings
+  const rows = await restGet<ExhibitionBoothRow>(
+    `exhibition_booths?select=${BOOTH_SELECT}&id=in.(${boothIds.map(encodeURIComponent).join(",")})`
+  )
+  const boothsById = new Map(rows.map(r => [r.id, mapExhibitionBooth(r)]))
+  return meetings.map(m => ({ ...m, booth: boothsById.get(m.boothId) || null }))
+}
+
+// 3. Meeting Requests — backed by public.exhibition_meetings (migration
+// 0054). visitorId is the caller's real auth.uid(), resolved and verified
+// by the API route — never a client-supplied value.
+export async function getMeetings(visitorId: string): Promise<ExhibitionMeeting[]> {
+  const service = getServiceClient()
+  if (!service) return []
+  const { data, error } = await service
+    .from("exhibition_meetings")
+    .select("*")
+    .eq("visitor_id", visitorId)
+    .order("created_at", { ascending: false })
+  if (error || !data) return []
+  return attachBooths((data as ExhibitionMeetingRow[]).map(mapMeetingRow))
 }
 
 export async function createMeeting(
   visitorId: string,
   input: Omit<ExhibitionMeeting, "id" | "visitorId" | "status" | "createdAt" | "updatedAt">
 ): Promise<ExhibitionMeeting> {
-  const list = getMockMeetings()
-  const newMeeting: ExhibitionMeeting = {
-    ...input,
-    id: `meet-${Math.random().toString(36).slice(2, 11)}`,
-    visitorId,
-    status: "Pending",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+  if (!UUID_RE.test(input.boothId) || !UUID_RE.test(input.companyId)) {
+    throw new Error("target_not_found")
   }
-  list.push(newMeeting)
 
-  const boothsMap = getMockBooths()
-  const allBooths: ExhibitionBooth[] = []
-  for (const slug in boothsMap) {
-    allBooths.push(...boothsMap[slug])
+  const service = getServiceClient()
+  if (!service) throw new Error("Service client unavailable")
+
+  const { data, error } = await service
+    .from("exhibition_meetings")
+    .insert({
+      visitor_id: visitorId,
+      booth_id: input.boothId,
+      company_id: input.companyId,
+      preferred_date: input.preferredDate,
+      preferred_time: input.preferredTime,
+      purpose: input.purpose,
+      expected_volume: input.expectedVolume,
+      preferred_language: input.preferredLanguage,
+      notes: input.notes ?? null,
+    })
+    .select()
+    .single()
+
+  if (error || !data) {
+    if (error?.code === "23503") throw new Error("target_not_found")
+    throw new Error(error?.message || "Failed to create meeting")
   }
-  newMeeting.booth = allBooths.find(b => b.id === newMeeting.boothId) || null
 
-  return newMeeting
+  const [withBooth] = await attachBooths([mapMeetingRow(data as ExhibitionMeetingRow)])
+  return withBooth
 }
 
-export async function updateMeetingStatus(meetingId: string, status: ExhibitionMeetingStatus): Promise<ExhibitionMeeting> {
-  const list = getMockMeetings()
-  const idx = list.findIndex(m => m.id === meetingId)
-  if (idx === -1) throw new Error(`Meeting not found: ${meetingId}`)
-  list[idx].status = status
-  list[idx].updatedAt = new Date().toISOString()
-  return list[idx]
+export async function updateMeetingStatus(
+  visitorId: string,
+  meetingId: string,
+  status: ExhibitionMeetingStatus
+): Promise<ExhibitionMeeting> {
+  const service = getServiceClient()
+  if (!service) throw new Error("Service client unavailable")
+  const { data, error } = await service
+    .from("exhibition_meetings")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", meetingId)
+    .eq("visitor_id", visitorId)
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message || `Meeting not found: ${meetingId}`)
+  return mapMeetingRow(data as ExhibitionMeetingRow)
 }
 
-export async function rescheduleMeeting(meetingId: string, date: string, time: string, notes?: string): Promise<ExhibitionMeeting> {
-  const list = getMockMeetings()
-  const idx = list.findIndex(m => m.id === meetingId)
-  if (idx === -1) throw new Error(`Meeting not found: ${meetingId}`)
-  list[idx].preferredDate = date
-  list[idx].preferredTime = time
-  if (notes !== undefined) list[idx].notes = notes
-  list[idx].updatedAt = new Date().toISOString()
-  return list[idx]
+export async function rescheduleMeeting(
+  visitorId: string,
+  meetingId: string,
+  date: string,
+  time: string,
+  notes?: string
+): Promise<ExhibitionMeeting> {
+  const service = getServiceClient()
+  if (!service) throw new Error("Service client unavailable")
+  const update: { preferred_date: string; preferred_time: string; updated_at: string; notes?: string } = {
+    preferred_date: date,
+    preferred_time: time,
+    updated_at: new Date().toISOString(),
+  }
+  if (notes !== undefined) update.notes = notes
+  const { data, error } = await service
+    .from("exhibition_meetings")
+    .update(update)
+    .eq("id", meetingId)
+    .eq("visitor_id", visitorId)
+    .select()
+    .single()
+  if (error || !data) throw new Error(error?.message || `Meeting not found: ${meetingId}`)
+  return mapMeetingRow(data as ExhibitionMeetingRow)
 }
 
-// 4. Visitor Private Notes Management
+// 4. Visitor Private Notes Management — backed by
+// public.exhibition_visitor_notes (migration 0054).
+type ExhibitionVisitorNoteRow = {
+  id: string
+  visitor_id: string
+  booth_id: string
+  note_text: string
+  tags: string[]
+  created_at: string
+  updated_at: string
+}
+
+function mapNoteRow(row: ExhibitionVisitorNoteRow): ExhibitionVisitorNote {
+  return {
+    id: row.id,
+    visitorId: row.visitor_id,
+    boothId: row.booth_id,
+    noteText: row.note_text,
+    tags: row.tags,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
 export async function getVisitorNotes(visitorId: string, boothId?: string): Promise<ExhibitionVisitorNote[]> {
-  const list = getMockNotes().filter(n => n.visitorId === visitorId)
-  if (boothId) {
-    return list.filter(n => n.boothId === boothId)
-  }
-  return list
+  const service = getServiceClient()
+  if (!service) return []
+  let query = service.from("exhibition_visitor_notes").select("*").eq("visitor_id", visitorId)
+  if (boothId) query = query.eq("booth_id", boothId)
+  const { data, error } = await query.order("updated_at", { ascending: false })
+  if (error || !data) return []
+  return (data as ExhibitionVisitorNoteRow[]).map(mapNoteRow)
 }
 
-export async function saveVisitorNote(visitorId: string, boothId: string, noteText: string, tags: string[]): Promise<ExhibitionVisitorNote> {
-  const list = getMockNotes()
-  const idx = list.findIndex(n => n.visitorId === visitorId && n.boothId === boothId)
-  if (idx !== -1) {
-    list[idx].noteText = noteText
-    list[idx].tags = tags
-    list[idx].updatedAt = new Date().toISOString()
-    return list[idx]
-  }
+export async function saveVisitorNote(
+  visitorId: string,
+  boothId: string,
+  noteText: string,
+  tags: string[]
+): Promise<ExhibitionVisitorNote> {
+  if (!UUID_RE.test(boothId)) throw new Error("target_not_found")
 
-  const newNote: ExhibitionVisitorNote = {
-    id: `note-${Math.random().toString(36).slice(2, 11)}`,
-    visitorId,
-    boothId,
-    noteText,
-    tags,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+  const service = getServiceClient()
+  if (!service) throw new Error("Service client unavailable")
+
+  const { data, error } = await service
+    .from("exhibition_visitor_notes")
+    .upsert(
+      { visitor_id: visitorId, booth_id: boothId, note_text: noteText, tags, updated_at: new Date().toISOString() },
+      { onConflict: "visitor_id,booth_id" }
+    )
+    .select()
+    .single()
+
+  if (error || !data) {
+    if (error?.code === "23503") throw new Error("target_not_found")
+    throw new Error(error?.message || "Failed to save note")
   }
-  list.push(newNote)
-  return newNote
+  return mapNoteRow(data as ExhibitionVisitorNoteRow)
 }
 
 export async function deleteVisitorNote(visitorId: string, boothId: string): Promise<boolean> {
-  const list = getMockNotes()
-  const idx = list.findIndex(n => n.visitorId === visitorId && n.boothId === boothId)
-  if (idx !== -1) {
-    list.splice(idx, 1)
-    return true
-  }
-  return false
+  const service = getServiceClient()
+  if (!service) return false
+  const { error } = await service
+    .from("exhibition_visitor_notes")
+    .delete()
+    .eq("visitor_id", visitorId)
+    .eq("booth_id", boothId)
+  return !error
 }
