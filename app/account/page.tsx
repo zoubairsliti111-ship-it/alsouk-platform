@@ -16,6 +16,7 @@ import {
   updateCompany
 } from "@/lib/supabase/company-service"
 import { type Company } from "@/lib/directory-data"
+import { isStrongPassword } from "@/lib/supabase/auth-helpers"
 import { normalizeExternalStoreUrl } from "@/lib/external-store"
 import { MerchantPosts } from "@/components/marketplace/merchant-posts"
 import { getProducts } from "@/lib/services/products-service"
@@ -194,7 +195,7 @@ const localT = {
     selectCountry: "Select Country",
     enterCity: "Enter your city",
     updating: "Saving...",
-    passwordLengthError: "Password must be at least 8 characters long",
+    passwordLengthError: "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, and a number",
     passwordMismatchError: "Passwords do not match",
     requiredFieldsError: "Please fill in all required fields",
     customAvatarUrl: "Or paste a custom avatar image URL",
@@ -312,7 +313,7 @@ const localT = {
     selectCountry: "Sélectionnez un pays",
     enterCity: "Entrez votre ville",
     updating: "Enregistrement...",
-    passwordLengthError: "Le mot de passe doit comporter au moins 8 caractères",
+    passwordLengthError: "Le mot de passe doit comporter au moins 8 caractères, une majuscule, une minuscule et un chiffre",
     passwordMismatchError: "Les motifs de passe ne correspondent pas",
     requiredFieldsError: "Veuillez remplir tous les champs obligatoires",
     customAvatarUrl: "Ou collez l'URL d'une image d'avatar personnalisée",
@@ -430,7 +431,7 @@ const localT = {
     selectCountry: "اختر البلد",
     enterCity: "أدخل مدينتك",
     updating: "جاري الحفظ...",
-    passwordLengthError: "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+    passwordLengthError: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل وتحتوي على حرف كبير وحرف صغير ورقم",
     passwordMismatchError: "كلمات المرور غير متطابقة",
     requiredFieldsError: "يرجى ملء جميع الحقول المطلوبة",
     customAvatarUrl: "أو الصق رابط صورة مخصص",
@@ -965,7 +966,7 @@ function AccountScreen() {
     setPasswordSuccess("")
     setPasswordError("")
 
-    if (newPassword.length < 8) {
+    if (!isStrongPassword(newPassword)) {
       setPasswordError(dict.passwordLengthError)
       return
     }
