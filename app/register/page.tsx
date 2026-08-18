@@ -97,6 +97,24 @@ function RegisterScreen() {
     }
 
     try {
+      const guardResponse = await fetch("/api/auth/signup-guard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: finalEmail }),
+      })
+
+      if (guardResponse.status === 429) {
+        setError(t.auth.signupRateLimited)
+        setLoading(false)
+        return
+      }
+
+      if (guardResponse.status === 409) {
+        setError(activeTab === "phone" ? t.auth.phoneAlreadyRegistered : t.auth.emailAlreadyRegistered)
+        setLoading(false)
+        return
+      }
+
       const { error: signUpError } = await supabase.auth.signUp({
         email: finalEmail,
         password: password,
