@@ -133,21 +133,19 @@ export async function submitRfq(supplierId: string, input: RfqInput): Promise<Su
 export type AdminRfqsResult = {
   rfqs: RfqRow[]
   /** Set when the request could not be completed. */
-  reason?: "unauthorized" | "unconfigured" | "error"
+  reason?: "forbidden" | "unconfigured" | "error"
 }
 
 /**
- * Loads submitted RFQs for the admin view via `/api/admin/rfqs`, passing the
- * admin token as a bearer credential. The server reads the RLS-protected table
- * with the service-role key.
+ * Loads submitted RFQs for the admin view via `/api/admin/rfqs`. Auth rides
+ * on the signed-in session cookie — the server checks the caller is a real
+ * `admin_users` row (see `lib/admin/server.ts`), so no client-supplied
+ * credential is needed here.
  */
-export async function fetchAdminRfqs(token: string): Promise<AdminRfqsResult> {
+export async function fetchAdminRfqs(): Promise<AdminRfqsResult> {
   try {
-    const res = await fetch("/api/admin/rfqs", {
-      headers: { authorization: `Bearer ${token}` },
-      cache: "no-store",
-    })
-    if (res.status === 401) return { rfqs: [], reason: "unauthorized" }
+    const res = await fetch("/api/admin/rfqs", { cache: "no-store" })
+    if (res.status === 401 || res.status === 403) return { rfqs: [], reason: "forbidden" }
     if (res.status === 503) return { rfqs: [], reason: "unconfigured" }
     if (!res.ok) return { rfqs: [], reason: "error" }
     const json = (await res.json()) as { rfqs?: RfqRow[] }

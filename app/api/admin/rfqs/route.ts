@@ -1,20 +1,9 @@
-import { timingSafeEqual } from "node:crypto"
 import { NextResponse } from "next/server"
-import { ADMIN_TOKEN_VAR, SERVICE_KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
+import { SERVICE_KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
+import { authorizeAdmin, NO_STORE } from "@/lib/admin/server"
 import type { RfqRow } from "@/lib/supabase/rfq-service"
 
 export const dynamic = "force-dynamic"
-
-// Never cache admin responses: they carry buyer PII.
-const NO_STORE = { "Cache-Control": "no-store" } as const
-
-/** Constant-time string comparison to avoid leaking the token via timing. */
-function safeEqual(a: string, b: string): boolean {
-  const bufA = Buffer.from(a)
-  const bufB = Buffer.from(b)
-  if (bufA.length !== bufB.length) return false
-  return timingSafeEqual(bufA, bufB)
-}
 
 const RFQS_TABLE = "rfqs"
 const RFQ_COLUMNS =
@@ -25,23 +14,21 @@ const RFQ_COLUMNS =
  * Lists submitted RFQs for the admin view.
  *
  * RFQs are RLS-protected (they contain buyer PII), so they are read with the
- * server-only service-role key, which bypasses RLS. Access is gated by a shared
- * `RFQ_ADMIN_TOKEN` passed as a bearer credential. Responds 503 when the server
- * isn't configured (missing service key or admin token) and 401 on a bad token.
+ * server-only service-role key, which bypasses RLS. Access is gated by
+ * `authorizeAdmin()` — the caller must be signed in and present in
+ * `admin_users`, same as every other admin-only route. Responds 503 when the
+ * server isn't configured (missing service key).
  */
-export async function GET(request: Request) {
+export async function GET() {
+  const authz = await authorizeAdmin()
+  if (!authz.ok) return authz.response
+
   const url = firstDefined(URL_VARS).value
   const serviceKey = firstDefined(SERVICE_KEY_VARS).value
-  const adminToken = process.env[ADMIN_TOKEN_VAR]?.trim()
 
-  if (!url || !serviceKey || !adminToken || !/^https?:\/\//.test(url)) {
-    console.error("[api/admin/rfqs] Admin RFQ view is not configured (need service key + token).")
+  if (!url || !serviceKey || !/^https?:\/\//.test(url)) {
+    console.error("[api/admin/rfqs] Admin RFQ view is not configured (need service key).")
     return NextResponse.json({ rfqs: [], reason: "unconfigured" }, { status: 503, headers: NO_STORE })
-  }
-
-  const provided = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim()
-  if (!provided || !safeEqual(provided, adminToken)) {
-    return NextResponse.json({ rfqs: [], reason: "unauthorized" }, { status: 401, headers: NO_STORE })
   }
 
   const endpoint = `${url}/rest/v1/${RFQS_TABLE}?select=${RFQ_COLUMNS}&order=created_at.desc`

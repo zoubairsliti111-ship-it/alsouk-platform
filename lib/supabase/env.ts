@@ -25,9 +25,6 @@ export const SERVICE_KEY_VARS = [
   "SUPABASE_SERVICE_KEY",
 ] as const
 
-/** Shared-secret token that gates the RFQ admin view. Server-only. */
-export const ADMIN_TOKEN_VAR = "RFQ_ADMIN_TOKEN" as const
-
 /**
  * Returns the first env var (from `names`) that holds a non-empty value.
  * Values are trimmed so an empty/whitespace-only entry is treated as absent
