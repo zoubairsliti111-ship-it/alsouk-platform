@@ -384,6 +384,8 @@ type Dict = {
     signUpSuccess: string
     signInSuccess: string
     resetSuccess: string
+    passwordRecoveryTitle: string
+    passwordRecoveryDesc: string
     phoneTab: string
     emailTab: string
     phonePlaceholder: string
@@ -917,6 +919,8 @@ export const translations: Record<Lang, Dict> = {
       signUpSuccess: "Your account has been created successfully!",
       signInSuccess: "Signed in successfully!",
       resetSuccess: "Your password has been successfully reset!",
+      passwordRecoveryTitle: "Set a new password",
+      passwordRecoveryDesc: "You followed a password reset link. Choose a new password to finish and continue to your account.",
       phoneTab: "Phone Number",
       emailTab: "Email Address",
       phonePlaceholder: "21345678",
@@ -1448,6 +1452,8 @@ export const translations: Record<Lang, Dict> = {
       signUpSuccess: "Votre compte a été créé avec succès !",
       signInSuccess: "Connexion réussie !",
       resetSuccess: "Votre mot de passe a été réinitialisé avec succès !",
+      passwordRecoveryTitle: "Définir un nouveau mot de passe",
+      passwordRecoveryDesc: "Vous avez suivi un lien de réinitialisation. Choisissez un nouveau mot de passe pour continuer vers votre compte.",
       phoneTab: "Numéro de téléphone",
       emailTab: "Adresse e-mail",
       phonePlaceholder: "21345678",
@@ -1979,6 +1985,8 @@ export const translations: Record<Lang, Dict> = {
       signUpSuccess: "تم إنشاء حسابك بنجاح!",
       signInSuccess: "تم تسجيل الدخول بنجاح!",
       resetSuccess: "تم إعادة تعيين كلمة المرور بنجاح!",
+      passwordRecoveryTitle: "عيّن كلمة مرور جديدة",
+      passwordRecoveryDesc: "لقد اتبعت رابط إعادة تعيين كلمة المرور. اختر كلمة مرور جديدة للمتابعة إلى حسابك.",
       phoneTab: "رقم الهاتف",
       emailTab: "البريد الإلكتروني",
       phonePlaceholder: "21345678",
