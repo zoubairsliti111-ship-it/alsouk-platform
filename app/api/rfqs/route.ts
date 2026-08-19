@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { KEY_VARS, URL_VARS, firstDefined } from "@/lib/supabase/env"
 import { normalizeRfq, validateRfq, type RfqInput } from "@/lib/supabase/rfq-service"
+import { createClient } from "@/lib/supabase/server"
+import { getServiceClient } from "@/lib/supabase/service"
+import { notifyRFQ } from "@/lib/services/notifications-service"
 
 // The public read surface for `companies` — see supabase/migrations/0046 and
 // 0047. Base `companies` SELECT is member-only since 0047; this route only
@@ -135,9 +138,25 @@ export async function POST(request: Request) {
     }
   }
 
+  // Best-effort: if the submitter happens to be signed in, capture their
+  // auth.uid() so the supplier-side RFQ inbox can offer a real "Reply via
+  // message" action later (see 0059). The submission itself stays public —
+  // an anonymous caller (no session cookie) just leaves buyer_id null.
+  let buyerId: string | null = null
+  try {
+    const authedClient = await createClient()
+    const {
+      data: { user },
+    } = await authedClient.auth.getUser()
+    buyerId = user?.id ?? null
+  } catch (err) {
+    console.error("[api/rfqs] Failed to resolve signed-in buyer:", err)
+  }
+
   const record = {
     supplier_id: finalSupplierId,
     company_id: companyId,
+    buyer_id: buyerId,
     supplier_name: supplierName,
     company_name: input.companyName,
     contact_person: input.contactPerson,
@@ -151,10 +170,11 @@ export async function POST(request: Request) {
     message: input.message,
   }
 
+  let newRfqId: string | null = null
   try {
     const res = await fetch(`${url}/rest/v1/${RFQS_TABLE}`, {
       method: "POST",
-      headers: { ...headers, "content-type": "application/json", Prefer: "return=minimal" },
+      headers: { ...headers, "content-type": "application/json", Prefer: "return=representation" },
       body: JSON.stringify(record),
       cache: "no-store",
     })
@@ -163,9 +183,33 @@ export async function POST(request: Request) {
       console.error("[api/rfqs] Insert failed:", res.status, text)
       return NextResponse.json({ error: true, reason: "error" }, { status: 502 })
     }
-    return NextResponse.json({ error: false }, { status: 201 })
+    const inserted = (await res.json()) as { id: string }[]
+    newRfqId = inserted?.[0]?.id ?? null
   } catch (err) {
     console.error("[api/rfqs] Unexpected error:", err)
     return NextResponse.json({ error: true, reason: "error" }, { status: 500 })
   }
+
+  // Notify the target supplier's company owner. Best-effort and non-blocking:
+  // a general (undirected) RFQ has no companyId to notify, and any failure
+  // here must never turn a successfully-submitted RFQ into an error response.
+  if (companyId && newRfqId) {
+    try {
+      const service = getServiceClient()
+      if (service) {
+        const { data: companyRow } = await service
+          .from("companies")
+          .select("owner_id")
+          .eq("id", companyId)
+          .single()
+        if (companyRow?.owner_id) {
+          await notifyRFQ(service, companyRow.owner_id, input.companyName, input.productRequested, newRfqId)
+        }
+      }
+    } catch (err) {
+      console.error("[api/rfqs] Failed to send RFQ notification:", err)
+    }
+  }
+
+  return NextResponse.json({ error: false }, { status: 201 })
 }

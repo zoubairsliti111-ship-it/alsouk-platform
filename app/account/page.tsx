@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { StudioPanel } from "@/components/studio/studio-panel"
 import { useAuth } from "@/components/auth-provider"
@@ -151,6 +152,14 @@ const localT = {
     tabAboutTrade: "About & Trade",
     tabInstagramFeed: "Instagram Feed",
     tabFeaturedProducts: "Featured Products",
+    tabRfqs: "RFQ Inbox",
+    rfqStatusNew: "New",
+    rfqStatusAnswered: "Answered",
+    rfqStatusClosed: "Closed",
+    rfqReplyButton: "Reply",
+    rfqNoBuyerLinked: "No ALSOUK account linked — contact directly",
+    rfqEmptyTitle: "No RFQs yet",
+    rfqEmptySubtitle: "Requests for quotes sent to your company will show up here.",
     accountStatusLabel: "Account Status",
     levelStarter: "1 — Starter Plan",
     levelBusiness: "2 — Business Plan",
@@ -269,6 +278,14 @@ const localT = {
     tabAboutTrade: "À propos & Commerce",
     tabInstagramFeed: "Fil Instagram",
     tabFeaturedProducts: "Produits en vedette",
+    tabRfqs: "Demandes de devis",
+    rfqStatusNew: "Nouvelle",
+    rfqStatusAnswered: "Répondue",
+    rfqStatusClosed: "Clôturée",
+    rfqReplyButton: "Répondre",
+    rfqNoBuyerLinked: "Aucun compte ALSOUK lié — contactez directement",
+    rfqEmptyTitle: "Aucune demande pour l'instant",
+    rfqEmptySubtitle: "Les demandes de devis envoyées à votre entreprise s'afficheront ici.",
     accountStatusLabel: "Statut du compte",
     levelStarter: "1 — Forfait Starter",
     levelBusiness: "2 — Forfait Business",
@@ -387,6 +404,14 @@ const localT = {
     tabAboutTrade: "عن الشركة والتجارة",
     tabInstagramFeed: "المنشورات",
     tabFeaturedProducts: "المنتجات المميزة",
+    tabRfqs: "صندوق طلبات الأسعار",
+    rfqStatusNew: "جديد",
+    rfqStatusAnswered: "مُجاب",
+    rfqStatusClosed: "مغلق",
+    rfqReplyButton: "الرد",
+    rfqNoBuyerLinked: "لا يوجد حساب ALSOUK مرتبط — تواصل مباشرة",
+    rfqEmptyTitle: "لا توجد طلبات أسعار بعد",
+    rfqEmptySubtitle: "طلبات عروض الأسعار الموجهة لشركتك ستظهر هنا.",
     accountStatusLabel: "حالة الحساب",
     levelStarter: "1 — الخطة الأساسية",
     levelBusiness: "2 — خطة الأعمال",
@@ -523,7 +548,7 @@ function AccountScreen() {
   const [selectedRole, setSelectedRole] = useState<"buyer" | "supplier" | null>(null)
 
   // New premium profile layout tabs: posts, products, about, exhibitions, reviews, certificates
-  const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "products" | "about" | "exhibitions" | "reviews" | "certificates" | "studio">("about")
+  const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "products" | "about" | "exhibitions" | "reviews" | "certificates" | "studio" | "rfqs">("about")
 
   // Sidebar controls
   const [showEditSettingsModal, setShowEditSettingsModal] = useState(false)
@@ -559,6 +584,8 @@ function AccountScreen() {
   const [exhibitions, setExhibitions] = useState<any[]>([])
   const [productsCount, setProductsCount] = useState(0)
   const [rfqsCount, setRfqsCount] = useState(0)
+  const [rfqList, setRfqList] = useState<any[]>([])
+  const [rfqUpdatingId, setRfqUpdatingId] = useState<string | null>(null)
   const [fetchingCompanyInfo, setFetchingCompanyInfo] = useState(false)
 
   // Followers & Following — real counts, fetched from company_follows in
@@ -575,6 +602,21 @@ function AccountScreen() {
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const bannerFileInputRef = useRef<HTMLInputElement>(null)
   const { user: authUser } = useAuth()
+
+  // Opens the RFQs tab directly when arriving from a notification's
+  // actionUrl (`/account?tab=rfqs&rfqId=...`, see notifyRFQ in
+  // lib/services/notifications-service.ts). Reads window.location directly
+  // instead of useSearchParams to avoid a Suspense boundary requirement on
+  // this already-large client page.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("tab") === "rfqs") {
+      // Defer state change to avoid synchronous react-hooks/set-state-in-effect
+      const tm = setTimeout(() => setActiveProfileTab("rfqs"), 0)
+      return () => clearTimeout(tm)
+    }
+  }, [])
 
   // Likes & Comments Simulator State for posts
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({})
@@ -810,6 +852,15 @@ function AccountScreen() {
             .or(filterStr)
           setRfqsCount(legacyCount || 0)
         }
+
+        // Full RFQ inbox list for the new "rfqs" tab — same company_id scope
+        // as the count above, backed by the SELECT policy from 0053.
+        const { data: rfqRows } = await supabase
+          .from("rfqs")
+          .select("id,company_name,contact_person,email,phone,product_requested,quantity,target_price,delivery_destination,message,status,buyer_id,created_at")
+          .eq("company_id", currentCompanyId)
+          .order("created_at", { ascending: false })
+        setRfqList(rfqRows || [])
       }
 
       // 4. Real followers count (was hardcoded 1240) + real posts count
@@ -1201,6 +1252,21 @@ function AccountScreen() {
     }
   }
 
+  const handleRfqStatusChange = async (rfqId: string, status: string) => {
+    setRfqUpdatingId(rfqId)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from("rfqs").update({ status }).eq("id", rfqId)
+      if (!error) {
+        setRfqList((prev) => prev.map((r) => (r.id === rfqId ? { ...r, status } : r)))
+      } else {
+        console.error("Error updating RFQ status:", error)
+      }
+    } finally {
+      setRfqUpdatingId(null)
+    }
+  }
+
   const handleAddProduct = async () => {
     if (!company) return
     if (!productForm.name.trim()) return
@@ -1292,10 +1358,11 @@ function AccountScreen() {
 
   // Dynamic visible tabs based on profileLevel
   const visibleTabs = useMemo(() => {
-    const tabs: { id: "about" | "posts" | "products" | "certificates" | "reviews" | "exhibitions" | "studio"; label: string; icon: import("lucide-react").LucideIcon }[] = [
+    const tabs: { id: "about" | "posts" | "products" | "certificates" | "reviews" | "exhibitions" | "studio" | "rfqs"; label: string; icon: import("lucide-react").LucideIcon }[] = [
       { id: "studio" as const, label: "Studio", icon: ImagePlus },
       { id: "about" as const, label: dict.tabAboutTrade, icon: Building2 },
       { id: "products" as const, label: dict.tabFeaturedProducts, icon: Box },
+      { id: "rfqs" as const, label: dict.tabRfqs, icon: FileText },
     ]
     return tabs
   }, [company?.profileLevel, lang])
@@ -2352,6 +2419,94 @@ function AccountScreen() {
                     </div>
                   </div>
                 )
+              )}
+            </div>
+          )}
+
+          {/* Tab: RFQ Inbox — requests for quotes addressed to this company
+              (public.rfqs, scoped by the SELECT policy from migration 0053).
+              "Answered" reuses the existing status='in_progress' value; there
+              is no separate DB enum value for it. */}
+          {activeTabResolved === "rfqs" && (
+            <div className="space-y-6 max-w-4xl mx-auto">
+              <div className="border-b border-border pb-3">
+                <h3 className="text-base font-black text-foreground">{dict.tabRfqs}</h3>
+              </div>
+
+              {!company && noCompanyCta}
+
+              {company && rfqList.length === 0 && (
+                <div className="rounded-[20px] border border-dashed border-border p-12 text-center max-w-md mx-auto space-y-4">
+                  <FileText className="size-12 text-muted-foreground mx-auto" />
+                  <div>
+                    <h4 className="text-sm font-black text-foreground">{dict.rfqEmptyTitle}</h4>
+                    <p className="text-xs text-muted-foreground leading-normal mt-1">{dict.rfqEmptySubtitle}</p>
+                  </div>
+                </div>
+              )}
+
+              {company && rfqList.length > 0 && (
+                <div className="space-y-4">
+                  {rfqList.map((rfq) => {
+                    const statusStyle =
+                      rfq.status === "closed"
+                        ? "text-muted-foreground bg-muted"
+                        : rfq.status === "in_progress"
+                        ? "text-blue-600 bg-blue-500/10"
+                        : "text-emerald-600 bg-emerald-500/10"
+                    const statusLabel =
+                      rfq.status === "closed" ? dict.rfqStatusClosed : rfq.status === "in_progress" ? dict.rfqStatusAnswered : dict.rfqStatusNew
+                    return (
+                      <div key={rfq.id} className="rounded-2xl border border-border bg-card p-5 space-y-3">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div>
+                            <div className="text-sm font-black text-foreground">{rfq.company_name || rfq.contact_person}</div>
+                            <div className="text-xs text-muted-foreground">{new Date(rfq.created_at).toLocaleDateString()}</div>
+                          </div>
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${statusStyle}`}>{statusLabel}</span>
+                        </div>
+
+                        <div className="text-sm text-foreground">
+                          <span className="font-bold">{rfq.product_requested}</span>
+                          {rfq.quantity && <span className="text-muted-foreground"> · {rfq.quantity}</span>}
+                        </div>
+                        {rfq.message && <p className="text-xs text-muted-foreground leading-normal">{rfq.message}</p>}
+
+                        <div className="flex flex-wrap items-center gap-2 pt-2">
+                          {rfq.buyer_id ? (
+                            <Link
+                              href={`/messages/${rfq.buyer_id}`}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-xs font-black text-white hover:opacity-95"
+                            >
+                              <Send className="size-3.5" />
+                              {dict.rfqReplyButton}
+                            </Link>
+                          ) : (
+                            <a
+                              href={`mailto:${rfq.email}`}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-xs font-black text-foreground hover:bg-secondary"
+                              title={dict.rfqNoBuyerLinked}
+                            >
+                              <Mail className="size-3.5" />
+                              {rfq.email}
+                            </a>
+                          )}
+
+                          <select
+                            value={rfq.status || "new"}
+                            disabled={rfqUpdatingId === rfq.id}
+                            onChange={(e) => handleRfqStatusChange(rfq.id, e.target.value)}
+                            className="px-3 py-2 rounded-xl border border-border text-xs font-bold bg-card disabled:opacity-50"
+                          >
+                            <option value="new">{dict.rfqStatusNew}</option>
+                            <option value="in_progress">{dict.rfqStatusAnswered}</option>
+                            <option value="closed">{dict.rfqStatusClosed}</option>
+                          </select>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               )}
             </div>
           )}
