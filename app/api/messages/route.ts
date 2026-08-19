@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { fetchConversations, sendMessage } from "@/lib/services/messages-service"
+import { fetchConversations, resolveParticipant, sendMessage } from "@/lib/services/messages-service"
+import { notifyMessage } from "@/lib/services/notifications-service"
 
 export const dynamic = "force-dynamic"
 
@@ -47,5 +48,15 @@ export async function POST(request: Request) {
   if (!result.ok) {
     return NextResponse.json({ error: result.reason }, { status: result.reason === "validation" ? 400 : 500 })
   }
+
+  // Notify the receiver. Best-effort and non-blocking: a failure here must
+  // never turn a successfully-sent message into an error response.
+  try {
+    const sender = await resolveParticipant(supabase, user.id)
+    await notifyMessage(supabase, body.receiverId, sender.name, result.data.message, `/messages/${user.id}`, result.data.id)
+  } catch (err) {
+    console.error("[api/messages] Failed to send message notification:", err)
+  }
+
   return NextResponse.json({ success: true, data: result.data })
 }
