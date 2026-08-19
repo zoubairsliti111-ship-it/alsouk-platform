@@ -1,64 +1,12 @@
-import { restGet, getRestConfig } from "@/lib/supabase/rest"
+import { restGet } from "@/lib/supabase/rest"
 import type { SupabaseClient } from "@supabase/supabase-js"
 import type { ExhibitionMedia, ExhibitionDocument } from "@/lib/domains/exhibition/types"
 import {
   mapExhibitionMedia,
   mapExhibitionDocument,
-  getMockBooths,
   ExhibitionMediaRow,
   ExhibitionDocumentRow,
 } from "@/lib/services/exhibitions-service"
-
-// We can extract/mirror standard mock maps from service for completeness
-const MOCK_MEDIA: Record<string, ExhibitionMedia[]> = {
-  "booth-medina": [
-    { id: "med-m-1", boothId: "booth-medina", mediaType: "image", url: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=600", caption: "Sfax Ancestral Groves", sortOrder: 1 },
-    { id: "med-m-2", boothId: "booth-medina", mediaType: "image", url: "https://images.unsplash.com/photo-1471193945509-9ad0617afabf?auto=format&fit=crop&q=80&w=600", caption: "Traditional Stone Mill Pressing", sortOrder: 2 },
-    { id: "med-m-3", boothId: "booth-medina", mediaType: "video", url: "https://www.w3schools.com/html/mov_bbb.mp4", caption: "Cold Press Machinery Walkthrough", sortOrder: 3 },
-  ],
-  "booth-sahara": [
-    { id: "sah-m-1", boothId: "booth-sahara", mediaType: "image", url: "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&q=80&w=600", caption: "Orchards in Tozeur Oasis", sortOrder: 1 },
-  ],
-  "booth-carthage": [
-    { id: "car-m-1", boothId: "booth-carthage", mediaType: "image", url: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80&w=600", caption: "Weaving Loom Hall", sortOrder: 1 },
-  ],
-}
-
-const MOCK_DOCS: Record<string, ExhibitionDocument[]> = {
-  "booth-medina": [
-    { id: "med-d-1", boothId: "booth-medina", name: "Official B2B Export Catalogue 2026.pdf", url: "#", fileSize: "3.2 MB", sortOrder: 1 },
-    { id: "med-d-2", boothId: "booth-medina", name: "ISO 22000 & Organic Certifications.pdf", url: "#", fileSize: "1.8 MB", sortOrder: 2 },
-  ],
-  "booth-sahara": [
-    { id: "sah-d-1", boothId: "booth-sahara", name: "Sahara Dates - Export Specs & Logistics.pdf", url: "#", fileSize: "2.5 MB", sortOrder: 1 },
-  ],
-  "booth-carthage": [
-    { id: "car-d-1", boothId: "booth-carthage", name: "Carthage Textiles Technical Datasheet.pdf", url: "#", fileSize: "4.1 MB", sortOrder: 1 },
-  ],
-}
-
-// Setup globalThis mocks for media and documents
-export function getMockMedia(): Record<string, ExhibitionMedia[]> {
-  if (typeof globalThis !== "undefined") {
-    const g = globalThis as any
-    if (!g.__mockMedia) {
-      g.__mockMedia = JSON.parse(JSON.stringify(MOCK_MEDIA))
-    }
-    return g.__mockMedia
-  }
-  return MOCK_MEDIA
-}
-
-export function getMockDocs(): Record<string, ExhibitionDocument[]> {
-  if (typeof globalThis !== "undefined") {
-    const g = globalThis as any
-    if (!g.__mockDocs) {
-      g.__mockDocs = JSON.parse(JSON.stringify(MOCK_DOCS))
-    }
-    return g.__mockDocs
-  }
-  return MOCK_DOCS
-}
 
 /**
  * Loads all media items (images/videos) attached to a booth.
@@ -89,12 +37,6 @@ export async function getDocumentBoothId(documentId: string): Promise<string | n
 
 export async function getMediaForBooth(boothId: string): Promise<ExhibitionMedia[]> {
   try {
-    const cfg = getRestConfig()
-    if (!cfg || boothId.startsWith("booth-")) {
-      const list = getMockMedia()[boothId] || []
-      return list.sort((a, b) => a.sortOrder - b.sortOrder)
-    }
-
     const rows = await restGet<ExhibitionMediaRow>(
       `exhibition_media?select=*&booth_id=eq.${encodeURIComponent(boothId)}&order=sort_order.asc`
     )
@@ -234,12 +176,6 @@ export async function setBoothCoverImage(
  */
 export async function getDocumentsForBooth(boothId: string): Promise<ExhibitionDocument[]> {
   try {
-    const cfg = getRestConfig()
-    if (!cfg || boothId.startsWith("booth-")) {
-      const list = getMockDocs()[boothId] || []
-      return list.sort((a, b) => a.sortOrder - b.sortOrder)
-    }
-
     const rows = await restGet<ExhibitionDocumentRow>(
       `exhibition_documents?select=*&booth_id=eq.${encodeURIComponent(boothId)}&order=sort_order.asc`
     )

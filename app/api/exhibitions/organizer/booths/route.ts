@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
-import { restGet, getRestConfig } from "@/lib/supabase/rest"
+import { restGet } from "@/lib/supabase/rest"
 import {
   getExhibitions,
-  getMockBooths,
   mapExhibitionBooth,
   updateBoothStatus,
 } from "@/lib/services/exhibitions-service"
@@ -25,20 +24,12 @@ export async function GET(request: Request) {
     const defaultId = exhibitions[0].id
     const exhibitionId = searchParams.get("exhibitionId") || defaultId
     const exhibition = exhibitions.find((e) => e.id === exhibitionId) || exhibitions[0]
-    const slug = exhibition.slug
 
-    let booths = []
-    const cfg = getRestConfig()
-
-    if (!cfg) {
-      booths = getMockBooths()[slug] || []
-    } else {
-      const select = "id,exhibition_id,company_id,banner_url,description,is_archived,booth_number,category,status,title,short_description,companies(*)"
-      const rows = await restGet<any>(
-        `exhibition_booths?select=${select}&exhibition_id=eq.${encodeURIComponent(exhibition.id)}`
-      )
-      booths = rows.map(mapExhibitionBooth)
-    }
+    const select = "id,exhibition_id,company_id,banner_url,description,is_archived,booth_number,category,status,title,short_description,companies(*)"
+    const rows = await restGet<any>(
+      `exhibition_booths?select=${select}&exhibition_id=eq.${encodeURIComponent(exhibition.id)}`
+    )
+    const booths = rows.map(mapExhibitionBooth)
 
     return NextResponse.json({ success: true, data: booths })
   } catch (err: any) {

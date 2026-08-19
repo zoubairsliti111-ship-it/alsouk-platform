@@ -585,6 +585,22 @@ export async function getExhibitsForBooth(boothId: string): Promise<ExhibitionEx
 }
 
 /**
+ * Returns a single exhibit by ID, or null if not found.
+ */
+export async function getExhibitById(id: string): Promise<ExhibitionExhibit | null> {
+  try {
+    const rows = await restGet<ExhibitionItemRow>(
+      `exhibition_items?select=*&id=eq.${encodeURIComponent(id)}&limit=1`
+    )
+    const row = rows[0]
+    return row ? mapExhibitionExhibit(row) : null
+  } catch (err) {
+    console.warn(`[exhibitions-service] getExhibitById error:`, err)
+    return null
+  }
+}
+
+/**
  * Creates a new exhibit.
  */
 export async function createExhibit(
@@ -1766,29 +1782,17 @@ export async function getRecentlyViewed(visitorId: string): Promise<ExhibitionRe
   // Sort descending by viewedAt
   list.sort((a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime())
 
-  const boothsMap = getMockBooths()
-  const allBooths: ExhibitionBooth[] = []
-  for (const slug in boothsMap) {
-    allBooths.push(...boothsMap[slug])
-  }
-
-  return list.map(item => {
-    if (item.targetType === "booth") {
-      const booth = allBooths.find(b => b.id === item.targetId) || null
-      return { ...item, booth }
-    } else {
-      let foundExhibit: ExhibitionExhibit | null = null
-      const exhibitsMap = getMockExhibits()
-      for (const bId in exhibitsMap) {
-        const found = exhibitsMap[bId].find(e => e.id === item.targetId)
-        if (found) {
-          foundExhibit = found
-          break
-        }
+  return Promise.all(
+    list.map(async item => {
+      if (item.targetType === "booth") {
+        const booth = await getBoothDetails(item.targetId)
+        return { ...item, booth }
+      } else {
+        const exhibit = await getExhibitById(item.targetId)
+        return { ...item, exhibit }
       }
-      return { ...item, exhibit: foundExhibit }
-    }
-  })
+    })
+  )
 }
 
 export async function trackRecentlyViewed(visitorId: string, targetType: "booth" | "exhibit", targetId: string): Promise<ExhibitionRecentlyViewed> {
