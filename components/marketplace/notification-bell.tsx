@@ -44,7 +44,7 @@ const localT = {
 }
 
 export function NotificationBell() {
-  const { lang, dir } = useLanguage()
+  const { t, lang, dir } = useLanguage()
   const router = useRouter()
   const dict = localT[lang] || localT.en
 
@@ -211,7 +211,7 @@ export function NotificationBell() {
       <button
         onClick={handleToggle}
         className="relative inline-flex size-9 items-center justify-center rounded-full border border-border/50 bg-card/50 text-foreground/80 hover:bg-secondary hover:text-primary transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
-        aria-label="Notifications"
+        aria-label={t.ui.notifications}
         aria-haspopup="true"
         aria-expanded={isOpen}
       >

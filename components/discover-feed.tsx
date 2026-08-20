@@ -89,16 +89,16 @@ export function DiscoverFeed() {
           <Store className="size-8" />
         </div>
         <div>
-          <h3 className="text-lg font-black text-foreground">No Commercial Updates Yet</h3>
+          <h3 className="text-lg font-black text-foreground">{d.noUpdatesTitle}</h3>
           <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-            Suppliers haven&apos;t published any updates to the Discover Feed today. Are you a merchant? Go to Account to publish your first commercial post!
+            {d.noUpdatesDesc}
           </p>
         </div>
         <Link
           href="/account"
           className="inline-flex rounded-xl bg-primary text-white font-bold text-xs py-2.5 px-5 hover:opacity-90"
         >
-          Go to Account Dashboard
+          {d.goToAccount}
         </Link>
       </div>
     )
@@ -143,7 +143,7 @@ export function DiscoverFeed() {
                 {/* Header chip */}
                 <span className="absolute start-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/40 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
                   <Eye className="size-3" />
-                  {post.viewCount} views
+                  {post.viewCount} {d.viewsSuffix}
                 </span>
 
                 {/* Right action rail */}
@@ -182,7 +182,7 @@ export function DiscoverFeed() {
                         className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white px-4 py-3 text-xs font-black text-neutral-900 transition-transform active:scale-95 shadow-md"
                       >
                         <Info className="size-4" />
-                        <span>View Company</span>
+                        <span>{d.viewCompany}</span>
                       </Link>
                     ) : (
                       <Link
@@ -200,7 +200,7 @@ export function DiscoverFeed() {
                         className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-white/40 bg-white/10 px-4 py-3 text-xs font-black text-white backdrop-blur transition-transform active:scale-95"
                       >
                         <Store className="size-4" />
-                        <span>Visit Store</span>
+                        <span>{d.visitStore}</span>
                       </Link>
                     ) : (
                       <Link
@@ -221,13 +221,13 @@ export function DiscoverFeed() {
           {hasMore && (
             <section className="relative flex h-full w-full snap-start items-center justify-center bg-secondary/20 sm:rounded-3xl p-6">
               <div className="text-center space-y-3">
-                <p className="text-sm font-black text-muted-foreground">You&apos;re caught up with today&apos;s updates!</p>
+                <p className="text-sm font-black text-muted-foreground">{d.caughtUp}</p>
                 <button
                   onClick={handleLoadMore}
                   disabled={fetchingMore}
                   className="rounded-xl bg-primary text-white font-black text-xs py-2.5 px-6 shadow-md transition-all cursor-pointer active:scale-95 disabled:opacity-50"
                 >
-                  {fetchingMore ? "Loading..." : "Load Older Updates"}
+                  {fetchingMore ? d.loading : d.loadOlder}
                 </button>
               </div>
             </section>

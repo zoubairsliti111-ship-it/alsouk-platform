@@ -49,7 +49,8 @@ const localT = {
       engagement: "Likes & Comments",
       social: "Followers",
       others: "System & Updates"
-    }
+    },
+    clearConfirm: "Are you sure you want to clear all notifications? This action cannot be undone."
   },
   fr: {
     back: "Retour",
@@ -75,7 +76,8 @@ const localT = {
       engagement: "Mentions j'aime & Commentaires",
       social: "Abonnés",
       others: "Système & Mises à jour"
-    }
+    },
+    clearConfirm: "Êtes-vous sûr de vouloir effacer toutes les notifications ? Cette action est irréversible."
   },
   ar: {
     back: "عودة",
@@ -101,12 +103,13 @@ const localT = {
       engagement: "التفاعلات والتعليقات",
       social: "المتابعون",
       others: "النظام والتحديثات"
-    }
+    },
+    clearConfirm: "هل أنت متأكد من رغبتك في مسح جميع الإشعارات؟ لا يمكن التراجع عن هذا الإجراء."
   }
 }
 
 function NotificationsScreen() {
-  const { lang, dir } = useLanguage()
+  const { t, lang, dir } = useLanguage()
   const router = useRouter()
   const dict = localT[lang] || localT.en
 
@@ -156,7 +159,7 @@ function NotificationsScreen() {
   }
 
   const handleDeleteAll = async () => {
-    if (!confirm("Are you sure you want to clear all notifications? This action cannot be undone.")) return
+    if (!confirm(dict.clearConfirm)) return
     try {
       const res = await fetch("/api/notifications", { method: "DELETE" })
       const data = await res.json()
@@ -428,7 +431,7 @@ function NotificationsScreen() {
                         })
                       }}
                       className="p-2.5 rounded-xl border border-border hover:bg-secondary/60 text-foreground hover:text-primary transition-all cursor-pointer"
-                      title="View detail"
+                      title={t.ui.viewDetail}
                     >
                       <Eye className="size-4" />
                     </button>
@@ -439,7 +442,7 @@ function NotificationsScreen() {
                       handleDelete(n.id)
                     }}
                     className="p-2.5 rounded-xl border border-destructive/10 hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-all cursor-pointer"
-                    title="Delete notification"
+                    title={t.ui.deleteNotification}
                   >
                     <Trash2 className="size-4" />
                   </button>

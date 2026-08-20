@@ -105,11 +105,11 @@ export function Opportunities() {
                     {o.imageUrl ? (
                       <Image src={o.imageUrl} alt={o.name} fill sizes="(max-width: 640px) 280px, 20vw" className="object-cover transition-transform duration-500 group-hover:scale-102" />
                     ) : (
-                      <div className="flex size-full items-center justify-center text-xs text-muted-foreground">No image</div>
+                      <div className="flex size-full items-center justify-center text-xs text-muted-foreground">{t.ui.noImage}</div>
                     )}
                     {o.isNew && (
                       <span className="absolute start-3 top-3 inline-flex items-center rounded-full bg-[#16A34A] px-2 py-0.5 text-[9px] font-bold text-white shadow-sm">
-                        NEW
+                        {t.ui.newBadge}
                       </span>
                     )}
                   </div>
@@ -132,7 +132,7 @@ export function Opportunities() {
                         })}
                       >
                         <PackageSearch className="size-3.5" />
-                        <span>Request Quote</span>
+                        <span>{t.ui.requestQuote}</span>
                       </Link>
                     </div>
                   </div>

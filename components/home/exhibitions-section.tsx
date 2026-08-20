@@ -35,7 +35,7 @@ export function UpcomingExhibitionsSection() {
         <div>
           <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-black text-primary uppercase tracking-wider mb-2">
             <Sparkles className="size-3" />
-            <span>Virtual Trade Shows</span>
+            <span>{t.ui.virtualTradeShows}</span>
           </span>
           <h2 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
             {lang === "en" ? "Upcoming B2B Exhibitions" : lang === "fr" ? "Prochains Salons B2B" : "المعارض التجارية القادمة B2B"}

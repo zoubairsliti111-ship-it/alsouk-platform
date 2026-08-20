@@ -243,7 +243,10 @@ const localT = {
     photoUrlLabel: "Photo/Document URL",
     captionLabel: "Caption / Title",
     addBtn: "Add Asset",
-    noMedia: "No media assets uploaded yet."
+    noMedia: "No media assets uploaded yet.",
+    companyName: "Company Name",
+    selectType: "Select type",
+    selectIndustry: "Select industry",
   },
   fr: {
     personalInfo: "Informations Personnelles",
@@ -369,7 +372,10 @@ const localT = {
     photoUrlLabel: "URL du document/photo",
     captionLabel: "Légende / Titre",
     addBtn: "Ajouter l'élément",
-    noMedia: "Aucun fichier multimédia téléchargé pour le moment."
+    noMedia: "Aucun fichier multimédia téléchargé pour le moment.",
+    companyName: "Nom de l'entreprise",
+    selectType: "Sélectionnez un type",
+    selectIndustry: "Sélectionnez un secteur",
   },
   ar: {
     personalInfo: "المعلومات الشخصية",
@@ -495,7 +501,10 @@ const localT = {
     photoUrlLabel: "رابط الصورة / المستند",
     captionLabel: "الوصف / العنوان",
     addBtn: "إضافة عنصر",
-    noMedia: "لم يتم تحميل أي ملفات وسائط بعد."
+    noMedia: "لم يتم تحميل أي ملفات وسائط بعد.",
+    companyName: "اسم الشركة",
+    selectType: "اختر النوع",
+    selectIndustry: "اختر الصناعة",
   }
 }
 
@@ -2062,7 +2071,7 @@ function AccountScreen() {
                                 onChange={(e) => setCompanyForm({...companyForm, businessType: e.target.value})}
                                 className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
                               >
-                                <option value="">Select type</option>
+                                <option value="">{dict.selectType}</option>
                                 {BUSINESS_TYPES.map(x => <option key={x} value={x}>{x.replace("_", " ")}</option>)}
                               </select>
                             </div>
@@ -2073,7 +2082,7 @@ function AccountScreen() {
                                 onChange={(e) => setCompanyForm({...companyForm, primaryIndustry: e.target.value})}
                                 className="w-full px-4 py-3 text-xs font-semibold rounded-xl border border-border bg-secondary/20 focus:border-primary"
                               >
-                                <option value="">Select industry</option>
+                                <option value="">{dict.selectIndustry}</option>
                                 {INDUSTRIES.map(x => <option key={x} value={x}>{x}</option>)}
                               </select>
                             </div>

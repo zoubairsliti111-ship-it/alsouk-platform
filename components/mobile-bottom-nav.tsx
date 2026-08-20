@@ -11,21 +11,15 @@ import { useLanguage } from "@/components/language-provider"
  * Tabs: Home, Categories, RFQ, Messages, Account.
  */
 export function MobileBottomNav() {
-  const { lang } = useLanguage()
+  const { t } = useLanguage()
   const pathname = usePathname()
 
-  const homeLabels: Record<string, string> = { en: "Home", fr: "Accueil", ar: "الرئيسية" }
-  const categoriesLabels: Record<string, string> = { en: "Categories", fr: "Catégories", ar: "الفئات" }
-  const rfqLabels: Record<string, string> = { en: "RFQ", fr: "RFQ", ar: "طلبات الأسعار" }
-  const messagesLabels: Record<string, string> = { en: "Messages", fr: "Messages", ar: "الرسائل" }
-  const accountLabels: Record<string, string> = { en: "Account", fr: "Compte", ar: "الحساب" }
-
   const tabs = [
-    { href: "/", label: homeLabels[lang] || homeLabels["en"], icon: Home },
-    { href: "/categories", label: categoriesLabels[lang] || categoriesLabels["en"], icon: LayoutGrid },
-    { href: "/rfq", label: rfqLabels[lang] || rfqLabels["en"], icon: FileText },
-    { href: "/messages", label: messagesLabels[lang] || messagesLabels["en"], icon: MessageSquare },
-    { href: "/account", label: accountLabels[lang] || accountLabels["en"], icon: User },
+    { href: "/", label: t.bottomNav.home, icon: Home },
+    { href: "/categories", label: t.bottomNav.categories, icon: LayoutGrid },
+    { href: "/rfq", label: t.bottomNav.rfq, icon: FileText },
+    { href: "/messages", label: t.bottomNav.messages, icon: MessageSquare },
+    { href: "/account", label: t.bottomNav.account, icon: User },
   ]
 
   function isActive(href: string) {

@@ -103,7 +103,7 @@ export function FeaturedProducts() {
                     {p.imageUrl ? (
                       <Image src={p.imageUrl} alt={p.name} fill sizes="(max-width: 640px) 280px, 20vw" className="object-cover transition-transform duration-500 group-hover:scale-102" />
                     ) : (
-                      <div className="flex size-full items-center justify-center text-xs text-muted-foreground">No image</div>
+                      <div className="flex size-full items-center justify-center text-xs text-muted-foreground">{t.ui.noImage}</div>
                     )}
                     {p.minOrderQuantity && (
                       <span className="absolute end-3 top-3 rounded-full bg-background/90 px-2 py-0.5 text-[9px] font-bold text-foreground shadow-sm backdrop-blur">
@@ -129,7 +129,7 @@ export function FeaturedProducts() {
                         className: "mt-4 w-full rounded-xl bg-[#2563EB] hover:bg-blue-700 text-[11px] font-semibold text-white transition-all duration-300",
                       })}
                     >
-                      Request Quote
+                      {t.ui.requestQuote}
                     </Link>
                   </div>
                 </div>

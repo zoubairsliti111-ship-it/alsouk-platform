@@ -93,7 +93,7 @@ export function BusinessDiscovery() {
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
                       <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500"></span>
                     </span>
-                    <p className="mt-2 text-sm font-bold tracking-wide">Live Demo Stream</p>
+                    <p className="mt-2 text-sm font-bold tracking-wide">{t.ui.liveDemoStream}</p>
                     <p className="mt-1 text-xs text-zinc-400">{item.supplier}</p>
                     <button
                       onClick={(e) => {

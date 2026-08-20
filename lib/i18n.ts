@@ -8,6 +8,8 @@ export const LANGS: { code: Lang; label: string; native: string; dir: "rtl" | "l
 
 type Dict = {
   nav: {
+    home: string
+    menu: string
     categories: string
     suppliers: string
     products: string
@@ -326,6 +328,7 @@ type Dict = {
     home: string
     discover: string
     categories: string
+    rfq: string
     messages: string
     account: string
   }
@@ -347,6 +350,15 @@ type Dict = {
     contact: string
     save: string
     saved: string
+    noUpdatesTitle: string
+    noUpdatesDesc: string
+    viewCompany: string
+    visitStore: string
+    caughtUp: string
+    loading: string
+    loadOlder: string
+    goToAccount: string
+    viewsSuffix: string
   }
   auth: {
     loginTitle: string
@@ -468,11 +480,32 @@ type Dict = {
     activeTag: string
     loadMore: string
   }
+  ui: {
+    liveDemoStream: string
+    hot: string
+    requestQuote: string
+    socialLink: string
+    breadcrumb: string
+    searchLabel: string
+    heroImageAlt: string
+    heroHubTitle: string
+    heroHubDesc: string
+    notifications: string
+    viewDetail: string
+    deleteNotification: string
+    close: string
+    verified: string
+    virtualTradeShows: string
+    noImage: string
+    newBadge: string
+  }
 }
 
 export const translations: Record<Lang, Dict> = {
   en: {
     nav: {
+      home: "Home",
+      menu: "Menu",
       categories: "Categories",
       suppliers: "Suppliers",
       products: "Products",
@@ -864,6 +897,7 @@ export const translations: Record<Lang, Dict> = {
       home: "Home",
       discover: "Discover",
       categories: "Categories",
+      rfq: "RFQ",
       messages: "Messages",
       account: "Account",
     },
@@ -885,6 +919,15 @@ export const translations: Record<Lang, Dict> = {
       contact: "Contact",
       save: "Save",
       saved: "Saved",
+      noUpdatesTitle: "No Commercial Updates Yet",
+      noUpdatesDesc: "Suppliers haven't published any updates to the Discover Feed today. Are you a merchant? Go to Account to publish your first commercial post!",
+      viewCompany: "View Company",
+      visitStore: "Visit Store",
+      caughtUp: "You're caught up with today's updates!",
+      loading: "Loading...",
+      loadOlder: "Load Older Updates",
+      goToAccount: "Go to Account Dashboard",
+      viewsSuffix: "views",
     },
     auth: {
       loginTitle: "Sign in to ALSOUK",
@@ -1006,9 +1049,30 @@ export const translations: Record<Lang, Dict> = {
       activeTag: "ACTIVE",
       loadMore: "Load More Exhibitors",
     },
+    ui: {
+      liveDemoStream: "Live Demo Stream",
+      hot: "HOT",
+      requestQuote: "Request Quote",
+      socialLink: "Social Link",
+      breadcrumb: "Breadcrumb",
+      searchLabel: "Search",
+      heroImageAlt: "Mediterranean trade and logistics port in Tunisia",
+      heroHubTitle: "Mediterranean trade & logistics hub",
+      heroHubDesc: "Connecting Tunisia and global buyers with absolute reliability and quality excellence.",
+      notifications: "Notifications",
+      viewDetail: "View detail",
+      deleteNotification: "Delete notification",
+      close: "Close",
+      verified: "Verified",
+      virtualTradeShows: "Virtual Trade Shows",
+      noImage: "No image",
+      newBadge: "NEW",
+    },
   },
   fr: {
     nav: {
+      home: "Accueil",
+      menu: "Menu",
       categories: "Catégories",
       suppliers: "Fournisseurs",
       products: "Produits",
@@ -1400,6 +1464,7 @@ export const translations: Record<Lang, Dict> = {
       home: "Accueil",
       discover: "Découvrir",
       categories: "Catégories",
+      rfq: "RFQ",
       messages: "Messages",
       account: "Compte",
     },
@@ -1421,6 +1486,15 @@ export const translations: Record<Lang, Dict> = {
       contact: "Contacter",
       save: "Enregistrer",
       saved: "Enregistré",
+      noUpdatesTitle: "Aucune actualité commerciale",
+      noUpdatesDesc: "Les fournisseurs n'ont publié aucune actualité sur le fil Découverte aujourd'hui. Vous êtes commerçant ? Allez dans Compte pour publier votre première actualité commerciale !",
+      viewCompany: "Voir l'entreprise",
+      visitStore: "Visiter la boutique",
+      caughtUp: "Vous êtes à jour avec les actualités d'aujourd'hui !",
+      loading: "Chargement...",
+      loadOlder: "Charger d'anciennes actualités",
+      goToAccount: "Aller au tableau de bord",
+      viewsSuffix: "vues",
     },
     auth: {
       loginTitle: "Se connecter à ALSOUK",
@@ -1542,9 +1616,30 @@ export const translations: Record<Lang, Dict> = {
       activeTag: "ACTIF",
       loadMore: "Charger plus d'exposants",
     },
+    ui: {
+      liveDemoStream: "Diffusion en direct",
+      hot: "POPULAIRE",
+      requestQuote: "Demander un devis",
+      socialLink: "Lien social",
+      breadcrumb: "Fil d'Ariane",
+      searchLabel: "Rechercher",
+      heroImageAlt: "Port commercial et logistique méditerranéen en Tunisie",
+      heroHubTitle: "Hub commercial et logistique méditerranéen",
+      heroHubDesc: "Connecter la Tunisie et les acheteurs mondiaux avec une fiabilité et une qualité absolues.",
+      notifications: "Notifications",
+      viewDetail: "Voir le détail",
+      deleteNotification: "Supprimer la notification",
+      close: "Fermer",
+      verified: "Vérifié",
+      virtualTradeShows: "Salons professionnels virtuels",
+      noImage: "Pas d'image",
+      newBadge: "NOUVEAU",
+    },
   },
   ar: {
     nav: {
+      home: "الرئيسية",
+      menu: "القائمة",
       categories: "الفئات",
       suppliers: "الموردون",
       products: "المنتجات",
@@ -1936,6 +2031,7 @@ export const translations: Record<Lang, Dict> = {
       home: "الرئيسية",
       discover: "اكتشف",
       categories: "الفئات",
+      rfq: "طلبات الأسعار",
       messages: "الرسائل",
       account: "الحساب",
     },
@@ -1957,6 +2053,15 @@ export const translations: Record<Lang, Dict> = {
       contact: "تواصل",
       save: "حفظ",
       saved: "محفوظ",
+      noUpdatesTitle: "لا توجد تحديثات تجارية بعد",
+      noUpdatesDesc: "لم ينشر الموردون أي تحديثات على موجز الاكتشاف اليوم. هل أنت تاجر؟ انتقل إلى الحساب لنشر أول منشور تجاري!",
+      viewCompany: "عرض الشركة",
+      visitStore: "زيارة المتجر",
+      caughtUp: "لقد اطلعت على جميع تحديثات اليوم!",
+      loading: "جارٍ التحميل...",
+      loadOlder: "تحميل تحديثات أقدم",
+      goToAccount: "الذهاب إلى لوحة الحساب",
+      viewsSuffix: "مشاهدة",
     },
     auth: {
       loginTitle: "تسجيل الدخول إلى ألسوق",
@@ -2077,6 +2182,25 @@ export const translations: Record<Lang, Dict> = {
       vettedTag: "معتمد ونخبة",
       activeTag: "نشط حالياً",
       loadMore: "تحميل المزيد من العارضين",
+    },
+    ui: {
+      liveDemoStream: "بث مباشر",
+      hot: "رائج",
+      requestQuote: "طلب عرض سعر",
+      socialLink: "رابط اجتماعي",
+      breadcrumb: "مسار التنقل",
+      searchLabel: "بحث",
+      heroImageAlt: "ميناء التجارة والخدمات اللوجستية المتوسطي في تونس",
+      heroHubTitle: "مركز التجارة والخدمات اللوجستية المتوسطي",
+      heroHubDesc: "ربط تونس والمشترين حول العالم بموثوقية وجودة مطلقة.",
+      notifications: "الإشعارات",
+      viewDetail: "عرض التفاصيل",
+      deleteNotification: "حذف الإشعار",
+      close: "إغلاق",
+      verified: "موثق",
+      virtualTradeShows: "المعارض التجارية الافتراضية",
+      noImage: "لا توجد صورة",
+      newBadge: "جديد",
     },
   },
 }

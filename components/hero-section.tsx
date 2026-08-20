@@ -131,7 +131,7 @@ export function HeroSection() {
             <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[24px] border border-border bg-card shadow-2xl transition-all duration-500 hover:shadow-primary/5 hover:scale-[1.01]">
               <Image
                 src="/images/hero-trade.png"
-                alt="Mediterranean trade and logistics port in Tunisia"
+                alt={t.ui.heroImageAlt}
                 fill
                 priority
                 sizes="40vw"
@@ -140,8 +140,8 @@ export function HeroSection() {
               {/* Soft overlay mask */}
               <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
               <div className="absolute bottom-6 left-6 right-6 rounded-2xl bg-background/90 p-5 shadow-lg backdrop-blur border border-white/20">
-                <p className="text-sm font-black text-foreground tracking-tight">Mediterranean trade & logistics hub</p>
-                <p className="text-xs text-muted-foreground mt-1.5 font-medium leading-relaxed">Connecting Tunisia and global buyers with absolute reliability and quality excellence.</p>
+                <p className="text-sm font-black text-foreground tracking-tight">{t.ui.heroHubTitle}</p>
+                <p className="text-xs text-muted-foreground mt-1.5 font-medium leading-relaxed">{t.ui.heroHubDesc}</p>
               </div>
             </div>
           </div>
